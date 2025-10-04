@@ -2,8 +2,6 @@ import React, { useState, useRef } from 'react';
 import { useSharedState } from '../context/SharedContext';
 import DashboardSection from '../DashboardSection';
 import Modal from '../Modal';
-import RecentActivity from '../RecentActivity';
-import type { RecentActivityRef } from '../RecentActivity';
 
 type MLModel = 'tess' | 'kepler';
 type InputMode = 'file' | 'manual';
@@ -72,9 +70,10 @@ interface RequiredColumnsProps {
   columns: string[];
   modelName: string;
   optionalColumns?: string[];
+  columnDescriptions: { [key: string]: string };
 }
 
-const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, optionalColumns = [] }) => {
+const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, optionalColumns = [], columnDescriptions }) => {
   const [showAll, setShowAll] = useState(false);
   const [showOptional, setShowOptional] = useState(false);
   const displayColumns = showAll ? columns : columns.slice(0, 10);
@@ -98,9 +97,24 @@ const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, o
       </div>
       <div className="flex flex-wrap gap-2">
         {displayColumns.map((col) => (
-          <span key={col} className="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 text-xs rounded-lg font-medium border border-indigo-200 dark:border-indigo-800">
-            {col}
-          </span>
+          <div key={col} className="group relative">
+            <span className="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200 text-xs rounded-lg font-medium border border-indigo-200 dark:border-indigo-800 cursor-help">
+              {col}
+            </span>
+            {/* Tooltip */}
+            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-64">
+              <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg p-3 shadow-xl border border-gray-700 dark:border-gray-600">
+                <div className="font-semibold mb-1 text-indigo-300">{col}</div>
+                <div className="text-gray-200 dark:text-gray-300">
+                  {columnDescriptions[col] || 'No description available'}
+                </div>
+                {/* Arrow */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                  <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
         {!showAll && columns.length > 10 && (
           <span className="px-2.5 py-1 text-gray-500 dark:text-gray-400 text-xs font-medium">
@@ -128,9 +142,24 @@ const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, o
           </div>
           <div className="flex flex-wrap gap-2">
             {displayOptionalColumns.map((col) => (
-              <span key={col} className="px-2.5 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-xs rounded-lg border border-green-200 dark:border-green-800">
-                {col}
-              </span>
+              <div key={col} className="group relative">
+                <span className="px-2.5 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-xs rounded-lg border border-green-200 dark:border-green-800 cursor-help">
+                  {col}
+                </span>
+                {/* Tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-64">
+                  <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg p-3 shadow-xl border border-gray-700 dark:border-gray-600">
+                    <div className="font-semibold mb-1 text-green-300">{col}</div>
+                    <div className="text-gray-200 dark:text-gray-300">
+                      {columnDescriptions[col] || 'No description available'}
+                    </div>
+                    {/* Arrow */}
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                      <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
             {!showOptional && optionalColumns.length > 5 && (
               <span className="px-2.5 py-1 text-gray-500 dark:text-gray-400 text-xs font-medium">
@@ -246,6 +275,116 @@ const Dashboard: React.FC = () => {
     'koi_teq': 'Equilibrium Temperature', 'koi_insol': 'Insolation Flux',
     'koi_steff': 'Stellar Effective Temperature', 'koi_slogg': 'Stellar Surface Gravity',
     'koi_srad': 'Stellar Radius', 'koi_kepmag': 'Kepler Magnitude'
+  };
+
+  const columnDescriptions: { [key: string]: string } = {
+    // TESS Required Columns
+    'ra': 'Sky coordinate (right ascension) in degrees for celestial positioning',
+    'dec': 'Sky coordinate (declination) in degrees for celestial positioning',
+    'st_teff': 'Temperature of the star in Kelvin (K)',
+    'st_logg': 'Surface gravity of the star (log base 10 of cm/s²)',
+    'st_rad': 'Radius of the star in solar radii',
+    'st_dist': 'Distance from Earth to the star in parsecs',
+    'st_pmra': 'Star\'s proper motion in RA direction (mas/year)',
+    'st_pmdec': 'Star\'s proper motion in Dec direction (mas/year)',
+    'st_tmag': 'TESS photometric magnitude of the host star',
+    'pl_orbper': 'Time for the planet to complete one orbit (days)',
+    'pl_rade': 'Radius of the planet in Earth radii',
+    'pl_trandep': 'Depth of the transit (percentage decrease in brightness)',
+    'pl_trandurh': 'Duration of the planetary transit in hours',
+    'pl_eqt': 'Equilibrium temperature of the planet (K)',
+    'pl_insol': 'Insolation flux received by the planet (Earth flux)',
+    'pl_tranmid': 'Time of transit center (BJD - 2457000)',
+    
+    // Kepler Required Columns
+    'koi_disposition': 'Archive disposition (CONFIRMED, FALSE POSITIVE, CANDIDATE)',
+    'koi_pdisposition': 'Pipeline-determined disposition',
+    'koi_score': 'Disposition score (0-1, higher = more likely planet)',
+    'koi_fpflag_nt': 'Not transit-like false positive flag',
+    'koi_fpflag_ss': 'Stellar eclipse false positive flag',
+    'koi_fpflag_co': 'Centroid offset false positive flag',
+    'koi_fpflag_ec': 'Ephemeris match false positive flag',
+    'koi_period': 'Orbital period of the planet candidate (days)',
+    'koi_impact': 'Sky-projected distance between planet and star',
+    'koi_duration': 'Transit duration from first to last contact (hours)',
+    'koi_depth': 'Transit depth in parts per million',
+    'koi_prad': 'Planetary radius in Earth radii',
+    'koi_teq': 'Equilibrium temperature of planet (K)',
+    'koi_insol': 'Insolation flux (Earth flux)',
+    'koi_model_snr': 'Signal-to-noise ratio of the transit',
+    'koi_tce_plnt_num': 'Planet number in multi-planet system',
+    'koi_steff': 'Stellar effective temperature (K)',
+    'koi_slogg': 'Stellar surface gravity (log g)',
+    'koi_srad': 'Stellar radius (solar radii)',
+    'koi_kepmag': 'Kepler-band magnitude of the host star',
+    
+    // Optional TESS Columns
+    'toi': 'TESS Object of Interest identifier',
+    'tid': 'TESS Input Catalog identifier',
+    'tfopwg_disp': 'TESS Follow-up Observing Program disposition',
+    'rastr': 'Right Ascension in sexagesimal format',
+    'decstr': 'Declination in sexagesimal format',
+    'st_pmraerr1': 'Upper uncertainty in RA proper motion',
+    'st_pmraerr2': 'Lower uncertainty in RA proper motion',
+    'st_pmdecerr1': 'Upper uncertainty in Dec proper motion',
+    'st_pmdecerr2': 'Lower uncertainty in Dec proper motion',
+    'st_tmagerr1': 'Upper uncertainty in TESS magnitude',
+    'st_tmagerr2': 'Lower uncertainty in TESS magnitude',
+    'st_disterr1': 'Upper uncertainty in stellar distance',
+    'st_disterr2': 'Lower uncertainty in stellar distance',
+    'st_tefferr1': 'Upper uncertainty in stellar temperature',
+    'st_tefferr2': 'Lower uncertainty in stellar temperature',
+    'st_loggerr1': 'Upper uncertainty in surface gravity',
+    'st_loggerr2': 'Lower uncertainty in surface gravity',
+    'st_raderr1': 'Upper uncertainty in stellar radius',
+    'st_raderr2': 'Lower uncertainty in stellar radius',
+    'pl_orbpererr1': 'Upper uncertainty in orbital period',
+    'pl_orbpererr2': 'Lower uncertainty in orbital period',
+    'pl_radeerr1': 'Upper uncertainty in planet radius',
+    'pl_radeerr2': 'Lower uncertainty in planet radius',
+    'pl_trandeperr1': 'Upper uncertainty in transit depth',
+    'pl_trandeperr2': 'Lower uncertainty in transit depth',
+    'pl_trandurherr1': 'Upper uncertainty in transit duration',
+    'pl_trandurherr2': 'Lower uncertainty in transit duration',
+    'pl_eqterr1': 'Upper uncertainty in equilibrium temperature',
+    'pl_eqterr2': 'Lower uncertainty in equilibrium temperature',
+    'pl_insolerr1': 'Upper uncertainty in insolation flux',
+    'pl_insolerr2': 'Lower uncertainty in insolation flux',
+    'pl_tranmiderr1': 'Upper uncertainty in transit midpoint',
+    'pl_tranmiderr2': 'Lower uncertainty in transit midpoint',
+    'toi_created': 'Date when TOI was created',
+    'rowupdate': 'Last update date of the record',
+    
+    // Optional Kepler Columns
+    'kepid': 'Kepler Input Catalog identifier',
+    'kepoi_name': 'KOI name in standard format',
+    'kepler_name': 'Kepler planet name if confirmed',
+    'koi_sma': 'Semi-major axis of orbit (AU)',
+    'koi_incl': 'Orbital inclination (degrees)',
+    'koi_time0bk': 'Transit epoch (BJD - 2454833)',
+    'koi_period_err1': 'Upper uncertainty in orbital period',
+    'koi_period_err2': 'Lower uncertainty in orbital period',
+    'koi_time0bk_err1': 'Upper uncertainty in transit epoch',
+    'koi_time0bk_err2': 'Lower uncertainty in transit epoch',
+    'koi_impact_err1': 'Upper uncertainty in impact parameter',
+    'koi_impact_err2': 'Lower uncertainty in impact parameter',
+    'koi_duration_err1': 'Upper uncertainty in transit duration',
+    'koi_duration_err2': 'Lower uncertainty in transit duration',
+    'koi_depth_err1': 'Upper uncertainty in transit depth',
+    'koi_depth_err2': 'Lower uncertainty in transit depth',
+    'koi_prad_err1': 'Upper uncertainty in planetary radius',
+    'koi_prad_err2': 'Lower uncertainty in planetary radius',
+    'koi_teq_err1': 'Upper uncertainty in equilibrium temp',
+    'koi_teq_err2': 'Lower uncertainty in equilibrium temp',
+    'koi_insol_err1': 'Upper uncertainty in insolation flux',
+    'koi_insol_err2': 'Lower uncertainty in insolation flux',
+    'koi_steff_err1': 'Upper uncertainty in stellar temperature',
+    'koi_steff_err2': 'Lower uncertainty in stellar temperature',
+    'koi_slogg_err1': 'Upper uncertainty in stellar gravity',
+    'koi_slogg_err2': 'Lower uncertainty in stellar gravity',
+    'koi_srad_err1': 'Upper uncertainty in stellar radius',
+    'koi_srad_err2': 'Lower uncertainty in stellar radius',
+    'koi_tce_delivname': 'TCE delivery name from pipeline'
   };
 
   // Model Metrics (dummy data - would come from state in production)
@@ -400,9 +539,10 @@ const Dashboard: React.FC = () => {
       };
       reader.readAsText(file);
     } else {
-      // For XLSX files, set immediately (validation happens server-side)
+      // For XLSX files, set immediately with warning about validation
       setUploadedFile(file);
-      setFileInfoMessage('✓ XLSX file uploaded successfully! Column validation will be performed during analysis.');
+      setFileInfoMessage('⚠️ XLSX file uploaded. Please ensure it contains all required columns for the selected model before running analysis.');
+      // Note: We can't validate XLSX client-side easily, so we add a validation check in handleAnalyze
     }
   };
 
@@ -421,6 +561,21 @@ const Dashboard: React.FC = () => {
 
   const handleAnalyze = async () => {
     if (!uploadedFile && inputMode === 'file') return;
+
+    // Final validation check before running ML model
+    if (validationErrors.length > 0) {
+      setFileError('Cannot run ML analysis: Please fix all validation errors first.');
+      return;
+    }
+
+    // Additional check for XLSX files
+    if (uploadedFile?.name.toLowerCase().endsWith('.xlsx')) {
+      const confirmRun = window.confirm(
+        'Warning: XLSX file validation happens server-side. Please confirm that your file contains all required columns for the ' +
+        selectedModel.toUpperCase() + ' model before proceeding.'
+      );
+      if (!confirmRun) return;
+    }
 
     setIsAnalyzing(true);
     try {
@@ -648,13 +803,13 @@ const Dashboard: React.FC = () => {
                 ))}
               </div>
 
-              {/* Required Columns Display */}
-              <RequiredColumns
-                columns={modelColumns[selectedModel]}
-                modelName={selectedModel.toUpperCase()}
-                optionalColumns={optionalColumns[selectedModel]}
-              />
-            </div>
+            {/* Required Columns Display */}
+            <RequiredColumns
+              columns={modelColumns[selectedModel]}
+              modelName={selectedModel.toUpperCase()}
+              optionalColumns={optionalColumns[selectedModel]}
+            />
+          </div>
 
           {/* Input Mode Tabs */}
               <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
@@ -754,32 +909,105 @@ const Dashboard: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Validation Errors */}
+                  {/* Validation Errors - Enhanced */}
                   {validationErrors.length > 0 && (
-                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 rounded-lg">
-                      <p className="text-yellow-800 dark:text-yellow-300 text-sm font-semibold mb-2">
-                        <i className="fas fa-exclamation-triangle mr-2"></i>
-                        Validation Issues Found:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-yellow-700 dark:text-yellow-400 text-sm">
-                        {validationErrors.map((error, idx) => (
-                          <li key={idx}>{error}</li>
-                        ))}
-                      </ul>
+                    <div className="p-5 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-500 rounded-xl shadow-lg">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <i className="fas fa-exclamation-triangle text-white text-lg"></i>
+                        </div>
+                        <div>
+                          <p className="text-red-800 dark:text-red-300 text-base font-bold mb-1">
+                            File Validation Failed
+                          </p>
+                          <p className="text-red-700 dark:text-red-400 text-sm">
+                            Your file has {validationErrors.length} error{validationErrors.length > 1 ? 's' : ''} that must be fixed before running the ML model.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                        <ul className="space-y-2">
+                          {validationErrors.map((error, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-red-700 dark:text-red-400 text-sm">
+                              <i className="fas fa-times-circle mt-0.5 flex-shrink-0"></i>
+                              <span>{error}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="mt-4 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg border border-blue-300 dark:border-blue-700">
+                        <p className="text-blue-800 dark:text-blue-300 text-xs font-medium">
+                          <i className="fas fa-info-circle mr-1"></i>
+                          <strong>How to fix:</strong> Ensure your CSV file includes all required columns listed above and that the column names match exactly (case-sensitive).
+                        </p>
+                      </div>
                     </div>
                   )}
 
-                  {/* Analyze Button */}
+                  {/* File Validation Status */}
+                  {uploadedFile && !fileError && (
+                    <div className={`p-4 rounded-xl border-2 ${
+                      validationErrors.length === 0
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-500'
+                        : 'bg-red-50 dark:bg-red-900/20 border-red-500'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                          validationErrors.length === 0
+                            ? 'bg-green-500'
+                            : 'bg-red-500'
+                        }`}>
+                          <i className={`fas ${
+                            validationErrors.length === 0
+                              ? 'fa-check-circle'
+                              : 'fa-exclamation-triangle'
+                          } text-white text-xl`}></i>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className={`font-bold text-base ${
+                            validationErrors.length === 0
+                              ? 'text-green-800 dark:text-green-300'
+                              : 'text-red-800 dark:text-red-300'
+                          }`}>
+                            {validationErrors.length === 0
+                              ? 'File Validated Successfully'
+                              : 'File Validation Failed'}
+                          </h4>
+                          <p className={`text-sm ${
+                            validationErrors.length === 0
+                              ? 'text-green-700 dark:text-green-400'
+                              : 'text-red-700 dark:text-red-400'
+                          }`}>
+                            {validationErrors.length === 0
+                              ? 'All required columns are present and correctly formatted'
+                              : `Found ${validationErrors.length} validation error${validationErrors.length > 1 ? 's' : ''} - please fix before running ML model`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Analyze Button - Only enabled when validation passes */}
                   {uploadedFile && !fileError && (
                     <button
                       onClick={handleAnalyze}
-                      disabled={isAnalyzing}
-                      className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 flex items-center justify-center gap-2"
+                      disabled={isAnalyzing || validationErrors.length > 0}
+                      className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
+                        validationErrors.length > 0
+                          ? 'bg-gray-400 dark:bg-gray-600 text-gray-200 dark:text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white hover:shadow-2xl hover:scale-105'
+                      } ${isAnalyzing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      title={validationErrors.length > 0 ? 'Fix validation errors before running ML analysis' : 'Run ML analysis on uploaded file'}
                     >
                       {isAnalyzing ? (
                         <>
                           <i className="fas fa-spinner fa-spin"></i>
                           Analyzing Data...
+                        </>
+                      ) : validationErrors.length > 0 ? (
+                        <>
+                          <i className="fas fa-ban"></i>
+                          Cannot Run - Fix Validation Errors First
                         </>
                       ) : (
                         <>
@@ -940,51 +1168,6 @@ const Dashboard: React.FC = () => {
           </table>
         </div>
       </DashboardSection>
-      </div>
-
-      {/* Right Column - Recent Activity (1/3 width) */}
-      <div className="lg:col-span-1 space-y-4">
-        <RecentActivity ref={recentActivityRef} />
-        
-        {/* Temporary Hello Button */}
-        <button 
-          onClick={() => {
-            // Optimistically add to UI immediately
-            const tempActivity = {
-              id: Date.now(),
-              message: 'hello world',
-              created_at: new Date().toISOString(),
-              type: 'info' as const
-            };
-            
-            // Call the optimistic update if available
-            recentActivityRef.current?.addOptimisticActivity(tempActivity);
-            
-            fetch('http://localhost:8000/api/v1/logs/', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message: 'hello world' })
-            })
-              .then(res => res.json())
-              .then(data => {
-                console.log('Log added:', data);
-                // Refresh to get real data from server
-                setTimeout(() => {
-                  recentActivityRef.current?.refreshActivities(true);
-                }, 300);
-              })
-              .catch(err => {
-                console.error('Error adding log:', err);
-                // Remove optimistic update on error
-                recentActivityRef.current?.refreshActivities(false);
-              });
-          }}
-          className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2"
-        >
-          <i className="fas fa-plus-circle"></i>
-          Add Hello World Log
-        </button>
-      </div>
 
       {/* Hyperparameters Modal */}
       <Modal isOpen={showHyperparamsModal} onClose={() => setShowHyperparamsModal(false)}>
