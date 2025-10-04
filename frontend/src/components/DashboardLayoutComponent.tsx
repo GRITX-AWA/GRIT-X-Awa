@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react';
 import SideBar from './sideBar';
-import { ThemeProvider } from './ThemeContext';
 import ThemeToggle from './ThemeToggle';
 import FontSizeToggle from './FontSizeToggle';
 import { SharedProvider } from './context/SharedContext';
 import { ExoplanetProvider } from '../contexts/ExoplanetContext';
+import { ThemeProvider } from './ThemeContext';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Exoplanets = lazy(() => import('./pages/Exoplanets'));
@@ -12,13 +12,11 @@ const Analysis = lazy(() => import('./pages/Analysis'));
 const Visualizations = lazy(() => import('./pages/Visualizations'));
 const HelpResources = lazy(() => import('./pages/HelpResources'));
 const Settings = lazy(() => import('./pages/Settings'));
-const RunAnalysis = lazy(() => import('./pages/RunAnalysis'));
 
 // This context will allow child components to access and update the active page
 export const PageContext = React.createContext({
   activePage: 'dashboard',
   setActivePage: (page: string) => {},
-  runAnalysis: () => {},
 });
 
 const DashboardLayoutComponent = () => {
@@ -46,7 +44,6 @@ const DashboardLayoutComponent = () => {
   const contextValue = useMemo(() => ({
     activePage,
     setActivePage: handleSetActivePage,
-    runAnalysis: () => setActivePage('runanalysis'),
   }), [activePage, handleSetActivePage]);
 
   // Render different content based on activePage state
@@ -60,8 +57,6 @@ const DashboardLayoutComponent = () => {
         return <Analysis />;
       case 'visualizations':
         return <Visualizations />;
-      case 'runanalysis':
-        return <RunAnalysis />;
       case 'help':
         return <HelpResources />;
       case 'settings':
