@@ -1,6 +1,7 @@
 # app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from mangum import Mangum  # Serverless adapter for Vercel
 from app.db.database import AsyncSessionLocal, Base, engine
 from app.db.init_db import init_models
 from app.db.seed import seed_models
@@ -55,3 +56,7 @@ async def startup_event():
     except Exception as e:
         print(f"⚠️  Warning: Failed to preload ML models: {str(e)}")
         print("   Models will be loaded on first request instead.")
+
+
+# Serverless handler for Vercel deployment
+handler = Mangum(app, lifespan="off")
