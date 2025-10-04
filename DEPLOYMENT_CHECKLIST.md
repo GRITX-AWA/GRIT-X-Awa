@@ -4,7 +4,7 @@ Use this checklist to ensure your deployment is successful.
 
 ---
 
-## 📦 Pre-Deployment
+## 📦 Pre-Deployment.
 
 ### Backend Preparation
 - [ ] `backend/vercel.json` exists and configured
