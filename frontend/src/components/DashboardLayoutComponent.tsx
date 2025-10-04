@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, lazy, Suspense, useEffect, startTransition } from 'react';
 import SideBar from './sideBar';
 import ThemeToggle from './ThemeToggle';
 import FontSizeToggle from './FontSizeToggle';
@@ -26,17 +26,21 @@ const DashboardLayoutComponent = () => {
 
   // Define a function to update the active page with transition
   const handleSetActivePage = useCallback((page: string) => {
-    console.log('handleSetActivePage called with:', page, 'current:', activePage);
     if (page !== activePage) {
-      setIsTransitioning(true);
+      startTransition(() => {
+        setIsTransitioning(true);
+      });
       // Wait for fade out animation
       setTimeout(() => {
-        setActivePage(page);
-        setDisplayPage(page);
-        console.log('Page changed to:', page);
+        startTransition(() => {
+          setActivePage(page);
+          setDisplayPage(page);
+        });
         // Wait a tiny bit then fade in
         setTimeout(() => {
-          setIsTransitioning(false);
+          startTransition(() => {
+            setIsTransitioning(false);
+          });
         }, 50);
       }, 200);
     }
@@ -50,7 +54,6 @@ const DashboardLayoutComponent = () => {
 
   // Render different content based on activePage state
   const renderContent = () => {
-    console.log('renderContent called with displayPage:', displayPage);
     switch (displayPage) {
       case 'dashboard':
         return <Dashboard />;
@@ -65,7 +68,6 @@ const DashboardLayoutComponent = () => {
       case 'settings':
         return <Settings />;
       default:
-        console.log('Default case - returning Dashboard');
         return <Dashboard />;
     }
   };
