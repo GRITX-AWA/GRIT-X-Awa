@@ -3,10 +3,15 @@ import { useFrame } from '@react-three/fiber';
 import { Sphere, Stars, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Star component with glow effect
+// Star component with enhanced glow effect
 function Star() {
   const starRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
+  const outerGlowRef = useRef<THREE.Mesh>(null);
+  const coronaRef = useRef<THREE.Mesh>(null);
+
+  // Detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   useFrame((state) => {
     if (starRef.current) {
@@ -14,33 +19,70 @@ function Star() {
       starRef.current.rotation.x += 0.0005;
     }
     if (glowRef.current) {
-      const pulse = Math.sin(state.clock.elapsedTime * 0.5) * 0.2 + 1;
+      const pulse = Math.sin(state.clock.elapsedTime * 0.5) * 0.3 + 1;
       glowRef.current.scale.setScalar(pulse);
+    }
+    if (!isMobile) {
+      if (outerGlowRef.current) {
+        const pulse = Math.sin(state.clock.elapsedTime * 0.3) * 0.2 + 1;
+        outerGlowRef.current.scale.setScalar(pulse);
+        outerGlowRef.current.rotation.z += 0.002;
+      }
+      if (coronaRef.current) {
+        coronaRef.current.rotation.y += 0.003;
+        const pulse = Math.sin(state.clock.elapsedTime * 0.7) * 0.15 + 1;
+        coronaRef.current.scale.setScalar(pulse);
+      }
     }
   });
 
   return (
     <group>
-      {/* Outer glow */}
-      <Sphere ref={glowRef} args={[2.5, 32, 32]} position={[0, 0, 0]}>
+      {/* Outermost glow - desktop only */}
+      {!isMobile && (
+        <Sphere ref={outerGlowRef} args={[4, 24, 24]} position={[0, 0, 0]}>
+          <meshBasicMaterial
+            color="#ff8800"
+            transparent
+            opacity={0.08}
+          />
+        </Sphere>
+      )}
+
+      {/* Corona layer - desktop only */}
+      {!isMobile && (
+        <Sphere ref={coronaRef} args={[3, 24, 24]} position={[0, 0, 0]}>
+          <meshBasicMaterial
+            color="#ffaa00"
+            transparent
+            opacity={0.12}
+          />
+        </Sphere>
+      )}
+
+      {/* Middle glow */}
+      <Sphere ref={glowRef} args={[2.5, isMobile ? 24 : 32, isMobile ? 24 : 32]} position={[0, 0, 0]}>
         <meshBasicMaterial
           color="#ff8800"
           transparent
-          opacity={0.15}
+          opacity={0.2}
         />
       </Sphere>
 
-      {/* Main star */}
-      <Sphere ref={starRef} args={[1.5, 64, 64]} position={[0, 0, 0]}>
+      {/* Main star with enhanced distortion */}
+      <Sphere ref={starRef} args={[1.5, isMobile ? 32 : 64, isMobile ? 32 : 64]} position={[0, 0, 0]}>
         <MeshDistortMaterial
           emissive="#ffa500"
-          emissiveIntensity={3}
+          emissiveIntensity={4}
           color="#ffcc00"
-          distort={0.3}
-          speed={2}
-          roughness={0.2}
+          distort={isMobile ? 0.2 : 0.4}
+          speed={2.5}
+          roughness={0.1}
         />
       </Sphere>
+
+      {/* Additional point lights for better illumination */}
+      <pointLight position={[0, 0, 0]} intensity={5} distance={50} color="#ffaa00" />
     </group>
   );
 }
@@ -139,9 +181,13 @@ function Exoplanet({ distance, size, speed, color, tilt = 0, type = 'rocky' }: E
 
   return (
     <group ref={orbitRef} rotation={[tilt, 0, 0]}>
-      {/* Orbit ring with glow */}
+      {/* Orbit ring with enhanced glow */}
       <line geometry={orbitRing} rotation={[Math.PI / 2, 0, 0]}>
-        <lineBasicMaterial attach="material" color="#667eea" opacity={0.5} transparent />
+        <lineBasicMaterial attach="material" color="#667eea" opacity={0.4} transparent />
+      </line>
+      {/* Second orbit ring for depth */}
+      <line geometry={orbitRing} rotation={[Math.PI / 2, 0, 0]}>
+        <lineBasicMaterial attach="material" color="#a8c0ff" opacity={0.2} transparent />
       </line>
 
       {/* Planet with atmosphere */}
@@ -171,6 +217,157 @@ function Exoplanet({ distance, size, speed, color, tilt = 0, type = 'rocky' }: E
   );
 }
 
+// Rocket component with engine glow and trail
+interface RocketProps {
+  delay: number;
+  direction: 'left' | 'right';
+}
+
+function Rocket({ delay, direction }: RocketProps) {
+  const groupRef = useRef<THREE.Group>(null);
+  const rocketRef = useRef<THREE.Group>(null);
+  const trailRef = useRef<THREE.Line>(null);
+  const [startTime] = useState(() => Date.now() + delay * 1000);
+  const [trailPoints] = useState<THREE.Vector3[]>([]);
+  const maxTrailLength = 120;
+
+  const calculatePosition = (progress: number) => {
+    const t = progress * Math.PI * 2;
+    const directionMultiplier = direction === 'left' ? -1 : 1;
+
+    // Smooth curved path
+    const pathRadius = 18;
+    const x = Math.sin(t * 0.8) * pathRadius * directionMultiplier;
+    const y = Math.sin(t * 1.2) * 5 + 2;
+    const z = -Math.cos(t * 0.8) * 20 + 8;
+
+    return new THREE.Vector3(x, y, z);
+  };
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+
+    const elapsed = (Date.now() - startTime) / 1000;
+    const orbitDuration = 30;
+    const progress = (elapsed % orbitDuration) / orbitDuration;
+
+    const position = calculatePosition(progress);
+    const nextPosition = calculatePosition(progress + 0.001);
+
+    groupRef.current.position.copy(position);
+
+    // Point rocket in direction of travel
+    groupRef.current.lookAt(nextPosition);
+
+    // Add to trail
+    trailPoints.push(position.clone());
+    if (trailPoints.length > maxTrailLength) {
+      trailPoints.shift();
+    }
+
+    // Update trail
+    if (trailRef.current && trailPoints.length > 1) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(trailPoints);
+      trailRef.current.geometry.dispose();
+      trailRef.current.geometry = geometry;
+    }
+
+    // Slight rotation
+    if (rocketRef.current) {
+      rocketRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 2) * 0.1;
+    }
+  });
+
+  return (
+    <>
+      {/* Rocket trail - engine exhaust */}
+      <line ref={trailRef}>
+        <bufferGeometry />
+        <lineBasicMaterial
+          color="#FF6B35"
+          transparent
+          opacity={0.6}
+          linewidth={2}
+        />
+      </line>
+
+      {/* Rocket group */}
+      <group ref={groupRef}>
+        <group ref={rocketRef}>
+          {/* Rocket body - cone */}
+          <mesh position={[0, 0, 0.4]}>
+            <coneGeometry args={[0.15, 0.6, 8]} />
+            <meshStandardMaterial
+              color="#E8E8E8"
+              metalness={0.8}
+              roughness={0.2}
+              emissive="#666666"
+              emissiveIntensity={0.3}
+            />
+          </mesh>
+
+          {/* Rocket nose - tip */}
+          <mesh position={[0, 0, 0.85]}>
+            <coneGeometry args={[0.08, 0.3, 8]} />
+            <meshStandardMaterial
+              color="#FF4444"
+              metalness={0.6}
+              roughness={0.3}
+              emissive="#FF0000"
+              emissiveIntensity={0.5}
+            />
+          </mesh>
+
+          {/* Wings */}
+          {[0, 120, 240].map((angle, i) => (
+            <mesh
+              key={i}
+              position={[
+                Math.cos((angle * Math.PI) / 180) * 0.12,
+                Math.sin((angle * Math.PI) / 180) * 0.12,
+                0.2
+              ]}
+              rotation={[0, 0, (angle * Math.PI) / 180]}
+            >
+              <boxGeometry args={[0.25, 0.02, 0.3]} />
+              <meshStandardMaterial
+                color="#4444FF"
+                metalness={0.7}
+                roughness={0.3}
+                emissive="#0000AA"
+                emissiveIntensity={0.4}
+              />
+            </mesh>
+          ))}
+
+          {/* Engine glow */}
+          <mesh position={[0, 0, -0.1]}>
+            <sphereGeometry args={[0.2, 16, 16]} />
+            <meshBasicMaterial
+              color="#FF6B35"
+              transparent
+              opacity={0.7}
+            />
+          </mesh>
+
+          {/* Engine fire */}
+          <mesh position={[0, 0, -0.3]}>
+            <coneGeometry args={[0.12, 0.4, 8]} />
+            <meshBasicMaterial
+              color="#FFA500"
+              transparent
+              opacity={0.8}
+            />
+          </mesh>
+
+          {/* Point light for engine */}
+          <pointLight position={[0, 0, -0.2]} intensity={2} distance={3} color="#FF6B35" />
+        </group>
+      </group>
+    </>
+  );
+}
+
 // Orbiting Asteroid that passes by the camera with trail
 interface OrbitingAsteroidProps {
   delay: number;
@@ -193,14 +390,15 @@ function OrbitingAsteroid({ delay, direction }: OrbitingAsteroidProps) {
     const ctx = canvas.getContext('2d');
 
     if (ctx) {
-      // Base rocky colors
-      const baseColors = ['#6B6B6B', '#8B7355', '#696969', '#7D7D7D', '#5C5C5C'];
+      // Lighter base rocky colors for asteroid appearance
+      const baseColors = ['#A8A8A8', '#B8A89A', '#9C9C9C', '#ADADAD', '#8C8C8C'];
       const baseColor = baseColors[Math.floor(Math.random() * baseColors.length)];
 
-      // Create gradient for depth
+      // Create gradient for depth - lighter overall
       const gradient = ctx.createRadialGradient(256, 256, 0, 256, 256, 256);
-      gradient.addColorStop(0, baseColor);
-      gradient.addColorStop(1, '#2B2B2B');
+      gradient.addColorStop(0, '#D0D0D0');
+      gradient.addColorStop(0.5, baseColor);
+      gradient.addColorStop(1, '#707070');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 512, 512);
 
@@ -237,17 +435,17 @@ function OrbitingAsteroid({ delay, direction }: OrbitingAsteroidProps) {
     return tex;
   }, []);
 
-  // Exotic movement calculation
+  // Smoother movement calculation
   const calculatePosition = (progress: number) => {
-    // Combine multiple wave patterns for exotic movement
+    // Simplified wave patterns for smoother, less erratic movement
     const t = progress * Math.PI * 2;
     const directionMultiplier = direction === 'left' ? -1 : 1;
 
-    // Lissajous curve combined with spiral
-    const spiralRadius = 12 + Math.sin(t * 2) * 3;
-    const x = Math.sin(t * 1.3) * spiralRadius * directionMultiplier + Math.cos(t * 0.5) * 2;
-    const y = Math.sin(t * 1.7) * 4 + Math.cos(t * 3) * 1.5;
-    const z = -Math.cos(t) * 15 + 5 + Math.sin(t * 2.3) * 2;
+    // Gentle curved path with minimal variation
+    const spiralRadius = 12;
+    const x = Math.sin(t * 0.8) * spiralRadius * directionMultiplier;
+    const y = Math.sin(t * 0.9) * 3;
+    const z = -Math.cos(t * 0.8) * 15 + 5;
 
     return new THREE.Vector3(x, y, z);
   };
@@ -257,8 +455,8 @@ function OrbitingAsteroid({ delay, direction }: OrbitingAsteroidProps) {
 
     const elapsed = (Date.now() - startTime) / 1000;
 
-    // Duration of one complete orbit (in seconds)
-    const orbitDuration = 25;
+    // Duration of one complete orbit (in seconds) - increased for slower movement
+    const orbitDuration = 40;
 
     // Calculate progress (0 to 1, then loops)
     const progress = (elapsed % orbitDuration) / orbitDuration;
@@ -280,11 +478,11 @@ function OrbitingAsteroid({ delay, direction }: OrbitingAsteroidProps) {
       trailRef.current.geometry = geometry;
     }
 
-    // Rotate asteroid with tumbling motion
+    // Rotate asteroid with gentle tumbling motion
     if (asteroidRef.current) {
-      asteroidRef.current.rotation.y += 0.02;
-      asteroidRef.current.rotation.x += 0.015;
-      asteroidRef.current.rotation.z += 0.01;
+      asteroidRef.current.rotation.y += 0.01;
+      asteroidRef.current.rotation.x += 0.008;
+      asteroidRef.current.rotation.z += 0.005;
     }
   });
 
@@ -294,9 +492,9 @@ function OrbitingAsteroid({ delay, direction }: OrbitingAsteroidProps) {
       <line ref={trailRef}>
         <bufferGeometry />
         <lineBasicMaterial
-          color="#A0A0A0"
+          color="#D0D0D0"
           transparent
-          opacity={0.4}
+          opacity={0.5}
           linewidth={1}
         />
       </line>
@@ -308,11 +506,11 @@ function OrbitingAsteroid({ delay, direction }: OrbitingAsteroidProps) {
           <icosahedronGeometry args={[0.4, 1]} />
           <meshStandardMaterial
             map={texture}
-            roughness={0.95}
-            metalness={0.15}
+            roughness={0.9}
+            metalness={0.05}
             bumpMap={texture}
-            bumpScale={0.05}
-            color="#A9A9A9"
+            bumpScale={0.08}
+            color="#C8C8C8"
           />
         </mesh>
 
@@ -328,9 +526,9 @@ function OrbitingAsteroid({ delay, direction }: OrbitingAsteroidProps) {
             ]}>
               <sphereGeometry args={[0.03, 8, 8]} />
               <meshStandardMaterial
-                color="#808080"
-                roughness={1}
-                metalness={0.1}
+                color="#B0B0B0"
+                roughness={0.95}
+                metalness={0.05}
               />
             </mesh>
           );
@@ -340,8 +538,68 @@ function OrbitingAsteroid({ delay, direction }: OrbitingAsteroidProps) {
   );
 }
 
+// Shooting Star component
+function ShootingStar({ delay }: { delay: number }) {
+  const lineRef = useRef<THREE.Line>(null);
+  const [startTime] = useState(() => Date.now() + delay * 1000);
+  const [trailPoints] = useState<THREE.Vector3[]>([]);
+  const maxTrailLength = 40;
+
+  useFrame(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const duration = 5; // Each shooting star lasts 5 seconds (slower)
+    const cycleDuration = 20; // New shooting star every 20 seconds
+
+    const cycleTime = elapsed % cycleDuration;
+
+    if (cycleTime < duration) {
+      const progress = cycleTime / duration;
+
+      // Shooting star trajectory - diagonal across view
+      const startX = -30 + Math.random() * 20;
+      const startY = 10 + Math.random() * 10;
+      const startZ = -20 + Math.random() * 10;
+
+      const x = startX + progress * 60;
+      const y = startY - progress * 15;
+      const z = startZ + progress * 20;
+
+      const position = new THREE.Vector3(x, y, z);
+
+      trailPoints.push(position);
+      if (trailPoints.length > maxTrailLength) {
+        trailPoints.shift();
+      }
+    } else {
+      // Clear trail between shooting stars
+      trailPoints.length = 0;
+    }
+
+    if (lineRef.current && trailPoints.length > 1) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(trailPoints);
+      lineRef.current.geometry.dispose();
+      lineRef.current.geometry = geometry;
+    }
+  });
+
+  return (
+    <line ref={lineRef}>
+      <bufferGeometry />
+      <lineBasicMaterial
+        color="#FFFFFF"
+        transparent
+        opacity={0.9}
+        linewidth={3}
+      />
+    </line>
+  );
+}
+
 // Main Space Scene
 export default function SpaceScene() {
+  // Detect if mobile device for performance optimization
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <>
       {/* Ambient lighting */}
@@ -353,31 +611,64 @@ export default function SpaceScene() {
       {/* Additional directional lighting for better visibility */}
       <directionalLight position={[10, 10, 5]} intensity={0.5} color="#ffffff" />
 
-      {/* Starfield background */}
+      {/* Enhanced Starfield background - reduced on mobile */}
       <Stars
         radius={100}
         depth={50}
-        count={8000}
-        factor={5}
-        saturation={0.2}
+        count={isMobile ? 5000 : 15000}
+        factor={6}
+        saturation={0.3}
         fade
-        speed={1.5}
+        speed={2}
       />
+      {/* Additional twinkling stars layer - only on desktop */}
+      {!isMobile && (
+        <Stars
+          radius={150}
+          depth={80}
+          count={5000}
+          factor={8}
+          saturation={0.8}
+          fade={false}
+          speed={0.5}
+        />
+      )}
 
       {/* Central star with pulsing glow */}
       <Star />
 
-      {/* Exoplanets with different types and enhanced visuals */}
-      <Exoplanet distance={3} size={0.25} speed={0.008} color="#D2691E" tilt={0.1} type="rocky" />
-      <Exoplanet distance={5} size={0.45} speed={0.005} color="#4169E1" tilt={-0.15} type="gas" />
-      <Exoplanet distance={7} size={0.32} speed={0.003} color="#DC143C" tilt={0.2} type="rocky" />
-      <Exoplanet distance={9} size={0.5} speed={0.002} color="#9370DB" tilt={-0.1} type="gas" />
-      <Exoplanet distance={11} size={0.28} speed={0.0015} color="#87CEEB" tilt={0.25} type="ice" />
-      <Exoplanet distance={13} size={0.35} speed={0.001} color="#FF6347" tilt={-0.2} type="rocky" />
+      {/* Exoplanets - reduced on mobile */}
+      <Exoplanet distance={3} size={0.3} speed={0.009} color="#CD853F" tilt={0.1} type="rocky" />
+      <Exoplanet distance={4.5} size={0.4} speed={0.007} color="#8B4513" tilt={0.05} type="rocky" />
+      <Exoplanet distance={6} size={0.55} speed={0.005} color="#4169E1" tilt={-0.15} type="gas" />
+      <Exoplanet distance={7.5} size={0.35} speed={0.004} color="#DC143C" tilt={0.2} type="rocky" />
+      {!isMobile && (
+        <>
+          <Exoplanet distance={9} size={0.6} speed={0.0025} color="#9370DB" tilt={-0.1} type="gas" />
+          <Exoplanet distance={10.5} size={0.32} speed={0.002} color="#87CEEB" tilt={0.25} type="ice" />
+          <Exoplanet distance={12} size={0.38} speed={0.0015} color="#FF6347" tilt={-0.2} type="rocky" />
+          <Exoplanet distance={14} size={0.5} speed={0.001} color="#FFD700" tilt={0.15} type="gas" />
+          <Exoplanet distance={15.5} size={0.28} speed={0.0008} color="#E0FFFF" tilt={-0.25} type="ice" />
+        </>
+      )}
 
-      {/* Animated asteroids that pass by the camera */}
+      {/* Animated asteroids - reduced on mobile */}
       <OrbitingAsteroid delay={0} direction="left" />
-      <OrbitingAsteroid delay={10} direction="right" />
+      {!isMobile && (
+        <>
+          <OrbitingAsteroid delay={7} direction="right" />
+          <OrbitingAsteroid delay={14} direction="left" />
+        </>
+      )}
+
+      {/* Shooting stars - reduced on mobile */}
+      <ShootingStar delay={0} />
+      {!isMobile && (
+        <>
+          <ShootingStar delay={5} />
+          <ShootingStar delay={10} />
+        </>
+      )}
     </>
   );
 }

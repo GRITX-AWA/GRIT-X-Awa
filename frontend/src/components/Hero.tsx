@@ -4,13 +4,23 @@ import SpaceScene from './SpaceScene';
 import '../styles/Hero.css';
 
 export default function Hero() {
+  // Detect mobile for performance settings
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <div className="hero-container">
       {/* Three.js Background */}
       <div className="hero-canvas">
         <Canvas
           camera={{ position: [0, 5, 15], fov: 60 }}
-          gl={{ alpha: true, antialias: true }}
+          gl={{
+            alpha: true,
+            antialias: !isMobile, // Disable antialiasing on mobile
+            powerPreference: isMobile ? 'low-power' : 'high-performance',
+            stencil: false,
+            depth: true
+          }}
+          dpr={isMobile ? [1, 1.5] : [1, 2]} // Lower pixel ratio on mobile
         >
           <Suspense fallback={null}>
             <SpaceScene />
