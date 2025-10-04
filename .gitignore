@@ -504,3 +504,6 @@ scratch/
 # OS generated files for image previews
 .picasa.ini
 .picasaoriginals
+backend/venv
+backend/.env
+backend/**/__pycache__/
