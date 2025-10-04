@@ -1,36 +1,56 @@
+# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import data, predictions, train, models, analysis, stats, upload, predict
+from app.db.database import AsyncSessionLocal, Base, engine
+from app.db.init_db import init_models
+from app.db.seed import seed_models
+from app.api.v1 import predict, train, stats
+from app.api.v1 import models, data, predictions
+from app.api.v1 import analysis, upload
+from app.services.model_loader import get_model_loader
 
 app = FastAPI(
-    title="Exoplanet Explorer API",
-    description="API for exoplanet data analysis and ML predictions",
-    version="1.0.0"
+    title="Space ML Explorer Backend",
+    docs_url="/api/v1/docs",
+    redoc_url="/api/v1/redoc"
 )
 
-# CORS configuration
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4321", "http://127.0.0.1:4321"],
+    allow_origins=["http://localhost:4321", "http://127.0.0.1:4321"],  # Astro dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(data.router, prefix="/api/v1/data", tags=["data"])
-app.include_router(predictions.router, prefix="/api/v1/predictions", tags=["predictions"])
-app.include_router(predict.router, prefix="/api/v1/predict", tags=["predict"])
-app.include_router(train.router, prefix="/api/v1/train", tags=["train"])
-app.include_router(models.router, prefix="/api/v1/models", tags=["models"])
-app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["analysis"])
-app.include_router(stats.router, prefix="/api/v1/stats", tags=["stats"])
-app.include_router(upload.router, prefix="/api/v1/upload", tags=["upload"])
+# Include routers from both branches
+app.include_router(predict.router, prefix="/predict", tags=["Predict"])
+app.include_router(train.router, prefix="/train", tags=["Train"])
+app.include_router(stats.router, prefix="/stats", tags=["Stats"])
+app.include_router(models.router)
+app.include_router(data.router)
+app.include_router(predictions.router)
+app.include_router(analysis.router)
+app.include_router(upload.router)  # New upload router
 
-@app.get("/")
-async def root():
-    return {"message": "Exoplanet Explorer API", "docs": "/docs"}
 
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
+@app.on_event("startup")
+async def startup_event():
+    # Initialize database tables
+    await init_models()
+    print("✅ Database initialized and tables created successfully!")
+
+    # Seed initial models
+    async with AsyncSessionLocal() as db:
+        await seed_models(db)
+        print("✅ Seeded initial models successfully!")
+
+    # Preload ML models into cache
+    try:
+        model_loader = get_model_loader()
+        model_loader.preload_all_models()
+        print("✅ ML models (Kepler & TESS) preloaded successfully!")
+    except Exception as e:
+        print(f"⚠️  Warning: Failed to preload ML models: {str(e)}")
+        print("   Models will be loaded on first request instead.")
