@@ -1,9 +1,8 @@
 # app/modules/ml/model_registry.py
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import relationship
 from datetime import datetime
-
-Base = declarative_base()
+from app.db.database import Base
 
 class ModelRegistry(Base):
     __tablename__ = "model_registry"

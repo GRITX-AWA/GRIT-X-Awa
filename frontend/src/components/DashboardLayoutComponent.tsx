@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react';
 import SideBar from './sideBar';
-import { ThemeProvider } from './ThemeContext';
 import ThemeToggle from './ThemeToggle';
 import FontSizeToggle from './FontSizeToggle';
 import { SharedProvider } from './context/SharedContext';
 import { ExoplanetProvider } from '../contexts/ExoplanetContext';
+import { ThemeProvider } from './ThemeContext';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Exoplanets = lazy(() => import('./pages/Exoplanets'));
@@ -19,7 +19,7 @@ export const PageContext = React.createContext({
   setActivePage: (page: string) => {},
 });
 
-export default function DashboardLayoutComponent() {
+const DashboardLayoutComponent = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayPage, setDisplayPage] = useState('dashboard');
@@ -117,3 +117,5 @@ export default function DashboardLayoutComponent() {
     </SharedProvider>
   );
 }
+
+export default DashboardLayoutComponent;

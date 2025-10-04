@@ -6,7 +6,7 @@ from app.db.init_db import init_models
 from app.db.seed import seed_models
 from app.api.v1 import predict, train, stats
 from app.api.v1 import models, data, predictions
-from app.api.v1 import analysis, upload
+from app.api.v1 import analysis, upload, logs
 from app.services.model_loader import get_model_loader
 
 app = FastAPI(
@@ -18,7 +18,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4321", "http://127.0.0.1:4321"],  # Astro dev server
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,6 +33,7 @@ app.include_router(data.router)
 app.include_router(predictions.router)
 app.include_router(analysis.router)
 app.include_router(upload.router)  # New upload router
+app.include_router(logs.router)  # Logs router
 
 
 @app.on_event("startup")
