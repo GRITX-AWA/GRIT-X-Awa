@@ -25,6 +25,28 @@ const { title, description = "Primer Byte - Tu primer paso en el mundo de la pro
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
+    <!-- Dark mode initialization - prevents flash of wrong theme -->
+    <script is:inline>
+      (function() {
+        const savedTheme = localStorage.getItem('darkMode');
+        const savedFontSize = localStorage.getItem('fontSize');
+        
+        // Apply dark mode
+        if (savedTheme !== null) {
+          if (savedTheme === 'true') {
+            document.documentElement.classList.add('dark');
+          }
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('darkMode', 'true');
+        }
+
+        // Apply font size
+        if (savedFontSize) {
+          document.documentElement.classList.add(`font-${savedFontSize}`);
+        }
+      })();
+    </script>
   </head>
   <body class="transition-colors duration-200">
     <slot />

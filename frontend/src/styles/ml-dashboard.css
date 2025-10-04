@@ -1,0 +1,162 @@
+/* Progress bar styles */
+.progress-bar-94-2 {
+  width: 94.2%;
+}
+
+.progress-bar-92-8 {
+  width: 92.8%;
+}
+
+.progress-bar-91-5 {
+  width: 91.5%;
+}
+
+.progress-bar-92-1 {
+  width: 92.1%;
+}
+
+.progress-bar-8-4 {
+  width: 8.4%;
+}
+
+.progress-bar-21-6 {
+  width: 21.6%;
+}
+
+.progress-bar-24-3 {
+  width: 24.3%;
+}
+
+.progress-bar-12-8 {
+  width: 12.8%;
+}
+
+.progress-bar-9-7 {
+  width: 9.7%;
+}
+
+.progress-bar-16-9 {
+  width: 16.9%;
+}
+
+.progress-bar-6-3 {
+  width: 6.3%;
+}
+
+/* Discovery confidence bars */
+.progress-bar-89 {
+  width: 89%;
+}
+
+.progress-bar-78 {
+  width: 78%;
+}
+
+.progress-bar-92 {
+  width: 92%;
+}
+
+/* Analysis progress bars */
+.progress-bar-width-96 {
+  width: 96%;
+}
+
+.progress-bar-width-89 {
+  width: 89%;
+}
+
+.progress-bar-width-12 {
+  width: 12%;
+}
+
+/* Planet Type Distribution Bars */
+.planet-type-hot-jupiter {
+  width: 15%;
+}
+
+.planet-type-warm-jupiter {
+  width: 10%;
+}
+
+.planet-type-neptune-like {
+  width: 20%;
+}
+
+.planet-type-super-earth {
+  width: 30%;
+}
+
+.planet-type-earth-like {
+  width: 25%;
+}
+
+/* Planet classification probabilities */
+.prob-bar-68 {
+  width: 68%;
+}
+
+.prob-bar-24 {
+  width: 24%;
+}
+
+.prob-bar-8 {
+  width: 8%;
+}
+
+/* Habitability scores */
+.habitability-72 {
+  width: 72%;
+}
+
+.habitability-15 {
+  width: 15%;
+}
+
+.habitability-89 {
+  width: 89%;
+}
+
+/* Dark mode adaptations */
+.dark .progress-bar {
+  background-color: rgba(55, 65, 81, 0.5);
+}
+
+/* Animation for processing */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.processing-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Transitions */
+.transition-height {
+  transition: height 0.3s ease-in-out;
+}
+
+.transition-opacity {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Card hover effects */
+.result-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Tab transitions */
+.tab-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+.tab-active {
+  background-color: #8b5cf6;
+  color: white;
+}

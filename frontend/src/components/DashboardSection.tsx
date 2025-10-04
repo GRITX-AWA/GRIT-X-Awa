@@ -22,31 +22,31 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
     switch (variant) {
       case 'cosmic':
         return {
-          container: 'bg-gradient-to-br from-slate-900/40 via-blue-900/20 to-purple-900/30 dark:from-slate-950/60 dark:via-blue-950/40 dark:to-purple-950/50 border-blue-500/20',
-          glow: 'from-blue-500/10 via-purple-500/10 to-transparent',
-          orb1: 'bg-blue-500/20',
-          orb2: 'bg-purple-500/15',
+          container: 'bg-gradient-to-br from-blue-50/90 via-purple-50/80 to-white/90 dark:from-slate-950/60 dark:via-blue-950/40 dark:to-purple-950/50 border-blue-300/30 dark:border-blue-500/20',
+          glow: 'from-blue-400/10 via-purple-400/10 to-transparent',
+          orb1: 'bg-blue-400/20 dark:bg-blue-500/20',
+          orb2: 'bg-purple-400/15 dark:bg-purple-500/15',
         };
       case 'nebula':
         return {
-          container: 'bg-gradient-to-br from-purple-900/40 via-pink-900/20 to-slate-900/30 dark:from-purple-950/60 dark:via-pink-950/40 dark:to-slate-950/50 border-purple-500/20',
-          glow: 'from-purple-500/10 via-pink-500/10 to-transparent',
-          orb1: 'bg-purple-500/20',
-          orb2: 'bg-pink-500/15',
+          container: 'bg-gradient-to-br from-purple-50/90 via-pink-50/80 to-white/90 dark:from-purple-950/60 dark:via-pink-950/40 dark:to-slate-950/50 border-purple-300/30 dark:border-purple-500/20',
+          glow: 'from-purple-400/10 via-pink-400/10 to-transparent',
+          orb1: 'bg-purple-400/20 dark:bg-purple-500/20',
+          orb2: 'bg-pink-400/15 dark:bg-pink-500/15',
         };
       case 'galaxy':
         return {
-          container: 'bg-gradient-to-br from-indigo-900/40 via-violet-900/20 to-slate-900/30 dark:from-indigo-950/60 dark:via-violet-950/40 dark:to-slate-950/50 border-indigo-500/20',
-          glow: 'from-indigo-500/10 via-violet-500/10 to-transparent',
-          orb1: 'bg-indigo-500/20',
-          orb2: 'bg-violet-500/15',
+          container: 'bg-gradient-to-br from-indigo-50/90 via-violet-50/80 to-white/90 dark:from-indigo-950/60 dark:via-violet-950/40 dark:to-slate-950/50 border-indigo-300/30 dark:border-indigo-500/20',
+          glow: 'from-indigo-400/10 via-violet-400/10 to-transparent',
+          orb1: 'bg-indigo-400/20 dark:bg-indigo-500/20',
+          orb2: 'bg-violet-400/15 dark:bg-violet-500/15',
         };
       default:
         return {
-          container: 'bg-white/60 dark:bg-slate-900/40 border-gray-200/50 dark:border-gray-700/50',
-          glow: 'from-gray-500/5 via-gray-400/5 to-transparent',
-          orb1: 'bg-gray-500/10',
-          orb2: 'bg-gray-400/10',
+          container: 'bg-white/90 dark:bg-slate-900/40 border-gray-300/50 dark:border-gray-700/50',
+          glow: 'from-gray-400/5 via-gray-300/5 to-transparent',
+          orb1: 'bg-gray-400/10 dark:bg-gray-500/10',
+          orb2: 'bg-gray-300/10 dark:bg-gray-400/10',
         };
     }
   };
@@ -65,10 +65,10 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
         {/* Animated stars */}
         {variant !== 'default' && (
           <>
-            <div className="absolute top-1/4 left-1/3 w-1 h-1 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
-            <div className="absolute top-1/2 right-1/4 w-1 h-1 bg-white/30 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
-            <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
-            <div className="absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }} />
+            <div className="absolute top-1/4 left-1/3 w-1 h-1 bg-purple-400/60 dark:bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+            <div className="absolute top-1/2 right-1/4 w-1 h-1 bg-blue-400/50 dark:bg-white/30 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute bottom-1/3 left-1/4 w-1 h-1 bg-pink-400/70 dark:bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-indigo-400/60 dark:bg-white/40 rounded-full animate-pulse" style={{ animationDelay: '1.5s' }} />
           </>
         )}
       </div>
@@ -79,21 +79,21 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
       {/* Content */}
       <div className="relative z-10">
         {(title || subtitle || icon) && (
-          <div className="px-6 py-4 border-b border-gray-200/10 dark:border-gray-700/20 bg-gradient-to-r from-transparent via-white/5 to-transparent">
-            <div className="flex items-center gap-3">
+          <div className="px-4 md:px-6 py-3 md:py-4 border-b border-gray-200/10 dark:border-gray-700/20 bg-gradient-to-r from-transparent via-white/5 to-transparent">
+            <div className="flex items-center gap-2 md:gap-3">
               {icon && (
-                <div className="text-2xl text-purple-400 dark:text-purple-300">
+                <div className="text-xl md:text-2xl text-purple-600 dark:text-purple-400 flex-shrink-0">
                   {icon}
                 </div>
               )}
-              <div>
+              <div className="min-w-0">
                 {title && (
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-white bg-clip-text">
+                  <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white bg-clip-text truncate">
                     {title}
                   </h2>
                 )}
                 {subtitle && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-2">
                     {subtitle}
                   </p>
                 )}
@@ -101,7 +101,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({
             </div>
           </div>
         )}
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {children}
         </div>
       </div>

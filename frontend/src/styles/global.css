@@ -23,11 +23,24 @@ html.font-larger {
   .animation-delay-1000 {
     animation-delay: 1s;
   }
-  
+
   .animation-delay-2000 {
     animation-delay: 2s;
   }
 
+  /* Mobile touch optimizations */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent text selection on touch devices for UI elements */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
 }
 
 /* Thin, subtle scrollbar styling */
