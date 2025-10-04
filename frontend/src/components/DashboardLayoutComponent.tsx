@@ -85,7 +85,7 @@ export default function DashboardLayoutComponent() {
               </div>
 
               {/* Main content area */}
-              <main className="flex-1 overflow-y-auto themed-scrollbar p-4 relative z-10">
+              <main className="flex-1 overflow-y-auto themed-scrollbar p-4 md:p-6 pt-16 md:pt-4 relative z-10">
                 {/* Theme and Font Size toggle buttons */}
                 <div className="flex justify-end mb-4 gap-2">
                   <FontSizeToggle />

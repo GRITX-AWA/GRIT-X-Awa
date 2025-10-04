@@ -14,19 +14,19 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick, gradi
   return (
     <button
       onClick={onClick}
-      className={`group relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-300 overflow-hidden ${
+      className={`group relative w-full flex items-center gap-2 md:gap-3 px-3 md:px-4 py-3 md:py-3 rounded-xl text-left transition-all duration-300 overflow-hidden touch-manipulation ${
         isActive
           ? "bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 dark:from-blue-500/30 dark:via-purple-500/30 dark:to-pink-500/30 shadow-lg shadow-purple-500/20"
-          : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-500/10 hover:via-purple-500/10 hover:to-transparent dark:hover:from-blue-500/20 dark:hover:via-purple-500/20"
+          : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-500/10 hover:via-purple-500/10 hover:to-transparent dark:hover:from-blue-500/20 dark:hover:via-purple-500/20 active:scale-95"
       }`}
     >
       {isActive && (
         <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-pink-400/10 animate-pulse" />
       )}
-      <div className={`relative z-10 text-xl transition-transform duration-300 ${isActive ? 'scale-110 text-purple-600 dark:text-purple-400' : 'group-hover:scale-105'}`}>
+      <div className={`relative z-10 text-lg md:text-xl transition-transform duration-300 flex-shrink-0 ${isActive ? 'scale-110 text-purple-600 dark:text-purple-400' : 'group-hover:scale-105'}`}>
         {icon}
       </div>
-      <span className={`relative z-10 text-sm font-medium ${isActive ? 'text-purple-900 dark:text-purple-200 font-semibold' : ''}`}>
+      <span className={`relative z-10 text-sm font-medium truncate ${isActive ? 'text-purple-900 dark:text-purple-200 font-semibold' : ''}`}>
         {label}
       </span>
       {isActive && (
@@ -41,17 +41,42 @@ export default function SideBar() {
   const { darkMode } = useContext(ThemeContext);
   const [isDatasetOpen, setIsDatasetOpen] = useState(false);
   const [isModelsOpen, setIsModelsOpen] = useState(false);
-  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   console.log('SideBar rendered with activePage:', activePage);
-  
+
   const handlePageChange = (page: string) => {
     console.log('Changing page to:', page);
     setActivePage(page);
+    setIsMobileMenuOpen(false); // Close mobile menu after navigation
   };
-  
-  return (
-    <div className="m-2 relative bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900 dark:from-black dark:via-purple-950/30 dark:to-black backdrop-blur-md rounded-2xl flex flex-col h-[calc(100vh-16px)] w-72 shadow-2xl border border-purple-500/20 dark:border-purple-400/30 overflow-hidden transition-all duration-300">
 
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="md:hidden fixed top-4 left-4 z-50 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/50 transition-all duration-300 hover:scale-110"
+      >
+        <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-white text-xl`}></i>
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Desktop and Mobile */}
+      <div className={`
+        fixed md:relative inset-y-0 left-0 z-40
+        m-2 bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-black dark:via-purple-950/30 dark:to-black backdrop-blur-md rounded-2xl flex flex-col h-[calc(100vh-16px)] w-64 md:w-72 shadow-2xl border border-purple-300/40 dark:border-purple-400/30 overflow-hidden transition-all duration-300
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}
+      style={{ touchAction: 'pan-y' }}
+      >
       {/* Cosmic background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
@@ -60,36 +85,36 @@ export default function SideBar() {
       </div>
 
       {/* Logo and title */}
-      <div className="relative z-10 p-5 border-b border-purple-500/20 dark:border-purple-400/20 flex-shrink-0 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent">
-        <div className="flex items-center gap-3 mb-3">
+      <div className="relative z-10 p-4 md:p-5 border-b border-purple-500/20 dark:border-purple-400/20 flex-shrink-0 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent">
+        <div className="flex items-center gap-2 md:gap-3 mb-3">
           <a href="/" title="Return to landing page">
-            <div className="group w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 flex items-center justify-center hover:scale-110 transform transition-all duration-300 shadow-lg shadow-purple-500/50 hover:shadow-purple-400/70 hover:rotate-6">
-              <i className="fa-solid fa-arrow-left text-white group-hover:scale-110 transition-transform"></i>
+            <div className="group w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 flex items-center justify-center hover:scale-110 transform transition-all duration-300 shadow-lg shadow-purple-500/50 hover:shadow-purple-400/70 hover:rotate-6">
+              <i className="fa-solid fa-arrow-left text-white text-sm md:text-base group-hover:scale-110 transition-transform"></i>
             </div>
           </a>
-          <div>
-            <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-lg">
+          <div className="min-w-0">
+            <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-base md:text-lg truncate">
               Exoplanet Explorer
             </h2>
-            <p className="text-xs text-gray-400 dark:text-gray-500">NASA ML Dashboard</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 truncate">NASA ML Dashboard</p>
           </div>
         </div>
 
         {/* Team badge */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
-          <i className="fas fa-users text-purple-400 text-xs"></i>
-          <span className="text-xs font-medium text-gray-300">GRIT-X Team</span>
-          <div className="ml-auto flex -space-x-1">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-slate-900"></div>
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-slate-900"></div>
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 border-2 border-slate-900"></div>
+        <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-lg border border-purple-400/30 dark:border-purple-500/20">
+          <i className="fas fa-users text-purple-600 dark:text-purple-400 text-xs"></i>
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">GRIT-X Team</span>
+          <div className="ml-auto flex -space-x-1 flex-shrink-0">
+            <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white dark:border-slate-900"></div>
+            <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-white dark:border-slate-900"></div>
+            <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 border-2 border-white dark:border-slate-900"></div>
           </div>
         </div>
       </div>
 
       {/* Navigation - with overflow scrolling */}
       <div className="relative z-10 p-4 flex flex-col gap-2 flex-1 themed-scrollbar overflow-y-auto">
-        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-2">
+        <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2 px-2">
           <i className="fas fa-rocket mr-2"></i>Explore
         </div>
         <NavItem
@@ -124,7 +149,7 @@ export default function SideBar() {
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
         </div>
 
-        <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-2">
+        <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2 px-2">
           <i className="fas fa-satellite mr-2"></i>Resources
         </div>
       </div>
@@ -153,5 +178,6 @@ export default function SideBar() {
         </div>
       </div>
     </div>
+    </>
   );
 }
