@@ -1,0 +1,228 @@
+@import './progress.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Font size variations */
+html.font-normal {
+  font-size: 16px;
+}
+
+html.font-large {
+  font-size: 18px;
+}
+
+html.font-larger {
+  font-size: 20px;
+}
+
+/* Custom CSS animations and styles for the Space ML app */
+@layer utilities {
+  .animation-delay-1000 {
+    animation-delay: 1s;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+}
+
+/* Thin, subtle scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;  /* Very thin scrollbar */
+  height: 4px;  /* For horizontal scrollbars */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Track is transparent */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);  /* Light mode: Purple with opacity */
+  border-radius: 4px;  /* Rounded corners */
+  transition: background 0.3s;  /* Smooth transition for hover effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.5);  /* Slightly more visible on hover */
+}
+
+/* Dark mode scrollbar */
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(192, 132, 252, 0.4);  /* Dark mode: Lighter purple with opacity */
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(192, 132, 252, 0.6);  /* More visible on hover */
+}
+
+/* Hide scrollbar buttons (arrows) */
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* For Firefox - Light mode */
+* {
+  scrollbar-width: thin;  /* "thin" instead of "none" */
+  scrollbar-color: rgba(168, 85, 247, 0.3) transparent;  /* thumb and track colors */
+}
+
+/* For Firefox - Dark mode */
+html.dark * {
+  scrollbar-color: rgba(192, 132, 252, 0.4) transparent;  /* lighter purple for dark mode */
+}
+
+/* For Edge - still need special handling */
+@supports (-ms-overflow-style: none) {
+  * {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+}
+
+/* Glassmorphism utility class */
+.glass {
+  @apply bg-white/10 dark:bg-black/10 backdrop-blur-lg border border-white/20 dark:border-white/10;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  @apply bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent;
+}
+
+/* Custom button hover effects */
+.btn-space {
+  @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105;
+}
+
+.btn-primary {
+  @apply btn-space bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-purple-500/25;
+}
+
+.btn-secondary {
+  @apply btn-space border-2 border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white;
+}
+
+/* Utility class for elements that should have the themed scrollbar */
+.themed-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);  /* Purple theme */
+}
+
+.themed-scrollbar.dark::-webkit-scrollbar-thumb,
+.dark .themed-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.4);  /* Slightly more visible in dark mode */
+}
+
+/* Utility class to hide scrollbar completely on specific elements */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari and Opera */
+}
+
+/* Loading animation */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.8); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Space-themed background patterns */
+.space-dots {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Card hover effects */
+.card-hover {
+  @apply transform transition-all duration-300 hover:scale-105 hover:shadow-2xl;
+}
+
+/* Text glow effect */
+.text-glow {
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+/* Custom focus styles */
+.focus-visible {
+  @apply outline-none ring-2 ring-purple-500 ring-opacity-50;
+}
+
+/* Range slider improvements for dark mode */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Track */
+input[type="range"]::-webkit-slider-track {
+  background: #d1d5db;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.dark input[type="range"]::-webkit-slider-track {
+  background: #4b5563;
+}
+
+/* Thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #7c3aed;
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #5b21b6;
+  transform: scale(1.1);
+}
+
+.dark input[type="range"]::-webkit-slider-thumb {
+  border: 2px solid #1f2937;
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-track {
+  background: #d1d5db;
+  height: 8px;
+  border-radius: 4px;
+  border: none;
+}
+
+.dark input[type="range"]::-moz-range-track {
+  background: #4b5563;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #7c3aed;
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: #5b21b6;
+  transform: scale(1.1);
+}
+
+.dark input[type="range"]::-moz-range-thumb {
+  border: 2px solid #1f2937;
+}

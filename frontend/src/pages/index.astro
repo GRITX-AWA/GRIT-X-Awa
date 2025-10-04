@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Primer Byte - Tu primer paso en programación">
+  <body class="bg-black text-gray-100 font-sans antialiased">
+  <main>
+  <Hero client:load/>
+  </main>
+  <Footer />
+  </body>
+</Layout>

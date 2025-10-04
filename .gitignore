@@ -1,0 +1,506 @@
+# ============================================
+# Exoplanet Explorer - .gitignore
+# ============================================
+
+# ============================================
+# Frontend - Node.js / Astro / React
+# ============================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Production builds
+dist/
+build/
+.astro/
+.output/
+.vercel/
+.netlify/
+
+# Astro specific
+.astro/
+*.astro.js
+
+# Testing
+coverage/
+*.lcov
+.nyc_output/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist
+.turbo/
+.eslintcache
+.stylelintcache
+
+# TypeScript
+*.tsbuildinfo
+.tscache/
+
+# Optional npm/yarn cache
+.npm
+.yarn-integrity
+
+# ============================================
+# Backend - Python / FastAPI
+# ============================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.env/
+virtualenv/
+Pipfile.lock
+
+# Python testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+*.cover
+*.log
+nosetests.xml
+coverage.xml
+*.coveragerc
+
+# Python profiling
+*.prof
+*.lprof
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Scrapy
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# PyBuilder
+target/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ============================================
+# Databases
+# ============================================
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# PostgreSQL
+*.pgsql
+*.dump
+
+# Database backups
+*.sql
+*.backup
+*.bak
+
+# ============================================
+# Machine Learning / AI
+# ============================================
+
+# TensorFlow
+*.h5
+*.hdf5
+*.pb
+*.ckpt
+*.ckpt.data*
+*.ckpt.index
+*.ckpt.meta
+saved_model/
+checkpoint
+model.ckpt*
+
+# PyTorch
+*.pt
+*.pth
+*.pth.tar
+
+# ONNX
+*.onnx
+
+# Scikit-learn
+*.joblib
+*.pkl.z
+*.pickle
+
+# IMPORTANT: ML Model Files Decision
+# If you want to track trained models in git (easier deployment):
+#   - Comment out the *.pkl pattern below
+#   - Models will be committed and versioned
+# If you want to exclude models (smaller repo):
+#   - Keep *.pkl uncommented
+#   - Regenerate models after cloning
+# Currently: Models ARE being tracked (*.pkl is commented)
+# *.pkl
+
+# Model artifacts
+models/saved/
+models/checkpoints/
+models/logs/
+experiments/
+runs/
+mlruns/
+
+# Training data (large files)
+# IMPORTANT: CSV Files Decision
+# Your Kepler and TESS CSV files are CURRENTLY TRACKED in git
+# These are important reference datasets (~9,600 and 7,700 entries)
+# If they become too large or frequently updated, uncomment below:
+# *.csv
+# OR exclude specific directories only:
+# datasets/raw/
+# datasets/processed/
+# Currently: CSV files ARE being tracked (useful for distribution)
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+**/.ipynb_checkpoints/
+.virtual_documents/
+*.nbconvert.ipynb
+
+# IPython
+profile_default/
+ipython_config.py
+
+# ============================================
+# Environment Variables & Secrets
+# ============================================
+
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.staging
+.env*.local
+.envrc
+
+# API keys and secrets
+secrets/
+*.secret
+*.key
+*.pem
+*.p12
+credentials.json
+service-account*.json
+
+# ============================================
+# Operating Systems
+# ============================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# IDEs and Editors
+# ============================================
+
+# VSCode
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+*.code-workspace
+.history/
+.vscode-test/
+
+# JetBrains IDEs (PyCharm, WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+.sublime-gulp.cache
+
+# Vim
+*.swp
+*.swo
+*.swn
+*~
+.*.sw?
+Session.vim
+.netrwhist
+
+# Emacs
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Atom
+.atom/
+
+# Eclipse
+.project
+.classpath
+.settings/
+.metadata/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ============================================
+# Logs and Temporary Files
+# ============================================
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+pip-log.txt
+*.log.[0-9]*
+*.log.*.gz
+combined.log
+error.log
+access.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+.temp/
+.tmp/
+
+# ============================================
+# Build and Deployment
+# ============================================
+
+# Build outputs
+.output/
+.vercel/
+.netlify/
+.firebase/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+
+# Docker
+.docker/
+docker-compose.override.yml
+.dockerignore
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+
+# ============================================
+# Project Specific
+# ============================================
+
+# Generated JSON data files (can be regenerated from Supabase)
+# These files are downloaded from Supabase and converted from CSV
+# To regenerate: cd backend && python download_datasets.py
+frontend/src/data/*.json
+frontend/src/data/kepler_chunks/
+frontend/src/data/tess_chunks/
+backend/temp_*.csv
+
+# Keep the data directory structure but ignore contents
+!frontend/src/data/.gitkeep
+
+# Uploaded datasets (if too large for git)
+# backend/uploads/
+# frontend/src/data/*.csv
+# Uncomment above if CSV files are too large
+
+# Generated documentation
+docs/build/
+site/
+
+# AI Assistant contexts
+.claude/
+.cursor/
+.copilot/
+.aider*
+
+# Local configuration
+config.local.json
+settings.local.json
+
+# Performance monitoring
+.lighthouseci/
+
+# Lock files (optional - uncomment if you want to exclude)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ============================================
+# Miscellaneous
+# ============================================
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+
+# System files
+.fuse_hidden*
+
+# Debug files
+*.dmp
+*.stackdump
+
+# Patch files
+*.patch
+*.diff
+
+# Local notes
+TODO.local.md
+NOTES.local.md
+scratch/
+
+# OS generated files for image previews
+.picasa.ini
+.picasaoriginals

@@ -1,0 +1,350 @@
+/* Hero Container */
+.hero-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #000000, #0a0a1a, #000000);
+}
+
+/* Three.js Canvas */
+.hero-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Hero Content Overlay */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.hero-text-container {
+  text-align: center;
+  max-width: 900px;
+  animation: fadeInUp 1.2s ease-out;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  padding: 3rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+              inset 0 0 50px rgba(102, 126, 234, 0.05);
+}
+
+/* Hero Title */
+.hero-title {
+  margin: 0 0 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hero-title-main {
+  font-size: 4.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #a8c0ff 50%, #ffa500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(255, 165, 0, 0.6))
+          drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+  animation: glow 3s ease-in-out infinite alternate;
+  letter-spacing: -0.02em;
+}
+
+.hero-title-sub {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #e8f0ff;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(168, 192, 255, 0.8),
+               0 2px 10px rgba(0, 0, 0, 0.9),
+               0 4px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* Hero Description */
+.hero-description {
+  font-size: 1.3rem;
+  color: #ffffff;
+  line-height: 1.8;
+  margin: 0 auto 3rem auto;
+  max-width: 700px;
+  animation: fadeIn 1.5s ease-out 0.3s backwards;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9),
+               0 4px 20px rgba(0, 0, 0, 0.7);
+  font-weight: 400;
+}
+
+/* CTA Button */
+.hero-cta-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem 3rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 2px solid transparent;
+  border-radius: 50px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4),
+              0 0 20px rgba(102, 126, 234, 0.3);
+  animation: fadeIn 1.5s ease-out 0.6s backwards;
+}
+
+.hero-cta-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.hero-cta-button:hover::before {
+  left: 100%;
+}
+
+.hero-cta-button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 50px rgba(102, 126, 234, 0.6),
+              0 0 30px rgba(102, 126, 234, 0.5);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.hero-cta-button:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.button-text {
+  position: relative;
+  z-index: 1;
+  margin-right: 0.5rem;
+}
+
+.button-icon {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  transition: transform 0.3s ease;
+  font-size: 1.4rem;
+  margin-left: 0.5rem;
+}
+
+.hero-cta-button:hover .button-icon {
+  transform: translateX(5px);
+}
+
+/* Hero Stats */
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 4rem;
+  animation: fadeIn 1.5s ease-out 0.9s backwards;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffa500;
+  margin-bottom: 0.3rem;
+  text-shadow: 0 0 20px rgba(255, 165, 0, 0.8),
+               0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9),
+               0 4px 15px rgba(0, 0, 0, 0.7);
+}
+
+.stat-divider {
+  width: 2px;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeIn 2s ease-out 1.2s backwards;
+}
+
+.scroll-mouse {
+  width: 30px;
+  height: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  position: relative;
+  animation: bounce 2s infinite;
+}
+
+.scroll-wheel {
+  width: 4px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: scroll 2s infinite;
+}
+
+.scroll-text {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  from {
+    filter: drop-shadow(0 0 20px rgba(255, 165, 0, 0.4));
+  }
+  to {
+    filter: drop-shadow(0 0 40px rgba(255, 165, 0, 0.8));
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes scroll {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateX(-50%) translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title-main {
+    font-size: 2.8rem;
+  }
+
+  .hero-title-sub {
+    font-size: 1.2rem;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-cta-button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+  }
+
+  .hero-stats {
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+
+  .stat-value {
+    font-size: 1.3rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .stat-divider {
+    height: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title-main {
+    font-size: 2rem;
+  }
+
+  .hero-title-sub {
+    font-size: 1rem;
+  }
+
+  .hero-description {
+    font-size: 0.9rem;
+  }
+
+  .hero-stats {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .stat-divider {
+    display: none;
+  }
+}
