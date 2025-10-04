@@ -12,14 +12,16 @@ const Analysis = lazy(() => import('./pages/Analysis'));
 const Visualizations = lazy(() => import('./pages/Visualizations'));
 const HelpResources = lazy(() => import('./pages/HelpResources'));
 const Settings = lazy(() => import('./pages/Settings'));
+const RunAnalysis = lazy(() => import('./pages/RunAnalysis'));
 
 // This context will allow child components to access and update the active page
 export const PageContext = React.createContext({
   activePage: 'dashboard',
   setActivePage: (page: string) => {},
+  runAnalysis: () => {},
 });
 
-export default function DashboardLayoutComponent() {
+const DashboardLayoutComponent = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayPage, setDisplayPage] = useState('dashboard');
@@ -44,6 +46,7 @@ export default function DashboardLayoutComponent() {
   const contextValue = useMemo(() => ({
     activePage,
     setActivePage: handleSetActivePage,
+    runAnalysis: () => setActivePage('runanalysis'),
   }), [activePage, handleSetActivePage]);
 
   // Render different content based on activePage state
@@ -57,6 +60,8 @@ export default function DashboardLayoutComponent() {
         return <Analysis />;
       case 'visualizations':
         return <Visualizations />;
+      case 'runanalysis':
+        return <RunAnalysis />;
       case 'help':
         return <HelpResources />;
       case 'settings':
@@ -117,3 +122,5 @@ export default function DashboardLayoutComponent() {
     </SharedProvider>
   );
 }
+
+export default DashboardLayoutComponent;

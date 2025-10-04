@@ -1,7 +1,10 @@
-﻿import React from 'react';
+import React, { useContext } from 'react';
 import DashboardSection from '../DashboardSection';
+import { PageContext } from '../DashboardLayoutComponent';
 
 const Dashboard: React.FC = () => {
+  const { setActivePage } = useContext(PageContext);
+  
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -94,7 +97,10 @@ const Dashboard: React.FC = () => {
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Explore Data</p>
           </button>
 
-          <button className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 hover:from-purple-500/20 hover:to-purple-600/10 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 group">
+          <button 
+            onClick={() => setActivePage('runanalysis')}
+            className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 hover:from-purple-500/20 hover:to-purple-600/10 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 group"
+          >
             <i className="fas fa-chart-line text-2xl text-purple-500 mb-2 group-hover:scale-110 transition-transform"></i>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Run Analysis</p>
           </button>
