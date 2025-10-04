@@ -1,5 +1,8 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import Layout from "@/layouts/Layout.astro"
+import DashboardLayoutComponent from "@/components/DashboardLayoutComponent"
 ---
 
-<Layout title="Dashboard"></Layout>
+<Layout title="Dashboard">
+        <DashboardLayoutComponent client:load/>
+</Layout>
