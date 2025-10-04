@@ -1,8 +1,9 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useSharedState } from '../context/SharedContext';
 import DashboardSection from '../DashboardSection';
 import Modal from '../Modal';
+import RecentActivity from '../RecentActivity';
+import type { RecentActivityRef } from '../RecentActivity';
 
 type MLModel = 'tess' | 'kepler';
 type InputMode = 'file' | 'manual';
@@ -149,6 +150,7 @@ const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, o
 
 const Dashboard: React.FC = () => {
   const { state, updateState } = useSharedState();
+  const recentActivityRef = useRef<RecentActivityRef>(null);
 
   // ML Model States
   const [selectedModel, setSelectedModel] = useState<MLModel>('tess');
@@ -535,95 +537,124 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* Model Metrics Overview */}
-      <DashboardSection
-        variant="cosmic"
-        title="Model Performance"
-        subtitle="Current ML model accuracy metrics"
-        icon={<i className="fas fa-chart-bar"></i>}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          {modelMetricsWithIcons.map((metric, idx) => (
-            <div key={idx} className="group relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-white/80 to-white/40 dark:from-gray-800/80 dark:to-gray-800/40 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <div className="flex items-start justify-between mb-3">
-                <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${metric.color} flex items-center justify-center shadow-lg`}>
-                  <i className={`fas ${metric.icon} text-white text-xl`}></i>
-                </div>
-                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">{metric.name}</span>
-              </div>
-              <p className="text-3xl font-bold text-gray-800 dark:text-white mb-1">{metric.value}%</p>
-              <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div className={`h-full bg-gradient-to-r ${metric.color} rounded-full transition-all duration-1000`} style={{ width: `${metric.value}%` }}></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </DashboardSection>
-
-      {/* ML Model Selection & Prediction */}
-      <DashboardSection
-        variant="nebula"
-        title="ML Model Prediction"
-        subtitle="Select model and upload data for exoplanet classification"
-        icon={<i className="fas fa-brain"></i>}
-      >
-        <div className="space-y-6">
-          {/* Model Selection */}
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-              <label className="text-gray-700 dark:text-gray-300 font-semibold text-sm uppercase tracking-wide">
-                <i className="fas fa-satellite mr-2"></i>Select Model
-              </label>
-              <button
-                onClick={() => setShowHyperparamsModal(true)}
-                className="px-4 py-2 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 border border-purple-500/30 text-purple-700 dark:text-purple-300 rounded-xl hover:from-purple-500/30 hover:via-pink-500/30 hover:to-purple-500/30 transition-all text-sm font-medium flex items-center justify-center gap-2 shadow-sm"
-              >
-                <i className="fas fa-sliders-h"></i>
-                Adjust Hyperparameters
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { id: 'tess' as MLModel, label: 'TESS Model', desc: 'FP, PC, KP, APC, FA, CP', icon: 'fa-rocket', color: 'from-red-500 to-orange-500', count: modelColumns.tess.length },
-                { id: 'kepler' as MLModel, label: 'Kepler Model', desc: 'FP, confirmed, candidate', icon: 'fa-satellite', color: 'from-blue-500 to-cyan-500', count: modelColumns.kepler.length }
-              ].map((model) => (
-                <button
-                  key={model.id}
-                  onClick={() => handleModelChange(model.id)}
-                  className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
-                    selectedModel === model.id
-                      ? 'border-purple-500 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-purple-500/5 dark:from-purple-500/20 dark:via-pink-500/20 dark:to-purple-500/10 shadow-2xl scale-105'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500 bg-white/30 dark:bg-gray-800/30 hover:scale-102'
-                  }`}
-                >
-                  {selectedModel === model.id && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 via-purple-400/5 to-pink-400/5 animate-pulse"></div>
-                  )}
-                  <div className="relative z-10">
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${model.color} flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                      <i className={`fas ${model.icon} text-white text-2xl`}></i>
-                    </div>
-                    <h3 className="font-bold text-gray-800 dark:text-white text-base mb-1">{model.label}</h3>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">{model.desc}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full font-medium">
-                        {model.count} features
-                      </span>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Content - Left Side (2/3 width) */}
+      <div className="lg:col-span-2 space-y-4 md:space-y-6">
+        {/* Model Metrics Overview */}
+        <DashboardSection
+          variant="cosmic"
+          title="Model Performance"
+          subtitle="Current ML model accuracy metrics"
+          icon={<i className="fas fa-chart-bar"></i>}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {modelMetricsWithIcons.map((metric, idx) => (
+              <div key={idx} className="group relative overflow-hidden p-6 rounded-2xl bg-gradient-to-br from-white dark:from-gray-800 border-2 border-gray-200/50 dark:border-gray-700/50 hover:border-purple-400 dark:hover:border-purple-500 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                {/* Animated background gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${metric.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                
+                <div className="relative z-10">
+                  {/* Icon */}
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${metric.color} flex items-center justify-center shadow-xl mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <i className={`fas ${metric.icon} text-white text-2xl`}></i>
+                  </div>
+                  
+                  {/* Metric Name */}
+                  <h3 className="text-sm font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                    {metric.name}
+                  </h3>
+                  
+                  {/* Value */}
+                  <div className="flex items-baseline gap-1 mb-3">
+                    <p className={`text-3xl font-black bg-gradient-to-r ${metric.color} bg-clip-text text-transparent`}>
+                      {metric.value}
+                    </p>
+                    <span className={`text-xl font-bold bg-gradient-to-r ${metric.color} bg-clip-text text-transparent`}>%</span>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="relative w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
+                    <div 
+                      className={`absolute inset-y-0 left-0 bg-gradient-to-r ${metric.color} rounded-full transition-all duration-1000 ease-out shadow-lg`} 
+                      style={{ width: `${metric.value}%` }}
+                    >
+                      <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
                     </div>
                   </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Required Columns Display */}
-            <RequiredColumns
-              columns={modelColumns[selectedModel]}
-              modelName={selectedModel.toUpperCase()}
-              optionalColumns={optionalColumns[selectedModel]}
-            />
+                  
+                  {/* Sparkle effect on hover */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <i className="fas fa-sparkles text-yellow-400 text-sm animate-pulse"></i>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+        </DashboardSection>
+
+        {/* ML Model Selection & Prediction */}
+        <DashboardSection
+          variant="nebula"
+          title="ML Model Prediction"
+          subtitle="Select model and upload data for exoplanet classification"
+          icon={<i className="fas fa-brain"></i>}
+        >
+          <div className="space-y-6">
+            {/* Model Selection */}
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <label className="text-gray-700 dark:text-gray-300 font-semibold text-sm uppercase tracking-wide">
+                  <i className="fas fa-satellite mr-2"></i>Select Model
+                </label>
+                <button
+                  onClick={() => setShowHyperparamsModal(true)}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-purple-500/20 border border-purple-500/30 text-purple-700 dark:text-purple-300 rounded-xl hover:from-purple-500/30 hover:via-pink-500/30 hover:to-purple-500/30 transition-all text-sm font-medium flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <i className="fas fa-sliders-h"></i>
+                  Adjust Hyperparameters
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { id: 'tess' as MLModel, label: 'TESS Model', desc: 'FP, PC, KP, APC, FA, CP', icon: 'fa-rocket', color: 'from-red-500 to-orange-500', count: modelColumns.tess.length },
+                  { id: 'kepler' as MLModel, label: 'Kepler Model', desc: 'FP, confirmed, candidate', icon: 'fa-satellite', color: 'from-blue-500 to-cyan-500', count: modelColumns.kepler.length }
+                ].map((model) => (
+                  <button
+                    key={model.id}
+                    onClick={() => handleModelChange(model.id)}
+                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                      selectedModel === model.id
+                        ? 'border-purple-500 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-purple-500/5 dark:from-purple-500/20 dark:via-pink-500/20 dark:to-purple-500/10 shadow-2xl scale-105'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500 bg-white/30 dark:bg-gray-800/30 hover:scale-102'
+                    }`}
+                  >
+                    {selectedModel === model.id && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 via-purple-400/5 to-pink-400/5 animate-pulse"></div>
+                    )}
+                    <div className="relative z-10">
+                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${model.color} flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                        <i className={`fas ${model.icon} text-white text-2xl`}></i>
+                      </div>
+                      <h3 className="font-bold text-gray-800 dark:text-white text-base mb-1">{model.label}</h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">{model.desc}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full font-medium">
+                          {model.count} features
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Required Columns Display */}
+              <RequiredColumns
+                columns={modelColumns[selectedModel]}
+                modelName={selectedModel.toUpperCase()}
+                optionalColumns={optionalColumns[selectedModel]}
+              />
+            </div>
 
           {/* Input Mode Tabs */}
               <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
@@ -909,6 +940,51 @@ const Dashboard: React.FC = () => {
           </table>
         </div>
       </DashboardSection>
+      </div>
+
+      {/* Right Column - Recent Activity (1/3 width) */}
+      <div className="lg:col-span-1 space-y-4">
+        <RecentActivity ref={recentActivityRef} />
+        
+        {/* Temporary Hello Button */}
+        <button 
+          onClick={() => {
+            // Optimistically add to UI immediately
+            const tempActivity = {
+              id: Date.now(),
+              message: 'hello world',
+              created_at: new Date().toISOString(),
+              type: 'info' as const
+            };
+            
+            // Call the optimistic update if available
+            recentActivityRef.current?.addOptimisticActivity(tempActivity);
+            
+            fetch('http://localhost:8000/api/v1/logs/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: 'hello world' })
+            })
+              .then(res => res.json())
+              .then(data => {
+                console.log('Log added:', data);
+                // Refresh to get real data from server
+                setTimeout(() => {
+                  recentActivityRef.current?.refreshActivities(true);
+                }, 300);
+              })
+              .catch(err => {
+                console.error('Error adding log:', err);
+                // Remove optimistic update on error
+                recentActivityRef.current?.refreshActivities(false);
+              });
+          }}
+          className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2"
+        >
+          <i className="fas fa-plus-circle"></i>
+          Add Hello World Log
+        </button>
+      </div>
 
       {/* Hyperparameters Modal */}
       <Modal isOpen={showHyperparamsModal} onClose={() => setShowHyperparamsModal(false)}>

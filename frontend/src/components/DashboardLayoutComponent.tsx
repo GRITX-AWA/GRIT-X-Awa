@@ -26,12 +26,14 @@ const DashboardLayoutComponent = () => {
 
   // Define a function to update the active page with transition
   const handleSetActivePage = useCallback((page: string) => {
+    console.log('handleSetActivePage called with:', page, 'current:', activePage);
     if (page !== activePage) {
       setIsTransitioning(true);
       // Wait for fade out animation
       setTimeout(() => {
         setActivePage(page);
         setDisplayPage(page);
+        console.log('Page changed to:', page);
         // Wait a tiny bit then fade in
         setTimeout(() => {
           setIsTransitioning(false);
@@ -48,6 +50,7 @@ const DashboardLayoutComponent = () => {
 
   // Render different content based on activePage state
   const renderContent = () => {
+    console.log('renderContent called with displayPage:', displayPage);
     switch (displayPage) {
       case 'dashboard':
         return <Dashboard />;
@@ -62,6 +65,7 @@ const DashboardLayoutComponent = () => {
       case 'settings':
         return <Settings />;
       default:
+        console.log('Default case - returning Dashboard');
         return <Dashboard />;
     }
   };
