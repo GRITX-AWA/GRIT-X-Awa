@@ -4,7 +4,7 @@ Complete guide to deploy both frontend and backend on Vercel.
 
 ---
 
-## 📋 Table of Contents
+## 📋 Table of Contents.
 
 1. [Prerequisites](#prerequisites)
 2. [Frontend Deployment](#frontend-deployment)
