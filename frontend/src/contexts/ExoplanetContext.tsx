@@ -5,9 +5,10 @@ interface ExoplanetData {
   // Unique identifier
   id?: string | number;
   
-  // Kepler format
+  // Kepler format - primary names
   kepid?: number;
   kepler_name?: string;
+  kepoi_name?: string;  // Alternative naming
   koi_disposition?: string;
   koi_period?: number;
   koi_prad?: number;
@@ -19,7 +20,7 @@ interface ExoplanetData {
   koi_steff?: number;
   koi_srad?: number;
 
-  // TESS format
+  // TESS format - primary names
   tid?: number;        // TIC ID (TESS Input Catalog ID)
   toi?: number;        // TOI (TESS Object of Interest)
   tic_id?: number;     // Alternative naming
@@ -34,6 +35,9 @@ interface ExoplanetData {
   st_teff?: number;
   sy_dist?: number;  // Legacy Kepler field
   st_dist?: number;  // TESS field for stellar/system distance
+  
+  // Allow any other fields from CSV
+  [key: string]: any;
 }
 
 interface ExoplanetContextType {

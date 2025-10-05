@@ -112,33 +112,35 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
           const datasetType = results.dataset_type as 'kepler' | 'tess';
           
           // Field mapping for different naming conventions
-          const fieldMap: Record<string, string> = {
-            // Kepler mappings
-            'kepoi_name': 'kepler_name',
-            'koi_period': 'koi_period',
-            'koi_prad': 'koi_prad',
-            'koi_teq': 'koi_teq',
-            'koi_insol': 'koi_insol',
-            'koi_sma': 'koi_sma',
-            'koi_depth': 'koi_depth',
-            'koi_duration': 'koi_duration',
-            'koi_steff': 'koi_steff',
-            'koi_srad': 'koi_srad',
-            'koi_disposition': 'koi_disposition',
+          // Maps CSV headers to expected field names in the 3D component
+          const fieldMap: Record<string, string[]> = {
+            // Kepler mappings - CSV name -> [primary name, ...aliases]
+            'kepoi_name': ['kepler_name', 'kepoi_name'],
+            'kepid': ['kepid'],
+            'koi_period': ['koi_period'],
+            'koi_prad': ['koi_prad'],
+            'koi_teq': ['koi_teq'],
+            'koi_insol': ['koi_insol'],
+            'koi_sma': ['koi_sma'],
+            'koi_depth': ['koi_depth'],
+            'koi_duration': ['koi_duration'],
+            'koi_steff': ['koi_steff'],
+            'koi_srad': ['koi_srad'],
+            'koi_disposition': ['koi_disposition'],
             
             // TESS mappings
-            'tic_id': 'tid',
-            'toi_id': 'toi',
-            'pl_name': 'pl_name',
-            'pl_rade': 'pl_rade',
-            'pl_orbper': 'pl_orbper',
-            'pl_eqt': 'pl_eqt',
-            'pl_insol': 'pl_insol',
-            'st_rad': 'st_rad',
-            'st_teff': 'st_teff',
-            'sy_dist': 'sy_dist',
-            'st_dist': 'st_dist',
-            'pl_orbsmax': 'pl_orbsmax',
+            'tic_id': ['tid', 'tic_id'],
+            'toi_id': ['toi', 'toi_id'],
+            'pl_name': ['pl_name'],
+            'pl_rade': ['pl_rade'],
+            'pl_orbper': ['pl_orbper'],
+            'pl_eqt': ['pl_eqt'],
+            'pl_insol': ['pl_insol'],
+            'st_rad': ['st_rad'],
+            'st_teff': ['st_teff'],
+            'sy_dist': ['sy_dist'],
+            'st_dist': ['st_dist'],
+            'pl_orbsmax': ['pl_orbsmax'],
           };
           
           // Parse each row (skip header)
@@ -146,28 +148,50 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
             const values = lines[i].split(',').map(v => v.trim());
             const rowData: any = {};
             
+            // First pass: Store all original data with original field names
             headers.forEach((header, index) => {
               const value = values[index];
-              const mappedHeader = fieldMap[header] || header;
               
               // Convert numeric values
               if (value && value !== '' && !isNaN(Number(value))) {
-                rowData[mappedHeader] = Number(value);
+                rowData[header] = Number(value);
               } else if (value && value !== '') {
-                rowData[mappedHeader] = value;
+                rowData[header] = value;
+              }
+            });
+            
+            // Second pass: Add mapped field names (aliases)
+            headers.forEach((header, index) => {
+              const value = values[index];
+              const mappings = fieldMap[header];
+              
+              if (mappings) {
+                mappings.forEach(mappedName => {
+                  if (mappedName !== header) { // Don't duplicate if already set
+                    if (value && value !== '' && !isNaN(Number(value))) {
+                      rowData[mappedName] = Number(value);
+                    } else if (value && value !== '') {
+                      rowData[mappedName] = value;
+                    }
+                  }
+                });
               }
             });
             
             // Generate proper ID based on dataset type
             if (datasetType === 'kepler') {
-              if (rowData.kepid) {
-                rowData.id = `${rowData.kepid}-${rowData.kepler_name || 'unnamed'}`;
+              const kepid = rowData.kepid;
+              const name = rowData.kepler_name || rowData.kepoi_name;
+              if (kepid) {
+                rowData.id = `${kepid}-${name || 'unnamed'}`;
               } else {
                 rowData.id = `kepler-${i}`;
               }
             } else {
-              if (rowData.tid) {
-                rowData.id = `${rowData.tid}-${rowData.toi || i}`;
+              const tid = rowData.tid || rowData.tic_id;
+              const toi = rowData.toi || rowData.toi_id;
+              if (tid) {
+                rowData.id = `${tid}-${toi || i}`;
               } else {
                 rowData.id = `tess-${i}`;
               }
@@ -178,7 +202,9 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
           
           setSelectedExoplanets(exoplanets, datasetType);
           
-          console.log(`Loaded ${exoplanets.length} ${datasetType} exoplanets for 3D visualization`, exoplanets[0]);
+          console.log(`Loaded ${exoplanets.length} ${datasetType} exoplanets for 3D visualization`);
+          console.log('Sample exoplanet data:', exoplanets[0]);
+          console.log('All fields:', Object.keys(exoplanets[0]));
         }
       } else {
         console.warn('No file data available for 3D visualization');

@@ -5,10 +5,13 @@ import * as THREE from 'three';
 
 // Type definitions for exoplanet data
 interface ExoplanetData {
-  id?: string | number;  // Unique identifier (composite for Kepler: "kepid-name")
-  // Kepler format
+  // Unique identifier
+  id?: string | number;
+  
+  // Kepler format - primary names
   kepid?: number;
   kepler_name?: string;
+  kepoi_name?: string;  // Alternative naming
   koi_disposition?: string;
   koi_period?: number;
   koi_prad?: number;
@@ -20,18 +23,24 @@ interface ExoplanetData {
   koi_steff?: number;
   koi_srad?: number;
 
-  // TESS format
+  // TESS format - primary names
   tid?: number;        // TIC ID (TESS Input Catalog ID)
   toi?: number;        // TOI (TESS Object of Interest)
+  tic_id?: number;     // Alternative naming
+  toi_id?: number;     // Alternative naming
   pl_name?: string;
   pl_rade?: number;
   pl_orbper?: number;
   pl_eqt?: number;
   pl_insol?: number;
+  pl_orbsmax?: number;
   st_rad?: number;
   st_teff?: number;
   sy_dist?: number;  // Legacy Kepler field
   st_dist?: number;  // TESS field for stellar/system distance
+  
+  // Allow any other fields from CSV
+  [key: string]: any;
 }
 
 interface VisualizationProps {
@@ -765,12 +774,21 @@ function Scene({ data, dataType, multipleData, onPlanetClick }: VisualizationPro
   // Normalize single planet data
   const normalizePlanetData = (planetData: ExoplanetData, type: 'kepler' | 'tess', index: number) => {
     if (type === 'kepler') {
+      // Try multiple name sources
+      const name = planetData.kepler_name || 
+                   planetData.kepoi_name || 
+                   (planetData.kepid ? `KOI-${planetData.kepid}` : `Kepler-${index + 1}`);
+      
+      // Try to get distance from multiple sources
+      const distance = planetData.koi_sma || 
+                       (planetData.koi_period ? Math.pow(planetData.koi_period / 365.25, 2/3) : 1);
+      
       return {
-        name: planetData.kepler_name || `KOI-${planetData.kepid}`,
+        name: name,
         radius: planetData.koi_prad || 1,
         temperature: planetData.koi_teq || 300,
         orbitalPeriod: planetData.koi_period || 10,
-        distance: planetData.koi_sma || 1,
+        distance: distance,
         starRadius: planetData.koi_srad || 1,
         starTemp: planetData.koi_steff || 5778,
         id: planetData.kepid,
@@ -781,20 +799,29 @@ function Scene({ data, dataType, multipleData, onPlanetClick }: VisualizationPro
       const orbitalPeriod = planetData.pl_orbper || 10;
       const starMass = 1; // Assume solar mass if not provided
 
+      // Try multiple name sources
+      const tid = planetData.tid || planetData.tic_id;
+      const toi = planetData.toi || planetData.toi_id;
+      const name = planetData.pl_name || 
+                   (toi ? `TOI-${toi}` : 
+                   (tid ? `TIC-${tid}` : `TESS-${index + 1}`));
+
+      // Try to get distance from multiple sources, or calculate from orbital period
       // Kepler's 3rd law: a³ = (G * M * T²) / (4π²)
       // Simplified for solar masses and days: a(AU) ≈ (T(days)/365.25)^(2/3)
-      const calculatedDistance = Math.pow(orbitalPeriod / 365.25, 2/3);
+      const distance = planetData.pl_orbsmax || 
+                       Math.pow(orbitalPeriod / 365.25, 2/3);
 
       return {
-        name: planetData.pl_name || (planetData.toi ? `TOI-${planetData.toi}` : `TIC-${planetData.tid || index}`),
+        name: name,
         radius: planetData.pl_rade || 1,
         temperature: planetData.pl_eqt || 300,
         orbitalPeriod: orbitalPeriod,
-        distance: calculatedDistance || 1,
+        distance: distance || 1,
         starRadius: planetData.st_rad || 1,
         starTemp: planetData.st_teff || 5778,
-        id: planetData.tid,
-        uniqueId: planetData.id ? String(planetData.id) : `tess-${planetData.tid || planetData.toi || index}`,
+        id: tid,
+        uniqueId: planetData.id ? String(planetData.id) : `tess-${tid || toi || index}`,
       };
     }
   };
