@@ -39,14 +39,19 @@ app.include_router(logs.router)  # Logs router
 
 @app.on_event("startup")
 async def startup_event():
-    # Initialize database tables
-    await init_models()
-    print("✅ Database initialized and tables created successfully!")
+    # Initialize database tables (skip if connection fails for local dev)
+    try:
+        await init_models()
+        print("✅ Database initialized and tables created successfully!")
 
-    # Seed initial models
-    async with AsyncSessionLocal() as db:
-        await seed_models(db)
-        print("✅ Seeded initial models successfully!")
+        # Seed initial models
+        async with AsyncSessionLocal() as db:
+            await seed_models(db)
+            print("✅ Seeded initial models successfully!")
+    except Exception as e:
+        print(f"⚠️  Warning: Failed to connect to database: {str(e)}")
+        print("   Running in LOCAL MODE without database persistence.")
+        print("   File uploads and predictions will work, but won't be saved to Supabase.")
 
     # Preload ML models into cache
     try:

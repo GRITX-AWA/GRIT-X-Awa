@@ -127,6 +127,82 @@ class ApiService {
   async runDeepAnalysis(objectId: string): Promise<any> {
     return this.request<any>(`/analysis/deep/${objectId}`);
   }
+
+  /**
+   * Upload CSV file and get ML predictions
+   * @param file - CSV file to upload
+   * @returns Upload response with predictions
+   */
+  async uploadAndPredict(file: File): Promise<UploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const url = `${API_BASE_URL}/api/v1/upload/csv`;
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+      // Don't set Content-Type header - browser will set it with boundary
+    });
+
+    if (!response.ok) {
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = null;
+      }
+      const error: any = new Error(errorData?.detail || `Upload failed: ${response.statusText}`);
+      error.status = response.status;
+      error.data = errorData;
+      throw error;
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get predictions by job ID
+   * @param jobId - Unique job identifier
+   */
+  async getPredictionsByJobId(jobId: string): Promise<PredictionJobResponse> {
+    return this.request<PredictionJobResponse>(`/api/v1/predictions/job/${jobId}`);
+  }
+
+  /**
+   * Get recent predictions
+   * @param limit - Maximum number of predictions to return
+   */
+  async getRecentPredictions(limit: number = 50): Promise<PredictionResult[]> {
+    return this.request<PredictionResult[]>(`/api/v1/predictions/recent?limit=${limit}`);
+  }
 }
 
 export const apiService = new ApiService();
+
+// ===== Type Definitions for Upload Feature =====
+
+export interface UploadResponse {
+  success: boolean;
+  message: string;
+  job_id: string;
+  dataset_type: string;
+  file_url: string;
+  total_predictions: number;
+  predictions: PredictionResult[];
+}
+
+export interface PredictionResult {
+  job_id: string;
+  row_index: number;
+  dataset_type: string;
+  predicted_class: string;
+  confidence: Record<string, number>;
+  created_at: string;
+}
+
+export interface PredictionJobResponse {
+  job_id: string;
+  dataset_type: string;
+  created_at: string;
+  predictions: PredictionResult[];
+}

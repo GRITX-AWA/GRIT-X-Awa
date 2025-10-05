@@ -22,7 +22,7 @@ build/
 .output/
 .vercel/
 .netlify/
-
+*.csv
 # Astro specific
 .astro/
 *.astro.js
