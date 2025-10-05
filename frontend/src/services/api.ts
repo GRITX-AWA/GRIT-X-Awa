@@ -3,7 +3,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://grit-x-awa-1035421
 // For local development: 'http://localhost:8000'
 
 export interface SpaceData {
-  id: number;
+  id: string | number;
   // Kepler fields
   kepid?: number;
   kepoi_name?: string;

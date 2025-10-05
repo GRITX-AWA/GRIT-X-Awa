@@ -118,7 +118,7 @@ export default function Exoplanets() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [view3D, setView3D] = useState(false);
-  const [selectedPlanets, setSelectedPlanets] = useState<Set<number>>(new Set());
+  const [selectedPlanets, setSelectedPlanets] = useState<Set<string | number>>(new Set());
   const [datasetType, setDatasetType] = useState<'kepler' | 'tess'>('kepler');
   
   // Selection limit to prevent performance issues
@@ -209,10 +209,31 @@ export default function Exoplanets() {
       });
 
       // Add unique IDs to each entry if not present
-      const dataWithIds = initialData.map((item: any, index: number) => ({
-        ...item,
-        id: item.id || item.kepid || item.toi || item.tid || index
-      }));
+      // IMPORTANT: Use composite ID (kepid+name or toi+name) to handle multiple planets in same system
+      // e.g., Kepler-227 b and Kepler-227 c share same kepid but have different names
+      const dataWithIds = initialData.map((item: any, index: number) => {
+        let uniqueId: string | number;
+        
+        if (item.kepid && item.kepler_name) {
+          // For Kepler: combine kepid with planet name to ensure uniqueness
+          uniqueId = `${item.kepid}-${item.kepler_name.replace(/\s+/g, '')}`;
+        } else if (item.toi) {
+          // For TESS: toi is already unique per planet
+          uniqueId = item.toi;
+        } else if (item.tid) {
+          uniqueId = item.tid;
+        } else if (item.kepid) {
+          // Fallback to just kepid if no name available
+          uniqueId = item.kepid;
+        } else {
+          uniqueId = `temp-${index}`;
+        }
+        
+        return {
+          ...item,
+          id: uniqueId
+        };
+      });
 
       setDatasets(dataWithIds as SpaceData[]);
       setLoading(false);
@@ -224,12 +245,32 @@ export default function Exoplanets() {
       // Wait for it to complete and update the dataset
       setTimeout(async () => {
         const allData = await dataLoader.loadAllData(datasetType);
-        const allDataWithIds = allData.map((item: any, index: number) => ({
-          ...item,
-          id: item.id || item.kepid || item.toi || item.tid || index
-        }));
+        const allDataWithIds = allData.map((item: any, index: number) => {
+          let uniqueId: string | number;
+          
+          if (item.kepid && item.kepler_name) {
+            // For Kepler: combine kepid with planet name to ensure uniqueness
+            uniqueId = `${item.kepid}-${item.kepler_name.replace(/\s+/g, '')}`;
+          } else if (item.toi) {
+            // For TESS: toi is already unique per planet
+            uniqueId = item.toi;
+          } else if (item.tid) {
+            uniqueId = item.tid;
+          } else if (item.kepid) {
+            // Fallback to just kepid if no name available
+            uniqueId = item.kepid;
+          } else {
+            uniqueId = `temp-${index}`;
+          }
+          
+          return {
+            ...item,
+            id: uniqueId
+          };
+        });
         setDatasets(allDataWithIds as SpaceData[]);
         console.log(`✅ Full dataset loaded: ${allDataWithIds.length} total exoplanets`);
+        // Selected planets are preserved because IDs are now stable (composite kepid+name)
       }, 500);
 
     } catch (err) {
@@ -390,6 +431,13 @@ export default function Exoplanets() {
 
   const handleViewMultiple3D = () => {
     const selected = datasets.filter(planet => selectedPlanets.has(planet.id));
+    console.log('🔍 Debug Selection:', {
+      selectedPlanetsSet: Array.from(selectedPlanets),
+      selectedPlanetsCount: selectedPlanets.size,
+      filteredPlanets: selected.map(p => ({ id: p.id, name: p.kepler_name || p.toi })),
+      filteredCount: selected.length,
+      totalDatasets: datasets.length
+    });
     setSelectedExoplanets(selected, datasetType);
     setActivePage('visualizations');
   };

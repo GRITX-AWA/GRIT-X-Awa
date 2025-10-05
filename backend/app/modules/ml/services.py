@@ -18,9 +18,6 @@ async def select_model(dataset_type: str, db: AsyncSession):
         model = next((m for m in models if m.model_name.lower() == "kepler"), None)
     elif dataset_type == "tess":
         model = next((m for m in models if m.model_name.lower() == "tess"), None)
-    else:  # "mixed" or "unified"
-        model = next((m for m in models if m.model_name.lower() == "unified"), None)
-
     return model
 
 # ----- Training -----
@@ -31,7 +28,6 @@ async def train_model(dataset_type: str, data: list[list[float]], labels: list[i
     model_name_map = {
         "Kepler": "Kepler",
         "TESS": "TESS",
-        "Unified": "Unified"
     }
     model_name = model_name_map.get(dataset_type, "Unified")
 

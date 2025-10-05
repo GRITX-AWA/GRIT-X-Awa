@@ -5,6 +5,7 @@ import * as THREE from 'three';
 
 // Type definitions for exoplanet data
 interface ExoplanetData {
+  id?: string | number;  // Unique identifier (composite for Kepler: "kepid-name")
   // Kepler format
   kepid?: number;
   kepler_name?: string;
@@ -773,7 +774,7 @@ function Scene({ data, dataType, multipleData, onPlanetClick }: VisualizationPro
         starRadius: planetData.koi_srad || 1,
         starTemp: planetData.koi_steff || 5778,
         id: planetData.kepid,
-        uniqueId: `kepler-${planetData.kepid || index}`,
+        uniqueId: planetData.id ? String(planetData.id) : `kepler-${planetData.kepid || index}`,
       };
     } else {
       // TESS data - normalize to match Kepler defaults for consistency
@@ -793,7 +794,7 @@ function Scene({ data, dataType, multipleData, onPlanetClick }: VisualizationPro
         starRadius: planetData.st_rad || 1,
         starTemp: planetData.st_teff || 5778,
         id: planetData.tic_id,
-        uniqueId: `tess-${planetData.tic_id || index}`,
+        uniqueId: planetData.id ? String(planetData.id) : `tess-${planetData.tic_id || index}`,
       };
     }
   };
