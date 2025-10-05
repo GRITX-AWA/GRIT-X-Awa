@@ -7,12 +7,10 @@ interface Activity {
   type: 'success' | 'info' | 'warning' | 'error';
 }
 
-interface RecentActivityRef {
+export interface RecentActivityRef {
   addOptimisticActivity: (activity: Activity) => void;
   refreshActivities: (keepExisting: boolean) => void;
 }
-
-export type { RecentActivityRef };
 
 const formatRelativeTime = (dateString: string): string => {
   const date = new Date(dateString);

@@ -8,7 +8,7 @@ import { dataLoader } from '../../services/dataLoader';
 interface ColumnConfig {
   key: keyof SpaceData;
   label: string;
-  visible: boolean;
+  visible?: boolean;
   essential: boolean;
   requiredForModel?: boolean;
   type: 'text' | 'number' | 'badge';
