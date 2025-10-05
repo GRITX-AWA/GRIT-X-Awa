@@ -52,13 +52,13 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
       onClose={() => {}} // Prevent closing during analysis
       maxWidth="2xl"
     >
-      <div className="bg-gradient-to-br from-gray-900 via-purple-900/50 to-gray-900 rounded-2xl p-6 sm:p-8 md:p-12 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-white via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/50 dark:to-gray-900 rounded-2xl p-6 sm:p-8 md:p-12 relative overflow-hidden">
           
           {/* Animated Background Orbs */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3s' }} />
-            <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s', animationDelay: '1s' }} />
-            <div className="absolute top-1/2 left-0 w-48 h-48 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3.5s', animationDelay: '0.5s' }} />
+            <div className="absolute top-0 left-1/4 w-64 h-64 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3s' }} />
+            <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-purple-500/10 dark:bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s', animationDelay: '1s' }} />
+            <div className="absolute top-1/2 left-0 w-48 h-48 bg-pink-500/10 dark:bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3.5s', animationDelay: '0.5s' }} />
           </div>
 
           {/* Content */}
@@ -69,7 +69,7 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
               <div className="inline-block">
                 <div className="relative">
                   {/* Rotating Ring */}
-                  <div className="w-24 h-24 mx-auto border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" style={{ animationDuration: '1.5s' }} />
+                  <div className="w-24 h-24 mx-auto border-4 border-purple-300/50 dark:border-purple-500/30 border-t-purple-600 dark:border-t-purple-500 rounded-full animate-spin" style={{ animationDuration: '1.5s' }} />
                   
                   {/* Center Icon */}
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -91,10 +91,10 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
                 </div>
               </div>
 
-              <h3 className="text-2xl sm:text-3xl font-bold text-white">
+              <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 Analyzing with AI
               </h3>
-              <p className="text-purple-300 text-sm sm:text-base">
+              <p className="text-purple-700 dark:text-purple-300 text-sm sm:text-base font-medium">
                 {modelType.toUpperCase()} Ensemble Model Processing
               </p>
             </div>
@@ -117,7 +117,7 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
                       ? 'bg-gradient-to-br from-green-500 to-emerald-500 scale-100'
                       : index === currentStep
                       ? `bg-gradient-to-br ${step.color} scale-110 shadow-lg animate-pulse`
-                      : 'bg-gray-700 scale-90'
+                      : 'bg-gray-300 dark:bg-gray-700 scale-90'
                     }
                   `}>
                     <i className={`fas ${
@@ -129,10 +129,10 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
                   <div className="flex-1 min-w-0">
                     <p className={`font-medium truncate transition-colors duration-500 ${
                       index === currentStep
-                        ? 'text-white text-lg'
+                        ? 'text-gray-900 dark:text-white text-lg'
                         : index < currentStep
-                        ? 'text-green-300'
-                        : 'text-gray-400'
+                        ? 'text-green-700 dark:text-green-300'
+                        : 'text-gray-500 dark:text-gray-400'
                     }`}>
                       {step.label}
                     </p>
@@ -142,9 +142,9 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
                   {index === currentStep && (
                     <div className="flex-shrink-0">
                       <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                       </div>
                     </div>
                   )}
@@ -154,11 +154,11 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
 
             {/* Progress Bar */}
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-purple-300">
+              <div className="flex justify-between text-sm text-purple-700 dark:text-purple-300 font-medium">
                 <span>Processing</span>
                 <span className="font-mono font-semibold">{Math.round(progress)}%</span>
               </div>
-              <div className="h-3 bg-gray-800 rounded-full overflow-hidden shadow-inner">
+              <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out relative overflow-hidden"
                   style={{ width: `${progress}%` }}
@@ -174,24 +174,24 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
             </div>
 
             {/* Model Info */}
-            <div className="flex flex-wrap gap-3 justify-center pt-4 border-t border-purple-500/20">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
+            <div className="flex flex-wrap gap-3 justify-center pt-4 border-t border-purple-300/40 dark:border-purple-500/20">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-white/5 backdrop-blur-sm rounded-lg border border-gray-300/50 dark:border-white/10 shadow-sm">
                 <i className="fas fa-fire text-orange-400"></i>
-                <span className="text-xs text-gray-300">XGBoost</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">XGBoost</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-white/5 backdrop-blur-sm rounded-lg border border-gray-300/50 dark:border-white/10 shadow-sm">
                 <i className="fas fa-bolt text-green-400"></i>
-                <span className="text-xs text-gray-300">LightGBM</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">LightGBM</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-white/5 backdrop-blur-sm rounded-lg border border-gray-300/50 dark:border-white/10 shadow-sm">
                 <i className="fas fa-cat text-blue-400"></i>
-                <span className="text-xs text-gray-300">CatBoost</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">CatBoost</span>
               </div>
             </div>
 
             {/* Fun Fact */}
             <div className="text-center">
-              <p className="text-xs text-purple-400/70 italic">
+              <p className="text-xs text-purple-600/70 dark:text-purple-400/70 italic font-medium">
                 ✨ Processing multiple algorithms simultaneously for best accuracy
               </p>
             </div>
@@ -202,7 +202,7 @@ const MLAnalysisAnimation: React.FC<MLAnalysisAnimationProps> = ({ isAnalyzing, 
             {[...Array(12)].map((_, i) => (
               <div
                 key={i}
-                className="absolute w-1 h-1 bg-purple-400/60 rounded-full animate-float"
+                className="absolute w-1 h-1 bg-purple-500/60 dark:bg-purple-400/60 rounded-full animate-float"
                 style={{
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,

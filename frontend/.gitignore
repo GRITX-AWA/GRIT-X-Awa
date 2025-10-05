@@ -1,1 +1,10 @@
+# Vercel
 .vercel
+
+# Environment variables (contains secrets!)
+.env
+.env.local
+.env.production
+
+# Keep example file
+!.env.example

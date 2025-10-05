@@ -14,11 +14,25 @@
     "pl_trandep",
     "pl_trandurh",
     "pl_eqt",
-    "pl_insol",
-    "pl_tranmid",
-    "pl_pnum"
+    "pl_insol"
   ],
-  "weights": [0.4, 0.35, 0.25],
-  "class_names": ["APC", "CP", "FA", "FP", "KP", "PC"],
-  "note": "New TESS model - updated ensemble with improved predictions"
+  "weights": [
+    0.4,
+    0.35,
+    0.25
+  ],
+  "class_names": [
+    "APC",
+    "CP",
+    "FA",
+    "FP",
+    "KP",
+    "PC"
+  ],
+  "accuracies": {
+    "catboost": 0.7690115761353518,
+    "xgboost": 0.8660730186999109,
+    "lightgbm": 0.8918967052537845,
+    "ensemble": 0.8662511130899376
+  }
 }

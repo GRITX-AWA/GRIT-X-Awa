@@ -197,65 +197,233 @@ const DiscoveryMethodChart: React.FC = () => (
   </div>
 );
 
-const StarTypeChart: React.FC = () => (
-  <div className="h-80 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-200/30 dark:border-amber-700/30 flex items-center justify-center">
-    <div className="relative w-64 h-64">
-      {/* Donut chart segments */}
-      <svg viewBox="0 0 100 100" className="transform -rotate-90">
-        {[
-          { start: 0, percent: 45, color: '#f59e0b', label: 'G-type (Sun-like)' },
-          { start: 45, percent: 30, color: '#ef4444', label: 'M-type (Red dwarf)' },
-          { start: 75, percent: 15, color: '#3b82f6', label: 'K-type (Orange)' },
-          { start: 90, percent: 10, color: '#8b5cf6', label: 'Other types' }
-        ].map((segment, idx) => {
-          const radius = 40;
-          const circumference = 2 * Math.PI * radius;
-          const offset = (segment.start / 100) * circumference;
-          const dashArray = `${(segment.percent / 100) * circumference} ${circumference}`;
+// Dynamic Star Type Chart Component
+interface StarTypeChartProps {
+  planets: Array<any>;
+  dataType: 'kepler' | 'tess';
+}
 
-          return (
-            <circle
-              key={idx}
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="none"
-              stroke={segment.color}
-              strokeWidth="20"
-              strokeDasharray={dashArray}
-              strokeDashoffset={-offset}
-              className="transition-all duration-500 hover:stroke-width-[22] cursor-pointer"
-            />
-          );
-        })}
-      </svg>
+const StarTypeChart: React.FC<StarTypeChartProps> = ({ planets, dataType }) => {
+  // Function to classify star type based on effective temperature
+  const classifyStarType = (teff: number): string => {
+    if (teff >= 30000) return 'O-type';
+    if (teff >= 10000) return 'B-type';
+    if (teff >= 7500) return 'A-type';
+    if (teff >= 6000) return 'F-type';
+    if (teff >= 5200) return 'G-type';
+    if (teff >= 3700) return 'K-type';
+    if (teff >= 2400) return 'M-type';
+    return 'Unknown';
+  };
 
-      {/* Center text */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">5,026</div>
-          <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mt-1">Total Stars</div>
+  // Count star types from the planets
+  const starTypeCounts: Record<string, number> = {
+    'O-type': 0,
+    'B-type': 0,
+    'A-type': 0,
+    'F-type': 0,
+    'G-type': 0,
+    'K-type': 0,
+    'M-type': 0,
+    'Unknown': 0,
+  };
+
+  planets.forEach((planet) => {
+    const teff = dataType === 'tess' ? planet.st_teff : planet.koi_steff;
+    if (teff) {
+      const type = classifyStarType(teff);
+      starTypeCounts[type]++;
+    } else {
+      starTypeCounts['Unknown']++;
+    }
+  });
+
+  const totalStars = planets.length;
+
+  // Filter out types with 0 count and prepare segments
+  const starTypeSegments = [
+    { type: 'O-type', color: '#3b82f6', label: 'O-type (Blue)', description: 'Very hot blue stars (>30,000K)' },
+    { type: 'B-type', color: '#60a5fa', label: 'B-type (Blue-white)', description: 'Hot blue-white stars (10,000-30,000K)' },
+    { type: 'A-type', color: '#f3f4f6', label: 'A-type (White)', description: 'White stars (7,500-10,000K)' },
+    { type: 'F-type', color: '#fef3c7', label: 'F-type (Yellow-white)', description: 'Yellow-white stars (6,000-7,500K)' },
+    { type: 'G-type', color: '#fbbf24', label: 'G-type (Sun-like)', description: 'Sun-like yellow stars (5,200-6,000K)' },
+    { type: 'K-type', color: '#f97316', label: 'K-type (Orange)', description: 'Orange stars (3,700-5,200K)' },
+    { type: 'M-type', color: '#ef4444', label: 'M-type (Red dwarf)', description: 'Cool red dwarf stars (2,400-3,700K)' },
+    { type: 'Unknown', color: '#6b7280', label: 'Unknown', description: 'Unknown spectral type' },
+  ]
+    .map((segment) => ({
+      ...segment,
+      count: starTypeCounts[segment.type],
+      percent: totalStars > 0 ? (starTypeCounts[segment.type] / totalStars) * 100 : 0,
+    }))
+    .filter((segment) => segment.count > 0);
+
+  // Calculate cumulative start positions for donut segments
+  let cumulativePercent = 0;
+  const segmentsWithPositions = starTypeSegments.map((segment) => {
+    const start = cumulativePercent;
+    cumulativePercent += segment.percent;
+    return { ...segment, start };
+  });
+
+  if (totalStars === 0) {
+    return (
+      <div className="h-80 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-200/30 dark:border-amber-700/30 flex items-center justify-center">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <i className="fas fa-star text-6xl mb-4 opacity-30"></i>
+          <p className="text-lg font-semibold">No star data available</p>
+          <p className="text-sm mt-2">Select exoplanets to analyze their host stars</p>
         </div>
       </div>
-    </div>
+    );
+  }
 
-    {/* Legend */}
-    <div className="ml-8 space-y-2">
-      {[
-        { color: 'bg-amber-500', label: 'G-type', percent: '45%' },
-        { color: 'bg-red-500', label: 'M-type', percent: '30%' },
-        { color: 'bg-blue-500', label: 'K-type', percent: '15%' },
-        { color: 'bg-purple-500', label: 'Other', percent: '10%' }
-      ].map((item, idx) => (
-        <div key={idx} className="flex items-center gap-2">
-          <div className={`w-4 h-4 rounded ${item.color} shadow-md`}></div>
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{item.label}</span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">({item.percent})</span>
+  return (
+    <div className="h-80 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-200/30 dark:border-amber-700/30 flex items-center justify-center relative overflow-hidden">
+      {/* Animated background stars */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-amber-300/30 dark:bg-amber-400/20 rounded-full animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 2}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative w-64 h-64 group">
+        {/* Outer glow ring */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400/20 via-orange-400/20 to-yellow-400/20 blur-xl animate-pulse"></div>
+        
+        {/* Donut chart segments with animation */}
+        <svg viewBox="0 0 100 100" className="transform -rotate-90 transition-transform duration-700 group-hover:rotate-[6deg] group-hover:scale-105">
+          {/* Background circle */}
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="20"
+            className="text-gray-200 dark:text-gray-700 opacity-20"
+          />
+          
+          {segmentsWithPositions.map((segment, idx) => {
+            const radius = 40;
+            const circumference = 2 * Math.PI * radius;
+            const offset = (segment.start / 100) * circumference;
+            const dashArray = `${(segment.percent / 100) * circumference} ${circumference}`;
+
+            return (
+              <g key={idx} className="animate-[fadeIn_0.5s_ease-out]" style={{ animationDelay: `${idx * 0.1}s` }}>
+                <title>{`${segment.label}: ${segment.count} (${segment.percent.toFixed(1)}%)`}</title>
+                {/* Segment with glow effect */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="none"
+                  stroke={segment.color}
+                  strokeWidth="20"
+                  strokeDasharray={dashArray}
+                  strokeDashoffset={-offset}
+                  className="transition-all duration-500 hover:brightness-125 cursor-pointer drop-shadow-lg"
+                  style={{
+                    filter: 'drop-shadow(0 0 8px currentColor)',
+                    opacity: 0.9,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.strokeWidth = '24';
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.strokeWidth = '20';
+                    e.currentTarget.style.opacity = '0.9';
+                  }}
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Center text with animation */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center animate-[fadeIn_0.8s_ease-out]">
+            <div className="text-4xl font-bold bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent drop-shadow-lg animate-pulse">
+              {totalStars}
+            </div>
+            <div className="text-xs font-bold text-gray-600 dark:text-gray-400 mt-1 tracking-wider uppercase">
+              {totalStars === 1 ? 'Star' : 'Stars'}
+            </div>
+            <div className="mt-2">
+              <i className="fas fa-star text-amber-500 dark:text-amber-400 text-sm animate-spin" style={{ animationDuration: '3s' }}></i>
+            </div>
+          </div>
         </div>
-      ))}
+
+        {/* Rotating orbit ring */}
+        <svg viewBox="0 0 100 100" className="absolute inset-0 pointer-events-none animate-spin" style={{ animationDuration: '20s' }}>
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="0.5"
+            strokeDasharray="2 4"
+            className="text-amber-400/30 dark:text-amber-500/20"
+          />
+        </svg>
+      </div>
+
+      {/* Legend with animations */}
+      <div className="ml-8 space-y-2 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-amber-400/30 scrollbar-track-transparent">
+        {segmentsWithPositions.map((item, idx) => {
+          const colorClass = item.color.startsWith('#') ? '' : item.color;
+          return (
+          <div 
+            key={idx} 
+            className="flex items-center gap-3 group cursor-pointer p-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-700/30 transition-all duration-300 animate-[slideInRight_0.5s_ease-out]"
+            style={{ animationDelay: `${idx * 0.1}s` }}
+          >
+            <div className="relative">
+              {/* Pulsing glow behind the color indicator */}
+              <div
+                className="absolute inset-0 rounded-full blur-sm transition-all duration-300 group-hover:blur-md group-hover:scale-150"
+                style={{ backgroundColor: item.color, opacity: 0.3 }}
+              ></div>
+              <div
+                className={`w-5 h-5 rounded-full shadow-lg transition-all duration-300 group-hover:scale-125 group-hover:rotate-[360deg] relative z-10 ${colorClass}`}
+                {...(item.color.startsWith('#') && { style: { backgroundColor: item.color } })}
+              >
+                <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></div>
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-bold text-gray-800 dark:text-gray-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                  {item.type}
+                </span>
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50 px-2 py-0.5 rounded-full">
+                  {item.count} · {item.percent.toFixed(1)}%
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
+                {item.description}
+              </p>
+            </div>
+            <i className="fas fa-chevron-right text-amber-400 dark:text-amber-500 text-xs opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1"></i>
+          </div>
+        );})}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Visualizations: React.FC = () => {
   const { selectedExoplanet, selectedExoplanets, dataType, clearSelectedExoplanet, clearAllExoplanets } = useExoplanet();
@@ -386,7 +554,7 @@ const Visualizations: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-white to-purple-50/20 dark:from-gray-800 dark:to-gray-800/50 p-8 rounded-2xl shadow-2xl border-2 border-purple-400/50 dark:border-purple-600/50 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-white to-purple-50/20 dark:from-gray-800 dark:to-gray-800/50 p-8 rounded-2xl shadow-2xl border-2 border-purple-400/50 dark:border-purple-600/50 backdrop-blur-sm cursor-move">
             <ExoplanetVisualization3D
               data={selectedExoplanets[0]}
               dataType={dataType}
@@ -425,7 +593,7 @@ const Visualizations: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-white to-purple-50/20 dark:from-gray-800 dark:to-gray-800/50 p-8 rounded-2xl shadow-2xl border-2 border-purple-400/50 dark:border-purple-600/50 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-white to-purple-50/20 dark:from-gray-800 dark:to-gray-800/50 p-8 rounded-2xl shadow-2xl border-2 border-purple-400/50 dark:border-purple-600/50 backdrop-blur-sm cursor-move">
             <ExoplanetVisualization3D data={selectedExoplanet} dataType={dataType} />
           </div>
         </div>
@@ -447,7 +615,9 @@ const Visualizations: React.FC = () => {
                 <i className="fas fa-satellite mr-2"></i>TESS
               </span>
             </div>
-            <ExoplanetVisualization3D data={sampleTessData} dataType="tess" />
+            <div className="cursor-move">
+              <ExoplanetVisualization3D data={sampleTessData} dataType="tess" />
+            </div>
           </div>
 
           <div className="bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-800 dark:to-purple-900/20 p-8 rounded-2xl shadow-2xl border-2 border-purple-400/50 dark:border-purple-600/50 backdrop-blur-sm">
@@ -463,7 +633,9 @@ const Visualizations: React.FC = () => {
                 <i className="fas fa-telescope mr-2"></i>Kepler
               </span>
             </div>
-            <ExoplanetVisualization3D data={sampleKeplerData} dataType="kepler" />
+            <div className="cursor-move">
+              <ExoplanetVisualization3D data={sampleKeplerData} dataType="kepler" />
+            </div>
           </div>
         </div>
       )}
@@ -611,10 +783,31 @@ const Visualizations: React.FC = () => {
               <i className="fas fa-sun text-amber-600 dark:text-amber-400"></i>
               Host Star Types
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Distribution of star types hosting confirmed exoplanets</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {hasSelection 
+                ? 'Star type classification of your selected exoplanets' 
+                : 'Distribution of star types hosting confirmed exoplanets'}
+            </p>
           </div>
           <div className="p-8">
-            <StarTypeChart />
+            {hasSelection && dataType ? (
+              <StarTypeChart 
+                planets={
+                  isMultipleMode 
+                    ? selectedExoplanets 
+                    : (selectedExoplanet ? [selectedExoplanet] : [])
+                }
+                dataType={dataType}
+              />
+            ) : (
+              <div className="h-80 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-200/30 dark:border-amber-700/30 flex items-center justify-center">
+                <div className="text-center text-gray-500 dark:text-gray-400">
+                  <i className="fas fa-star text-6xl mb-4 opacity-30"></i>
+                  <p className="text-lg font-semibold">No star data available</p>
+                  <p className="text-sm mt-2">Select exoplanets from the Exoplanets page to analyze their host stars</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

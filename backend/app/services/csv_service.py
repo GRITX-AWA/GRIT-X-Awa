@@ -21,6 +21,7 @@ class CSVProcessor:
         'koi_srad', 'ra', 'dec', 'koi_kepmag'
     }
 
+    # TESS base features (15 features - must match training data exactly)
     TESS_FEATURES = {
         'ra', 'dec', 'st_teff', 'st_logg', 'st_rad', 'st_dist',
         'st_pmra', 'st_pmdec', 'st_tmag', 'pl_orbper', 'pl_rade',
@@ -133,10 +134,10 @@ class CSVProcessor:
         Preprocess TESS dataset using winsorization and trained imputer
 
         Args:
-            df: Raw DataFrame with TESS base features (17 features)
+            df: Raw DataFrame with TESS base features (15 features)
 
         Returns:
-            Preprocessed feature array ready for prediction (17 features)
+            Preprocessed feature array ready for prediction (15 features)
         """
         from scipy.stats.mstats import winsorize
 
@@ -144,15 +145,10 @@ class CSVProcessor:
         metadata = models['metadata']
         feature_order = metadata['feature_order']
 
-        # Ensure we have all required base features (pl_pnum is optional)
-        optional_features = {'pl_pnum'}  # pl_pnum is metadata, not required for predictions
-        missing_features = set(feature_order) - set(df.columns) - optional_features
+        # Ensure we have all required base features
+        missing_features = set(feature_order) - set(df.columns)
         if missing_features:
             raise ValueError(f"Missing required features: {missing_features}")
-
-        # Add pl_pnum with default value of 1 if missing (single planet system assumption)
-        if 'pl_pnum' not in df.columns:
-            df['pl_pnum'] = 1
 
         # Select and order features according to training
         df_ordered = df[feature_order].copy()

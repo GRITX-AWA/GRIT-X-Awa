@@ -5,6 +5,7 @@ import { exoplanetService } from '../services/exoplanetService';
 import { PageContext } from './DashboardLayoutComponent';
 import { ThemeContext } from './ThemeContext';
 import { useExoplanet } from '../contexts/ExoplanetContext';
+import AIChatbot from './AIChatbot';
 
 interface PredictionResultsProps {
   results: UploadResponse;
@@ -18,6 +19,7 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
   const [showConfidence, setShowConfidence] = useState(true);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const itemsPerPage = 10;
   const { setActivePage } = useContext(PageContext);
   const { darkMode } = useContext(ThemeContext);
@@ -756,6 +758,32 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
             <div className="h-8" />
           </div>
         </div>
+
+        {/* Floating AI Chatbot Button - Bottom Right */}
+        <button
+          onClick={() => setIsChatbotOpen(true)}
+          className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-white rounded-full shadow-2xl hover:shadow-purple-500/50 hover:scale-110 transition-all duration-300 flex items-center justify-center group z-[9999] animate-pulse"
+          title="Ask AI about predictions"
+          aria-label="Open AI Assistant"
+        >
+          <div className="relative">
+            <i className="fas fa-robot text-2xl group-hover:rotate-12 transition-transform duration-300"></i>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-ping"></div>
+          </div>
+        </button>
+
+        {/* AI Chatbot Modal */}
+        <AIChatbot
+          isOpen={isChatbotOpen}
+          onClose={() => setIsChatbotOpen(false)}
+          csvData={results.predictions.map(pred => ({
+            row_index: pred.row_index,
+            predicted_class: pred.predicted_class,
+            confidence: pred.confidence,
+            ...pred.confidence
+          }))}
+          modelType={results.dataset_type as 'kepler' | 'tess'}
+        />
       </div>
     </div>,
     document.body

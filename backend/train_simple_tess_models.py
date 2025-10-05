@@ -19,11 +19,13 @@ from imblearn.over_sampling import SMOTE
 from sklearn.metrics import accuracy_score, classification_report
 
 # Configuration
-DATA_PATH = Path("../original_features.csv")
+DATA_PATH = Path("../csv/TOI_2025.10.05_11.28.40.csv")
 OUTPUT_DIR = Path("tess/trained_models")
 TARGET_COL = "tfopwg_disp"
 
-# Base features (15 features that work with current preprocessing)
+# Base features (15 features - CRITICAL: must match what the models were actually trained on)
+# NOTE: The saved models in tess/trained_models were trained on 17 features including pl_tranmid and pl_pnum
+# To fix the accuracy issue, we need to use the same 15 features for both training and prediction
 FEATURE_COLS = [
     "ra", "dec", "st_teff", "st_logg", "st_rad", "st_dist",
     "st_pmra", "st_pmdec", "st_tmag", "pl_orbper", "pl_rade",
@@ -168,28 +170,28 @@ def save_models(artifacts):
 
     # Save models
     pickle.dump(artifacts['cat_model'], open(OUTPUT_DIR / 'cat_model.pkl', 'wb'))
-    print(f"✓ Saved: cat_model.pkl")
+    print(f"[OK] Saved: cat_model.pkl")
 
     pickle.dump(artifacts['xgb_model'], open(OUTPUT_DIR / 'xgb_model.pkl', 'wb'))
-    print(f"✓ Saved: xgb_model.pkl")
+    print(f"[OK] Saved: xgb_model.pkl")
 
     pickle.dump(artifacts['lgbm_model'], open(OUTPUT_DIR / 'lgbm_model.pkl', 'wb'))
-    print(f"✓ Saved: lgbm_model.pkl")
+    print(f"[OK] Saved: lgbm_model.pkl")
 
     pickle.dump(artifacts['imputer'], open(OUTPUT_DIR / 'imputer.pkl', 'wb'))
-    print(f"✓ Saved: imputer.pkl")
+    print(f"[OK] Saved: imputer.pkl")
 
     pickle.dump(artifacts['target_le'], open(OUTPUT_DIR / 'target_le.pkl', 'wb'))
-    print(f"✓ Saved: target_le.pkl")
+    print(f"[OK] Saved: target_le.pkl")
 
     pickle.dump(artifacts['encoders'], open(OUTPUT_DIR / 'encoders.pkl', 'wb'))
-    print(f"✓ Saved: encoders.pkl")
+    print(f"[OK] Saved: encoders.pkl")
 
     with open(OUTPUT_DIR / 'meta.json', 'w') as f:
         json.dump(artifacts['metadata'], f, indent=2)
-    print(f"✓ Saved: meta.json")
+    print(f"[OK] Saved: meta.json")
 
-    print(f"\\n✓ All models saved to: {OUTPUT_DIR}")
+    print(f"\\n[OK] All models saved to: {OUTPUT_DIR}")
 
 def main():
     """Main training pipeline"""
