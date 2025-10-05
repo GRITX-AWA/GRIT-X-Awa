@@ -54,14 +54,13 @@ const DashboardLayoutComponent: React.FC = () => {
     }
   }, [activePage]);
 
-  // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     activePage,
     setActivePage: handleSetActivePage,
   }), [activePage, handleSetActivePage]);
 
   // Render different content based on activePage state
-  const renderContent = (): JSX.Element => {
+  const renderContent = (): React.ReactNode => {
     switch (displayPage) {
       case 'dashboard':
         return <Dashboard />;
