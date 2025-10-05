@@ -581,17 +581,38 @@ const Dashboard: React.FC = () => {
       });
     } catch (error: any) {
       console.error('Upload error:', error);
-      
-      // Extract error message from API response
-      const errorMessage = error?.data?.detail || error?.message || 'Analysis failed. Please try again.';
-      
+
+      // Determine error type and create appropriate message
+      let errorMessage: string;
+      let errorDetails: string = '';
+
+      if (error?.isTimeout) {
+        errorMessage = 'Request Timeout';
+        errorDetails = error.message;
+      } else if (error?.isNetworkError) {
+        errorMessage = 'Network Connection Failed';
+        errorDetails = error.message;
+      } else if (error?.status === 400) {
+        errorMessage = 'Invalid File or Data';
+        errorDetails = error?.data?.detail || error?.message || 'The uploaded file does not meet the required format or column requirements.';
+      } else if (error?.status === 500) {
+        errorMessage = 'Server Processing Error';
+        errorDetails = error?.data?.detail || error?.message || 'The server encountered an error while processing your file. This may be due to invalid data or a server issue.';
+      } else if (error?.status === 404) {
+        errorMessage = 'API Endpoint Not Found';
+        errorDetails = 'The upload endpoint is not available. Please check if the backend server is properly deployed.';
+      } else {
+        errorMessage = 'Upload Failed';
+        errorDetails = error?.data?.detail || error?.message || 'An unexpected error occurred. Please try again.';
+      }
+
       setAnalysisResult({
         confidence: 0,
         confirmed: null,
         error: errorMessage
       });
-      
-      setFileError(`Upload failed: ${errorMessage}`);
+
+      setFileError(`${errorMessage}: ${errorDetails}`);
     } finally {
       setIsAnalyzing(false);
     }

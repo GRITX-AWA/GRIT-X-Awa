@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:8000';
+// Toggle between local and production
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://grit-x-awa-1035421252747.europe-west1.run.app';
+// For local development: 'http://localhost:8000'
 
 export interface SpaceData {
   id: number;
@@ -138,26 +140,61 @@ class ApiService {
     formData.append('file', file);
 
     const url = `${API_BASE_URL}/api/v1/upload/csv`;
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-      // Don't set Content-Type header - browser will set it with boundary
-    });
 
-    if (!response.ok) {
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch {
-        errorData = null;
+    // Create AbortController for timeout (5 minutes for large datasets)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000); // 5 minutes
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+        // Don't set Content-Type header - browser will set it with boundary
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = null;
+        }
+        const error: any = new Error(errorData?.detail || `Upload failed: ${response.statusText}`);
+        error.status = response.status;
+        error.data = errorData;
+        throw error;
       }
-      const error: any = new Error(errorData?.detail || `Upload failed: ${response.statusText}`);
-      error.status = response.status;
-      error.data = errorData;
+
+      return response.json();
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+
+      // Handle specific error types
+      if (error.name === 'AbortError') {
+        const timeoutError: any = new Error(
+          'Upload timeout: Processing is taking longer than expected. This can happen with large datasets. ' +
+          'The prediction may still be running on the server. Try checking Recent Predictions in a few minutes.'
+        );
+        timeoutError.isTimeout = true;
+        throw timeoutError;
+      }
+
+      if (error.message === 'Failed to fetch') {
+        const networkError: any = new Error(
+          'Network error: Cannot connect to the server. Please check:\n' +
+          '1. Your internet connection\n' +
+          '2. The backend server is running\n' +
+          `3. API URL is correct: ${API_BASE_URL}`
+        );
+        networkError.isNetworkError = true;
+        throw networkError;
+      }
+
       throw error;
     }
-
-    return response.json();
   }
 
   /**

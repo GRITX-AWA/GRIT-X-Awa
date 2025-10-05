@@ -5,8 +5,34 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 BUCKET = os.getenv("SUPABASE_BUCKET", "nasa-csv")
 
+# Validate required environment variables
+_supabase_available = bool(SUPABASE_URL and SUPABASE_KEY)
+
+if not _supabase_available:
+    import warnings
+    warnings.warn(
+        "Supabase credentials not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY "
+        "environment variables to enable data persistence. Running in LOCAL MODE.",
+        UserWarning
+    )
+
 def get_supabase():
+    """
+    Get Supabase client instance.
+
+    Raises:
+        ValueError: If Supabase credentials are not configured
+    """
+    if not _supabase_available:
+        raise ValueError(
+            "Supabase is not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY "
+            "environment variables."
+        )
     return create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def is_supabase_available() -> bool:
+    """Check if Supabase credentials are configured"""
+    return _supabase_available
 
 def upload_file_bytes(path_in_bucket: str, file_bytes: bytes):
     sb = get_supabase()

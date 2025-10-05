@@ -44,10 +44,14 @@ async def upload_csv_file(file: UploadFile = File(...)):
 
         # 1. Upload to Supabase bucket
         try:
-            sb.upload_file_bytes(bucket_path, file_content)
-            file_url = sb.get_public_url(bucket_path)
+            if sb.is_supabase_available():
+                sb.upload_file_bytes(bucket_path, file_content)
+                file_url = sb.get_public_url(bucket_path)
+            else:
+                print(f"⚠️  Supabase not configured - skipping file upload")
+                file_url = f"local://{bucket_path}"  # Fallback for local dev
         except Exception as e:
-            print(f"Warning: Failed to upload file to Supabase: {str(e)}")
+            print(f"⚠️  Warning: Failed to upload file to Supabase: {str(e)}")
             file_url = f"local://{bucket_path}"  # Fallback for local dev
 
         # 2. Process CSV
@@ -65,13 +69,16 @@ async def upload_csv_file(file: UploadFile = File(...)):
             dataset_type=dataset_type
         )
         try:
-            sb.insert_upload_log({
-                **upload_log.model_dump(),
-                "upload_timestamp": timestamp,
-                "job_id": job_id
-            })
+            if sb.is_supabase_available():
+                sb.insert_upload_log({
+                    **upload_log.model_dump(),
+                    "upload_timestamp": timestamp,
+                    "job_id": job_id
+                })
+            else:
+                print(f"⚠️  Supabase not configured - skipping upload log")
         except Exception as e:
-            print(f"Warning: Failed to log upload: {str(e)}")
+            print(f"⚠️  Warning: Failed to log upload: {str(e)}")
             # Don't fail the request if logging fails
 
         # 4. Run predictions
@@ -103,9 +110,13 @@ async def upload_csv_file(file: UploadFile = File(...)):
 
         # 6. Save predictions to Supabase
         try:
-            sb.insert_batch_predictions(predictions_list)
+            if sb.is_supabase_available():
+                sb.insert_batch_predictions(predictions_list)
+                print(f"✅ Saved {len(predictions_list)} predictions to Supabase")
+            else:
+                print(f"⚠️  Supabase not configured - predictions not persisted to database")
         except Exception as e:
-            print(f"Warning: Failed to save predictions to Supabase: {str(e)}")
+            print(f"⚠️  Warning: Failed to save predictions to Supabase: {str(e)}")
             # Still return results even if saving fails
 
         # 7. Return response
@@ -121,5 +132,22 @@ async def upload_csv_file(file: UploadFile = File(...)):
 
     except HTTPException:
         raise
+    except ValueError as e:
+        # CSV validation or preprocessing errors
+        error_msg = str(e)
+        print(f"❌ Validation error: {error_msg}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Data validation error: {error_msg}"
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        # Unexpected errors with detailed logging
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Unexpected error in upload endpoint:")
+        print(error_trace)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server error while processing your file: {str(e)}. "
+                   f"Please check that your file contains valid data for either Kepler or TESS datasets."
+        )
