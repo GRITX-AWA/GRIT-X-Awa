@@ -218,8 +218,9 @@ class TessFeatureEngineer:
         Returns:
             DataFrame with ~66 engineered features
         """
-        # Start with base features only
-        df_processed = df[self.BASE_FEATURES].copy()
+        # Start with base features only (pl_pnum is optional - will be dropped anyway)
+        available_base_features = [f for f in self.BASE_FEATURES if f in df.columns]
+        df_processed = df[available_base_features].copy()
 
         # Apply winsorization
         df_processed = self.apply_winsorization(df_processed)

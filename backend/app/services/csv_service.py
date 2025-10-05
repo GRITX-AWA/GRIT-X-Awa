@@ -144,20 +144,25 @@ class CSVProcessor:
         metadata = models['metadata']
         feature_order = metadata['feature_order']
 
-        # Ensure we have all required base features
-        missing_features = set(feature_order) - set(df.columns)
+        # Ensure we have all required base features (pl_pnum is optional)
+        optional_features = {'pl_pnum'}  # pl_pnum is metadata, not required for predictions
+        missing_features = set(feature_order) - set(df.columns) - optional_features
         if missing_features:
             raise ValueError(f"Missing required features: {missing_features}")
+
+        # Add pl_pnum with default value of 1 if missing (single planet system assumption)
+        if 'pl_pnum' not in df.columns:
+            df['pl_pnum'] = 1
 
         # Apply feature engineering pipeline
         feature_engineer = TessFeatureEngineer()
         df_engineered = feature_engineer.engineer_features(df)
 
-        # Impute missing values using the trained imputer
-        imputer = models['imputer']
-        X_imputed = imputer.transform(df_engineered.values)
+        # Handle missing values (fill with 0 for robustness)
+        # Note: imputer.pkl contains feature names, not an actual imputer object
+        df_filled = df_engineered.fillna(0)
 
-        return X_imputed
+        return df_filled.values
 
     def polish_csv(self, df: pd.DataFrame, dataset_type: str = None) -> pd.DataFrame:
         """
