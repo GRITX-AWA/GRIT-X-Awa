@@ -249,7 +249,7 @@ class TessFeatureEngineer:
         else:
             df_final = df_numerical
 
-        # Drop features to match training data (going from 72 to 67 = drop 5)
+        # Drop features to match training data (going from 72 to 66 = drop 6)
         # These are either metadata, intermediate calculations, or redundant
         features_to_drop = [
             'pl_pnum',  # Metadata - number of planets
@@ -257,6 +257,7 @@ class TessFeatureEngineer:
             'pl_eqt',  # Replaced by pl_eqt_celsius
             'pl_eqt_celsius',  # Intermediate for habitable_temperature
             'transit_depth_normalized',  # Intermediate for transit_depth_anomaly
+            'transit_phase',  # Drop transit_phase to get to 66 features
         ]
 
         # Drop features that exist
@@ -266,8 +267,8 @@ class TessFeatureEngineer:
 
         print(f"DEBUG: Final feature count: {df_final.shape[1]}")
         print(f"DEBUG: Dropped {len(features_to_drop)} features: {features_to_drop}")
-        if df_final.shape[1] != 67:
-            print(f"WARNING: Expected 67 features but got {df_final.shape[1]}")
+        if df_final.shape[1] != 66:
+            print(f"WARNING: Expected 66 features but got {df_final.shape[1]}")
             print(f"All features: {list(df_final.columns)}")
 
         return df_final

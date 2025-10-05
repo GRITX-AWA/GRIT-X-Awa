@@ -130,15 +130,15 @@ class CSVProcessor:
 
     def preprocess_tess(self, df: pd.DataFrame) -> np.ndarray:
         """
-        Preprocess TESS dataset using feature engineering and trained imputer
+        Preprocess TESS dataset using winsorization and trained imputer
 
         Args:
             df: Raw DataFrame with TESS base features (17 features)
 
         Returns:
-            Preprocessed feature array ready for prediction (~66 engineered features)
+            Preprocessed feature array ready for prediction (17 features)
         """
-        from app.services.tess_feature_engineering import TessFeatureEngineer
+        from scipy.stats.mstats import winsorize
 
         models = self.model_loader.get_tess_models()
         metadata = models['metadata']
@@ -154,15 +154,19 @@ class CSVProcessor:
         if 'pl_pnum' not in df.columns:
             df['pl_pnum'] = 1
 
-        # Apply feature engineering pipeline
-        feature_engineer = TessFeatureEngineer()
-        df_engineered = feature_engineer.engineer_features(df)
+        # Select and order features according to training
+        df_ordered = df[feature_order].copy()
 
-        # Handle missing values (fill with 0 for robustness)
-        # Note: imputer.pkl contains feature names, not an actual imputer object
-        df_filled = df_engineered.fillna(0)
+        # Apply winsorization (1% on each tail) to handle outliers
+        for col in feature_order:
+            if col in df_ordered.columns:
+                df_ordered[col] = winsorize(df_ordered[col], limits=[0.01, 0.01])
 
-        return df_filled.values
+        # Apply imputation using trained imputer
+        imputer = models['imputer']
+        X_imputed = imputer.transform(df_ordered.values)
+
+        return X_imputed
 
     def polish_csv(self, df: pd.DataFrame, dataset_type: str = None) -> pd.DataFrame:
         """
