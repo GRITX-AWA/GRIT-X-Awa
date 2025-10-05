@@ -427,18 +427,16 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
                   );
                 })()}
 
-                {/* Average Certainty */}
+                {/* Average Confidence */}
                 {(() => {
-                  const avgCertainty = results.predictions.reduce((sum, p) => {
-                    const confidences = Object.values(p.confidence).sort((a, b) => b - a);
-                    const certainty = confidences.length > 1 ? (confidences[0] - confidences[1]) : 1;
-                    return sum + certainty;
+                  const avgConfidence = results.predictions.reduce((sum, p) => {
+                    return sum + p.confidence[p.predicted_class];
                   }, 0) / results.total_predictions;
                   return (
                     <div className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg p-4 border border-blue-300 dark:border-blue-600/50">
-                      <div className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">Avg Certainty</div>
-                      <div className="text-3xl font-bold text-gray-900 dark:text-white">{(avgCertainty * 100).toFixed(1)}%</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Prediction Clarity</div>
+                      <div className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">Avg Confidence</div>
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">{(avgConfidence * 100).toFixed(1)}%</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Model Certainty</div>
                     </div>
                   );
                 })()}
