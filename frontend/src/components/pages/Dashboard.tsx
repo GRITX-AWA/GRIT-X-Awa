@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useSharedState } from '../context/SharedContext';
 import DashboardSection from '../DashboardSection';
 import Modal from '../Modal';
-import RecentCard from '../RecentCard';
+import RecentActivity from '../RecentActivity';
 import { PredictionResults } from '../PredictionResults';
 import { apiService, type UploadResponse } from '../../services/api';
 
@@ -201,6 +201,9 @@ const Dashboard: React.FC = () => {
   const [showManualInputModal, setShowManualInputModal] = useState(false);
   const [showOptionalFieldsInManual, setShowOptionalFieldsInManual] = useState(false);
   const [isManualInputFullscreen, setIsManualInputFullscreen] = useState(false);
+
+  // Refs
+  const recentActivityRef = useRef<RecentActivityRef>(null);
 
   // Analysis States
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -1144,27 +1147,7 @@ const Dashboard: React.FC = () => {
 
         {/* Recent Activity */}
         <div className="md:col-span-1">
-          <DashboardSection
-            variant="nebula"
-            title="Recent Activity"
-            subtitle="Latest system events and updates"
-            icon={<i className="fas fa-history"></i>}
-          >
-            <div className="space-y-3">
-              <RecentCard commit="Transit detection model retrained" date="Today at 09:23" status="success" />
-              <RecentCard commit="New TESS data batch imported (Sector 56)" date="Yesterday at 14:32" status="success" />
-              <RecentCard commit="Hyperparameter tuning experiment" date="2 days ago at 11:45" status="pending" />
-              <RecentCard commit="Error in K2 data preprocessing" date="3 days ago at 16:20" status="error" />
-              <RecentCard commit="New candidate detected (TIC 260128333)" date="4 days ago at 08:17" status="success" />
-            </div>
-            
-            <div className="mt-6 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
-              <button className="w-full px-4 py-2.5 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 transition-colors rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20">
-                <i className="fas fa-list mr-2"></i>
-                View All Activity
-              </button>
-            </div>
-          </DashboardSection>
+          <RecentActivity ref={recentActivityRef} />
         </div>
       </div>
 
