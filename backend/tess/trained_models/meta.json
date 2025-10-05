@@ -20,5 +20,5 @@
   ],
   "weights": [0.4, 0.35, 0.25],
   "class_names": ["APC", "CP", "FA", "FP", "KP", "PC"],
-  "note": "Models trained with feature engineering pipeline. Requires 17 base features that are transformed into ~66 engineered features."
+  "note": "New TESS model - updated ensemble with improved predictions"
 }
