@@ -27,34 +27,34 @@ const HelpResources: React.FC = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <a
-                href="https://exoplanetarchive.ipac.caltech.edu/"
+                href="https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=cumulative"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-5 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-blue-500/20 hover:border-blue-500/60 hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="group p-5 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-green-500/20 hover:border-green-500/60 hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <i className="fas fa-archive text-blue-500 text-2xl mb-3 block"></i>
-                <h4 className="font-bold text-gray-800 dark:text-white mb-1">NASA Exoplanet Archive</h4>
+                <i className="fas fa-database text-green-500 text-2xl mb-3 block"></i>
+                <h4 className="font-bold text-gray-800 dark:text-white mb-1">Kepler Objects of Interest (KOI)</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Primary data source for Kepler and TESS exoplanet datasets
+                  Primary data source for Kepler exoplanet candidates
                 </p>
-                <span className="text-xs text-blue-500 group-hover:underline">
+                <span className="text-xs text-green-500 group-hover:underline">
                   exoplanetarchive.ipac.caltech.edu →
                 </span>
               </a>
 
               <a
-                href="https://exoplanets.nasa.gov/what-is-an-exoplanet/overview/"
+                href="https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=TOI"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-5 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-purple-500/20 hover:border-purple-500/60 hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="group p-5 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-green-500/20 hover:border-green-500/60 hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <i className="fas fa-globe text-purple-500 text-2xl mb-3 block"></i>
-                <h4 className="font-bold text-gray-800 dark:text-white mb-1">NASA Exoplanets</h4>
+                <i className="fas fa-database text-green-500 text-2xl mb-3 block"></i>
+                <h4 className="font-bold text-gray-800 dark:text-white mb-1">TESS Objects of Interest (TOI)</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Official NASA resource for exoplanet discovery and research
+                  Primary data source for TESS exoplanet candidates
                 </p>
-                <span className="text-xs text-purple-500 group-hover:underline">
-                  exoplanets.nasa.gov →
+                <span className="text-xs text-green-500 group-hover:underline">
+                  exoplanetarchive.ipac.caltech.edu →
                 </span>
               </a>
 
@@ -62,14 +62,14 @@ const HelpResources: React.FC = () => {
                 href="https://www.nasa.gov/mission_pages/kepler/overview/index.html"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-5 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-indigo-500/20 hover:border-indigo-500/60 hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="group p-5 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-yellow-500/20 hover:border-yellow-500/60 hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <i className="fas fa-satellite text-indigo-500 text-2xl mb-3 block"></i>
-                <h4 className="font-bold text-gray-800 dark:text-white mb-1">Kepler Mission</h4>
+                <i className="fas fa-satellite text-yellow-500 text-2xl mb-3 block"></i>
+                <h4 className="font-bold text-gray-800 dark:text-white mb-1">Kepler Space Telescope Mission</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                   Discover 9,564+ exoplanets with transit photometry data
                 </p>
-                <span className="text-xs text-indigo-500 group-hover:underline">
+                <span className="text-xs text-yellow-500 group-hover:underline">
                   nasa.gov/kepler →
                 </span>
               </a>
@@ -78,14 +78,14 @@ const HelpResources: React.FC = () => {
                 href="https://tess.mit.edu/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-5 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-pink-500/20 hover:border-pink-500/60 hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="group p-5 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-yellow-500/20 hover:border-yellow-500/60 hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <i className="fas fa-satellite-dish text-pink-500 text-2xl mb-3 block"></i>
-                <h4 className="font-bold text-gray-800 dark:text-white mb-1">TESS Mission</h4>
+                <i className="fas fa-satellite-dish text-yellow-500 text-2xl mb-3 block"></i>
+                <h4 className="font-bold text-gray-800 dark:text-white mb-1">Transiting Exoplanet Survey Satellite (TESS)</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Transiting Exoplanet Survey Satellite - All-sky survey data
+                  All-sky survey satellite discovering nearby exoplanets
                 </p>
-                <span className="text-xs text-pink-500 group-hover:underline">
+                <span className="text-xs text-yellow-500 group-hover:underline">
                   tess.mit.edu →
                 </span>
               </a>

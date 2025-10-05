@@ -169,12 +169,49 @@ class TessFeatureEngineer:
             df['transit_shape_proxy'] = df['pl_trandurh'] / np.sqrt(df['pl_trandep'] + 1)
             df['possible_binary'] = (df['transit_shape_proxy'] < df['transit_shape_proxy'].quantile(0.1)).astype(int)
 
+        # Handle uncertainty-based features (may not exist in all datasets)
+        if 'pl_trandeperr1' in df.columns and 'pl_trandep' in df.columns:
+            df['transit_depth_uncertainty_ratio'] = df['pl_trandeperr1'] / (df['pl_trandep'] + 1)
+            df['uncertain_detection'] = (df['transit_depth_uncertainty_ratio'] > 0.3).astype(int)
+        else:
+            # Create default values if error columns don't exist
+            df['transit_depth_uncertainty_ratio'] = 0.0
+            df['uncertain_detection'] = 0
+
         return df
 
     def create_statistical_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Statistical aggregation features"""
-        # These would use error columns which may not be present in prediction data
-        # We'll skip them for now or handle gracefully
+        # Create uncertainty ratio features if error columns exist
+        if 'pl_orbpererr1' in df.columns and 'pl_orbper' in df.columns:
+            df['period_uncertainty_ratio'] = df['pl_orbpererr1'] / (df['pl_orbper'] + 1e-10)
+        else:
+            df['period_uncertainty_ratio'] = 0.0
+
+        if 'pl_radeerr1' in df.columns and 'pl_rade' in df.columns:
+            df['radius_uncertainty_ratio'] = df['pl_radeerr1'] / (df['pl_rade'] + 1e-10)
+        else:
+            df['radius_uncertainty_ratio'] = 0.0
+
+        if 'st_raderr1' in df.columns and 'st_rad' in df.columns:
+            df['stellar_radius_uncertainty_ratio'] = df['st_raderr1'] / (df['st_rad'] + 1e-10)
+        else:
+            df['stellar_radius_uncertainty_ratio'] = 0.0
+
+        # Average measurement quality (using available ratios)
+        uncertainty_ratios = []
+        if 'period_uncertainty_ratio' in df.columns:
+            uncertainty_ratios.append(df['period_uncertainty_ratio'])
+        if 'radius_uncertainty_ratio' in df.columns:
+            uncertainty_ratios.append(df['radius_uncertainty_ratio'])
+        if 'stellar_radius_uncertainty_ratio' in df.columns:
+            uncertainty_ratios.append(df['stellar_radius_uncertainty_ratio'])
+
+        if uncertainty_ratios:
+            df['average_measurement_quality'] = np.mean(uncertainty_ratios, axis=0)
+        else:
+            df['average_measurement_quality'] = 0.0
+
         return df
 
     def engineer_features(self, df: pd.DataFrame) -> pd.DataFrame:
