@@ -1,8 +1,8 @@
-# Google Cloud Run Deployment Script for PowerShell
-# Usage: .\deploy.ps1 [-ProjectId "your-project-id"] [-Region "us-central1"]
+﻿# Google Cloud Run Deployment Script for PowerShell
+# Usage: .\deploy.ps1 [-ProjectId "your-project-id"] [-Region "europe-west1"]
 
 param(
-    [string]$ProjectId = "grit-x-awa-1035421252747",
+    [string]$ProjectId = "grit-x-awa",
     [string]$Region = "europe-west1"
 )
 
@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 $ServiceName = "grit-x-awa"
 $ImageName = "gcr.io/$ProjectId/$ServiceName"
 
-Write-Host "🚀 Starting deployment to Google Cloud Run" -ForegroundColor Blue
+Write-Host " Starting deployment to Google Cloud Run" -ForegroundColor Blue
 Write-Host "Project: $ProjectId" -ForegroundColor Blue
 Write-Host "Region: $Region" -ForegroundColor Blue
 Write-Host ""
@@ -20,13 +20,13 @@ Write-Host ""
 try {
     gcloud --version | Out-Null
 } catch {
-    Write-Host "❌ gcloud CLI is not installed. Please install it first." -ForegroundColor Red
+    Write-Host " gcloud CLI is not installed. Please install it first." -ForegroundColor Red
     exit 1
 }
 
 # Load environment variables from .env file
 if (Test-Path ".env") {
-    Write-Host "📋 Loading environment variables from .env..." -ForegroundColor Blue
+    Write-Host " Loading environment variables from .env..." -ForegroundColor Blue
     Get-Content .env | ForEach-Object {
         if ($_ -match '^([^=]+)=(.*)$') {
             $name = $matches[1]
@@ -37,17 +37,17 @@ if (Test-Path ".env") {
 }
 
 # Set the project
-Write-Host "📋 Setting project..." -ForegroundColor Blue
+Write-Host " Setting project..." -ForegroundColor Blue
 gcloud config set project $ProjectId
 
 # Enable required APIs
-Write-Host "🔧 Enabling required APIs..." -ForegroundColor Blue
+Write-Host " Enabling required APIs..." -ForegroundColor Blue
 gcloud services enable cloudbuild.googleapis.com
 gcloud services enable run.googleapis.com
 gcloud services enable containerregistry.googleapis.com
 
 # Build the Docker image
-Write-Host "🏗️  Building Docker image..." -ForegroundColor Blue
+Write-Host "  Building Docker image..." -ForegroundColor Blue
 docker build -t "${ImageName}:latest" .
 
 # Tag with timestamp
@@ -55,7 +55,7 @@ $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 docker tag "${ImageName}:latest" "${ImageName}:${Timestamp}"
 
 # Push to Google Container Registry
-Write-Host "⬆️  Pushing image to GCR..." -ForegroundColor Blue
+Write-Host "  Pushing image to GCR..." -ForegroundColor Blue
 docker push "${ImageName}:latest"
 docker push "${ImageName}:${Timestamp}"
 
@@ -65,7 +65,7 @@ $SupabaseServiceKey = $env:SUPABASE_SERVICE_ROLE_KEY
 $SupabaseAnonKey = $env:SUPABASE_ANON_KEY
 
 # Deploy to Cloud Run
-Write-Host "🚢 Deploying to Cloud Run..." -ForegroundColor Blue
+Write-Host " Deploying to Cloud Run..." -ForegroundColor Blue
 gcloud run deploy $ServiceName `
   --image "${ImageName}:latest" `
   --platform managed `
@@ -85,7 +85,7 @@ $ServiceUrl = gcloud run services describe $ServiceName `
   --format 'value(status.url)'
 
 Write-Host ""
-Write-Host "✅ Deployment successful!" -ForegroundColor Green
-Write-Host "🌐 Service URL: $ServiceUrl" -ForegroundColor Green
-Write-Host "📚 API Docs: $ServiceUrl/api/v1/docs" -ForegroundColor Green
+Write-Host " Deployment successful!" -ForegroundColor Green
+Write-Host " Service URL: $ServiceUrl" -ForegroundColor Green
+Write-Host " API Docs: $ServiceUrl/api/v1/docs" -ForegroundColor Green
 Write-Host ""
