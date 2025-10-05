@@ -169,20 +169,20 @@ class TessFeatureEngineer:
             df['transit_shape_proxy'] = df['pl_trandurh'] / np.sqrt(df['pl_trandep'] + 1)
             df['possible_binary'] = (df['transit_shape_proxy'] < df['transit_shape_proxy'].quantile(0.1)).astype(int)
 
-        # Handle uncertainty-based features (may not exist in all datasets)
+        # Handle uncertainty-based features (must always create for imputer compatibility)
         if 'pl_trandeperr1' in df.columns and 'pl_trandep' in df.columns:
             df['transit_depth_uncertainty_ratio'] = df['pl_trandeperr1'] / (df['pl_trandep'] + 1)
             df['uncertain_detection'] = (df['transit_depth_uncertainty_ratio'] > 0.3).astype(int)
         else:
-            # Create default values if error columns don't exist
+            # Create with zeros if error columns don't exist (for imputer compatibility)
             df['transit_depth_uncertainty_ratio'] = 0.0
             df['uncertain_detection'] = 0
 
         return df
 
     def create_statistical_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Statistical aggregation features"""
-        # Create uncertainty ratio features if error columns exist
+        """Statistical aggregation features - must create all for imputer compatibility"""
+        # Create uncertainty ratio features (with zeros if error columns don't exist)
         if 'pl_orbpererr1' in df.columns and 'pl_orbper' in df.columns:
             df['period_uncertainty_ratio'] = df['pl_orbpererr1'] / (df['pl_orbper'] + 1e-10)
         else:
@@ -198,19 +198,13 @@ class TessFeatureEngineer:
         else:
             df['stellar_radius_uncertainty_ratio'] = 0.0
 
-        # Average measurement quality (using available ratios)
-        uncertainty_ratios = []
-        if 'period_uncertainty_ratio' in df.columns:
-            uncertainty_ratios.append(df['period_uncertainty_ratio'])
-        if 'radius_uncertainty_ratio' in df.columns:
-            uncertainty_ratios.append(df['radius_uncertainty_ratio'])
-        if 'stellar_radius_uncertainty_ratio' in df.columns:
-            uncertainty_ratios.append(df['stellar_radius_uncertainty_ratio'])
-
-        if uncertainty_ratios:
-            df['average_measurement_quality'] = np.mean(uncertainty_ratios, axis=0)
-        else:
-            df['average_measurement_quality'] = 0.0
+        # Average measurement quality - always create for consistency
+        uncertainty_ratios = [
+            df['period_uncertainty_ratio'],
+            df['radius_uncertainty_ratio'],
+            df['stellar_radius_uncertainty_ratio']
+        ]
+        df['average_measurement_quality'] = np.mean(uncertainty_ratios, axis=0)
 
         return df
 
@@ -246,11 +240,23 @@ class TessFeatureEngineer:
         # Get categorical columns and one-hot encode
         categorical_cols = df_processed.select_dtypes(exclude=np.number).columns.tolist()
         if categorical_cols:
-            df_encoded = pd.get_dummies(df_processed, columns=categorical_cols, dummy_na=False)
+            # Try drop_first=True to avoid multicollinearity (reduces from 72 to 68)
+            df_encoded = pd.get_dummies(df_processed, columns=categorical_cols, dummy_na=False, drop_first=True)
             # Select only numerical after encoding
             numerical_cols_encoded = df_encoded.select_dtypes(include=np.number).columns.tolist()
             df_final = df_encoded[numerical_cols_encoded]
         else:
             df_final = df_numerical
+
+        # Drop pl_pnum as it's metadata, not a predictive feature
+        if 'pl_pnum' in df_final.columns:
+            df_final = df_final.drop(columns=['pl_pnum'])
+
+        # Note: Training script had target which they dropped to get 67 features
+        # With drop_first=True on 4 categoricals (-4) and dropping pl_pnum (-1),
+        # we should have 72 - 5 = 67 features
+
+        print(f"DEBUG: Final feature count: {df_final.shape[1]}")
+        print(f"DEBUG: Feature names: {list(df_final.columns[:20])}...")
 
         return df_final
