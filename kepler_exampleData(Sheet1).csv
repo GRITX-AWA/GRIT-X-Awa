@@ -1,4 +1,0 @@
-kepid,koi_pdisposition,koi_score,koi_fpflag_nt,koi_fpflag_ss,koi_fpflag_co,koi_fpflag_ec,koi_period,koi_impact,koi_duration,koi_depth,koi_prad,koi_teq,koi_insol,koi_model_snr,koi_tce_plnt_num,koi_steff,koi_slogg,koi_srad,ra,dec,koi_kepmag
-11904151,CANDIDATE,0.85,0,0,0,0,0.837,0.2,1.5,1000,1.2,1500,50,15,1,5500,4.4,1,291.4,48.9,12.5
-11446443,CONFIRMED,0.95,0,0,0,0,4.134,0.1,2.8,2000,2.5,800,20,25,1,5800,4.3,1.1,285.7,42,11.8
-10666592,FALSE POSITIVE,0.2,1,1,0,0,2.5,0.5,1,500,0.8,2000,100,5,2,6200,4.2,1.2,290.1,47.3,13.2
