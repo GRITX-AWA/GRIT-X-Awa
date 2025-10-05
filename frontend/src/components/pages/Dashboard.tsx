@@ -7,6 +7,8 @@ import type { RecentActivityRef } from '../RecentActivity';
 import RecentActivity from '../RecentActivity';
 import { PredictionResults } from '../PredictionResults';
 import { apiService, type UploadResponse } from '../../services/api';
+import { dataLoader } from '../../services/dataLoader';
+import MLAnalysisAnimation from '../MLAnalysisAnimation';
 
 // LocalStorage key for prediction results
 const LAST_PREDICTION_KEY = 'lastPredictionResults';
@@ -940,6 +942,59 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const loadSampleDataset = async () => {
+    setIsAnalyzing(true);
+    setFileError(null);
+    setFileInfoMessage(null);
+
+    try {
+      // Load random sample from the selected model's dataset
+      const datasetType = selectedModel; // 'kepler' or 'tess'
+      const sampleSize = 50; // Get 50 random rows
+
+      setFileInfoMessage(`🎲 Loading random sample from ${datasetType.toUpperCase()} dataset...`);
+
+      const sampleData = await dataLoader.loadRandomSample(datasetType, sampleSize);
+
+      if (!sampleData || sampleData.length === 0) {
+        throw new Error('No sample data received');
+      }
+
+      // Convert the sample data to CSV format
+      const headers = Object.keys(sampleData[0]);
+      const csvLines = [
+        headers.join(','), // Header row
+        ...sampleData.map(row =>
+          headers.map(header => {
+            const value = row[header];
+            // Handle values that might contain commas or quotes
+            if (value === null || value === undefined) return '';
+            const stringValue = String(value);
+            if (stringValue.includes(',') || stringValue.includes('"')) {
+              return `"${stringValue.replace(/"/g, '""')}"`;
+            }
+            return stringValue;
+          }).join(',')
+        )
+      ];
+      const csvContent = csvLines.join('\n');
+
+      // Create a File object from the CSV content
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const file = new File([blob], `sample_${datasetType}_${Date.now()}.csv`, { type: 'text/csv' });
+
+      // Set the file and trigger validation
+      setUploadedFile(file);
+      setFileInfoMessage(`✓ Loaded ${sampleData.length} random samples from ${datasetType.toUpperCase()} dataset! Ready for analysis.`);
+
+    } catch (error: any) {
+      console.error('Sample loading error:', error);
+      setFileError(`Failed to load sample dataset: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const addManualRow = () => {
     setManualData([...manualData, {}]);
   };
@@ -1206,13 +1261,29 @@ const Dashboard: React.FC = () => {
                           className="hidden"
                           id="file-upload-cosmic"
                         />
-                        <label
-                          htmlFor="file-upload-cosmic"
-                          className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-xl cursor-pointer transition-all hover:scale-105"
-                        >
-                          <i className="fas fa-folder-open mr-2"></i>
-                          Choose File
-                        </label>
+                        <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+                          <label
+                            htmlFor="file-upload-cosmic"
+                            className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-xl cursor-pointer transition-all hover:scale-105"
+                          >
+                            <i className="fas fa-folder-open mr-2"></i>
+                            Choose File
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={loadSampleDataset}
+                            disabled={isAnalyzing}
+                            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                          >
+                            <i className="fas fa-dice mr-2"></i>
+                            {isAnalyzing ? 'Loading...' : 'Try Sample Dataset'}
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 italic">
+                          <i className="fas fa-info-circle mr-1"></i>
+                          The sample dataset loads 50 random exoplanets from NASA's {selectedModel.toUpperCase()} dataset
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1754,6 +1825,9 @@ const Dashboard: React.FC = () => {
           fileData={lastUploadedFileData}
         />
       )}
+
+      {/* ML Analysis Animation */}
+      <MLAnalysisAnimation isAnalyzing={isAnalyzing} modelType={selectedModel} />
     </div>
   );
 };

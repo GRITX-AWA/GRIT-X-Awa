@@ -101,7 +101,7 @@ export default function SideBar() {
         {/* Team badge */}
         <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-lg border border-purple-400/30 dark:border-purple-500/20">
           <i className="fas fa-users text-purple-600 dark:text-purple-400 text-xs"></i>
-          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">GRIT-X AWA Team</span>
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">Team GRIT-X AWA </span>
           <div className="ml-auto flex -space-x-1 flex-shrink-0">
             <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white dark:border-slate-900"></div>
             <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-white dark:border-slate-900"></div>

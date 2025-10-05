@@ -356,6 +356,37 @@ class DataLoader {
   async cleanExpiredCache(): Promise<number> {
     return await indexedDBCache.cleanExpired();
   }
+
+  /**
+   * Load a random sample from a dataset (for demo purposes)
+   * @param datasetType - Type of dataset ('kepler' or 'tess')
+   * @param sampleSize - Number of random rows to fetch
+   * @returns Random sample of data
+   */
+  async loadRandomSample(datasetType: DatasetType, sampleSize: number = 50): Promise<any[]> {
+    const metadata = await this.loadMetadata(datasetType);
+
+    // Pick a random chunk
+    const randomChunkIndex = Math.floor(Math.random() * metadata.total_chunks);
+    console.log(`🎲 Loading random sample from ${datasetType} chunk ${randomChunkIndex}/${metadata.total_chunks - 1}`);
+
+    // Load the random chunk
+    const chunk = await this.loadChunk(datasetType, randomChunkIndex);
+
+    // If chunk has fewer items than requested, just return the chunk
+    if (chunk.length <= sampleSize) {
+      return chunk;
+    }
+
+    // Randomly select items from the chunk using Fisher-Yates shuffle
+    const shuffled = [...chunk];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled.slice(0, sampleSize);
+  }
 }
 
 // Singleton instance
