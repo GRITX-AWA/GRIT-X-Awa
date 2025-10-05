@@ -240,23 +240,33 @@ class TessFeatureEngineer:
         # Get categorical columns and one-hot encode
         categorical_cols = df_processed.select_dtypes(exclude=np.number).columns.tolist()
         if categorical_cols:
-            # Try drop_first=True to avoid multicollinearity (reduces from 72 to 68)
-            df_encoded = pd.get_dummies(df_processed, columns=categorical_cols, dummy_na=False, drop_first=True)
+            # Use drop_first=False to match training (keeps all dummy variables)
+            df_encoded = pd.get_dummies(df_processed, columns=categorical_cols, dummy_na=False, drop_first=False)
             # Select only numerical after encoding
             numerical_cols_encoded = df_encoded.select_dtypes(include=np.number).columns.tolist()
             df_final = df_encoded[numerical_cols_encoded]
         else:
             df_final = df_numerical
 
-        # Drop pl_pnum as it's metadata, not a predictive feature
-        if 'pl_pnum' in df_final.columns:
-            df_final = df_final.drop(columns=['pl_pnum'])
+        # Drop features to match training data (going from 72 to 67 = drop 5)
+        # These are either metadata, intermediate calculations, or redundant
+        features_to_drop = [
+            'pl_pnum',  # Metadata - number of planets
+            'pl_tranmid',  # Used to create transit_phase
+            'pl_eqt',  # Replaced by pl_eqt_celsius
+            'pl_eqt_celsius',  # Intermediate for habitable_temperature
+            'transit_depth_normalized',  # Intermediate for transit_depth_anomaly
+        ]
 
-        # Note: Training script had target which they dropped to get 67 features
-        # With drop_first=True on 4 categoricals (-4) and dropping pl_pnum (-1),
-        # we should have 72 - 5 = 67 features
+        # Drop features that exist
+        features_to_drop = [col for col in features_to_drop if col in df_final.columns]
+        if features_to_drop:
+            df_final = df_final.drop(columns=features_to_drop)
 
         print(f"DEBUG: Final feature count: {df_final.shape[1]}")
-        print(f"DEBUG: Feature names: {list(df_final.columns[:20])}...")
+        print(f"DEBUG: Dropped {len(features_to_drop)} features: {features_to_drop}")
+        if df_final.shape[1] != 67:
+            print(f"WARNING: Expected 67 features but got {df_final.shape[1]}")
+            print(f"All features: {list(df_final.columns)}")
 
         return df_final

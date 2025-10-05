@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useExoplanet } from '../../contexts/ExoplanetContext';
 import ExoplanetVisualization3D from './analysis/ExoplanetVisualization3D';
 
@@ -153,6 +153,13 @@ const Visualizations: React.FC = () => {
   // Determine if we're showing multiple planets or a single planet
   const isMultipleMode = selectedExoplanets && selectedExoplanets.length > 0;
   const hasSelection = selectedExoplanet || isMultipleMode;
+
+  // Scroll to top when exoplanets are loaded (from predictions)
+  useEffect(() => {
+    if (hasSelection) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [hasSelection]);
 
   // Sample data for examples
   const sampleTessData = {

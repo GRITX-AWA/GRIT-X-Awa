@@ -283,6 +283,203 @@ const HelpResources: React.FC = () => {
             </div>
           </div>
 
+          {/* Technologies Used */}
+          <div className="space-y-3">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+              <i className="fas fa-cogs text-green-500"></i>
+              Technologies Used
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Frontend Stack */}
+              <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-700/50">
+                <h4 className="font-bold text-blue-700 dark:text-blue-300 mb-3 flex items-center gap-2">
+                  <i className="fas fa-desktop text-sm"></i>
+                  Frontend
+                </h4>
+                <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center gap-2">
+                    <i className="fab fa-react text-cyan-500"></i>
+                    <span><strong>React</strong> - UI Components</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-star text-orange-500"></i>
+                    <span><strong>Astro</strong> - SSR Framework</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-code text-blue-600"></i>
+                    <span><strong>TypeScript</strong> - Type Safety</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-wind text-teal-500"></i>
+                    <span><strong>Tailwind CSS</strong> - Styling</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-cube text-purple-500"></i>
+                    <span><strong>Three.js</strong> - 3D Graphics</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-chart-line text-pink-500"></i>
+                    <span><strong>Plotly.js</strong> - Visualizations</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Backend Stack */}
+              <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-700/50">
+                <h4 className="font-bold text-green-700 dark:text-green-300 mb-3 flex items-center gap-2">
+                  <i className="fas fa-server text-sm"></i>
+                  Backend
+                </h4>
+                <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center gap-2">
+                    <i className="fab fa-python text-blue-500"></i>
+                    <span><strong>Python</strong> 3.11 - Core Language</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-rocket text-teal-500"></i>
+                    <span><strong>FastAPI</strong> - Web Framework</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-database text-green-600"></i>
+                    <span><strong>SQLAlchemy</strong> - ORM</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-database text-green-500"></i>
+                    <span><strong>Supabase</strong> - PostgreSQL DB</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-table text-orange-500"></i>
+                    <span><strong>Pandas</strong> - Data Processing</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-calculator text-blue-600"></i>
+                    <span><strong>NumPy</strong> - Numerical Computing</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ML Stack */}
+              <div className="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200/50 dark:border-purple-700/50">
+                <h4 className="font-bold text-purple-700 dark:text-purple-300 mb-3 flex items-center gap-2">
+                  <i className="fas fa-brain text-sm"></i>
+                  Machine Learning
+                </h4>
+                <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-network-wired text-orange-500"></i>
+                    <span><strong>TensorFlow</strong> - Deep Learning</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-flask text-blue-500"></i>
+                    <span><strong>Scikit-learn</strong> - ML Utilities</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-chart-bar text-red-500"></i>
+                    <span><strong>XGBoost</strong> - Gradient Boosting</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-chart-bar text-yellow-500"></i>
+                    <span><strong>LightGBM</strong> - Gradient Boosting</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-chart-bar text-green-500"></i>
+                    <span><strong>CatBoost</strong> - Gradient Boosting</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-layer-group text-purple-500"></i>
+                    <span><strong>Ensemble</strong> - Weighted Voting</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Development Tools & Infrastructure */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <i className="fas fa-tools text-gray-400 text-sm"></i>
+              <span className="text-sm">Development Tools & Infrastructure</span>
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              <a
+                href="https://cloud.google.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-blue-400/50 transition-all text-center"
+                title="Google Cloud Platform"
+              >
+                <i className="fab fa-google text-blue-500 text-lg mb-1 block"></i>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Google Cloud</span>
+              </a>
+
+              <a
+                href="https://supabase.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-green-400/50 transition-all text-center"
+                title="Supabase"
+              >
+                <i className="fas fa-database text-green-500 text-lg mb-1 block"></i>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Supabase</span>
+              </a>
+
+              <a
+                href="https://vercel.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-gray-900/50 dark:hover:border-gray-100/50 transition-all text-center"
+                title="Vercel"
+              >
+                <i className="fas fa-bolt text-gray-900 dark:text-white text-lg mb-1 block"></i>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Vercel</span>
+              </a>
+
+              <a
+                href="https://www.docker.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-blue-500/50 transition-all text-center"
+                title="Docker"
+              >
+                <i className="fab fa-docker text-blue-500 text-lg mb-1 block"></i>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Docker</span>
+              </a>
+
+              <a
+                href="https://github.com/features/copilot"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-purple-400/50 transition-all text-center"
+                title="GitHub Copilot"
+              >
+                <i className="fab fa-github text-gray-700 dark:text-gray-300 text-lg mb-1 block"></i>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Copilot</span>
+              </a>
+
+              <a
+                href="https://www.anthropic.com/claude"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-orange-400/50 transition-all text-center"
+                title="Claude AI"
+              >
+                <i className="fas fa-robot text-orange-500 text-lg mb-1 block"></i>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Claude</span>
+              </a>
+
+              <a
+                href="https://openai.com/chatgpt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-teal-400/50 transition-all text-center"
+                title="ChatGPT"
+              >
+                <i className="fas fa-comments text-teal-500 text-lg mb-1 block"></i>
+                <span className="text-xs text-gray-600 dark:text-gray-400">ChatGPT</span>
+              </a>
+            </div>
+          </div>
+
           {/* Data Attribution */}
           <div className="p-5 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 border border-gray-300/50 dark:border-gray-700/50">
             <h3 className="text-sm font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">

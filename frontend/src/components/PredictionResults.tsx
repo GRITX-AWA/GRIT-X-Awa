@@ -89,20 +89,6 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
     URL.revokeObjectURL(url);
   };
 
-  const viewInExoplanets = async () => {
-    try {
-      setLoadingAction('exoplanets');
-      // Navigate to exoplanets page
-      setActivePage('exoplanets');
-      onClose();
-    } catch (error) {
-      console.error('Error navigating to exoplanets:', error);
-      alert('Failed to navigate to exoplanets page');
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
   const viewAll3D = async () => {
     try {
       setLoadingAction('3d-all');
@@ -123,6 +109,37 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
         if (lines.length > 1) {
           const headers = lines[0].split(',').map(h => h.trim());
           const exoplanets = [];
+          const datasetType = results.dataset_type as 'kepler' | 'tess';
+          
+          // Field mapping for different naming conventions
+          const fieldMap: Record<string, string> = {
+            // Kepler mappings
+            'kepoi_name': 'kepler_name',
+            'koi_period': 'koi_period',
+            'koi_prad': 'koi_prad',
+            'koi_teq': 'koi_teq',
+            'koi_insol': 'koi_insol',
+            'koi_sma': 'koi_sma',
+            'koi_depth': 'koi_depth',
+            'koi_duration': 'koi_duration',
+            'koi_steff': 'koi_steff',
+            'koi_srad': 'koi_srad',
+            'koi_disposition': 'koi_disposition',
+            
+            // TESS mappings
+            'tic_id': 'tid',
+            'toi_id': 'toi',
+            'pl_name': 'pl_name',
+            'pl_rade': 'pl_rade',
+            'pl_orbper': 'pl_orbper',
+            'pl_eqt': 'pl_eqt',
+            'pl_insol': 'pl_insol',
+            'st_rad': 'st_rad',
+            'st_teff': 'st_teff',
+            'sy_dist': 'sy_dist',
+            'st_dist': 'st_dist',
+            'pl_orbsmax': 'pl_orbsmax',
+          };
           
           // Parse each row (skip header)
           for (let i = 1; i < Math.min(lines.length, 101); i++) { // Limit to 100 exoplanets for performance
@@ -131,30 +148,51 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
             
             headers.forEach((header, index) => {
               const value = values[index];
+              const mappedHeader = fieldMap[header] || header;
+              
               // Convert numeric values
-              if (value && !isNaN(Number(value))) {
-                rowData[header] = Number(value);
-              } else {
-                rowData[header] = value;
+              if (value && value !== '' && !isNaN(Number(value))) {
+                rowData[mappedHeader] = Number(value);
+              } else if (value && value !== '') {
+                rowData[mappedHeader] = value;
               }
             });
+            
+            // Generate proper ID based on dataset type
+            if (datasetType === 'kepler') {
+              if (rowData.kepid) {
+                rowData.id = `${rowData.kepid}-${rowData.kepler_name || 'unnamed'}`;
+              } else {
+                rowData.id = `kepler-${i}`;
+              }
+            } else {
+              if (rowData.tid) {
+                rowData.id = `${rowData.tid}-${rowData.toi || i}`;
+              } else {
+                rowData.id = `tess-${i}`;
+              }
+            }
             
             exoplanets.push(rowData);
           }
           
-          // Determine dataset type and set in context
-          const datasetType = results.dataset_type as 'kepler' | 'tess';
           setSelectedExoplanets(exoplanets, datasetType);
           
-          console.log(`Loaded ${exoplanets.length} exoplanets for 3D visualization`);
+          console.log(`Loaded ${exoplanets.length} ${datasetType} exoplanets for 3D visualization`, exoplanets[0]);
         }
       } else {
         console.warn('No file data available for 3D visualization');
         alert('Unable to load exoplanet data for 3D visualization. Please re-run the prediction.');
       }
       
-      // Navigate to visualizations page
+      // Navigate to visualizations page - scroll to top to show 3D view first
       setActivePage('visualizations');
+      
+      // Small delay to ensure page loads, then scroll to top
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+      
       onClose();
     } catch (error) {
       console.error('Error navigating to 3D view:', error);
@@ -260,16 +298,6 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
             <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700/50 p-6">
               <div className="flex flex-wrap gap-4 items-center justify-between">
                 <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={viewInExoplanets}
-                    disabled={loadingAction === 'exoplanets'}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl transition-all duration-200 flex items-center gap-3 font-semibold shadow-lg hover:shadow-purple-500/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    View in Exoplanets
-                  </button>
                   <button
                     onClick={viewAll3D}
                     disabled={loadingAction === '3d-all'}

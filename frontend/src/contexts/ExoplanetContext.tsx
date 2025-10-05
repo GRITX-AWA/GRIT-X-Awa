@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 
 interface ExoplanetData {
+  // Unique identifier
+  id?: string | number;
+  
   // Kepler format
   kepid?: number;
   kepler_name?: string;
@@ -17,16 +20,20 @@ interface ExoplanetData {
   koi_srad?: number;
 
   // TESS format
-  tic_id?: number;
-  toi_id?: number;
+  tid?: number;        // TIC ID (TESS Input Catalog ID)
+  toi?: number;        // TOI (TESS Object of Interest)
+  tic_id?: number;     // Alternative naming
+  toi_id?: number;     // Alternative naming
   pl_name?: string;
   pl_rade?: number;
   pl_orbper?: number;
   pl_eqt?: number;
+  pl_insol?: number;
   pl_orbsmax?: number;
   st_rad?: number;
   st_teff?: number;
-  sy_dist?: number;
+  sy_dist?: number;  // Legacy Kepler field
+  st_dist?: number;  // TESS field for stellar/system distance
 }
 
 interface ExoplanetContextType {
@@ -66,9 +73,11 @@ export const ExoplanetProvider: React.FC<{ children: ReactNode }> = ({ children 
   const removeExoplanet = (data: ExoplanetData) => {
     setSelectedExoplanetsState(prev =>
       prev.filter(planet => {
-        // Compare by unique identifier
-        if (planet.kepid) return planet.kepid !== data.kepid;
-        if (planet.tic_id) return planet.tic_id !== data.tic_id;
+        // Compare by unique identifier - prioritize 'id' field
+        if (planet.id && data.id) return planet.id !== data.id;
+        if (planet.kepid && data.kepid) return planet.kepid !== data.kepid;
+        if (planet.tid && data.tid) return planet.tid !== data.tid;
+        if (planet.tic_id && data.tic_id) return planet.tic_id !== data.tic_id;
         return true;
       })
     );
