@@ -6,18 +6,20 @@ import { SharedProvider } from './context/SharedContext';
 import { ExoplanetProvider } from '../contexts/ExoplanetContext';
 import { ThemeProvider } from './ThemeContext';
 
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Dashboard = lazy(() =>
+  import('./pages/Dashboard').then((module) => ({ default: (module as any).default }))
+);
 const Exoplanets = lazy(() => import('./pages/Exoplanets'));
 const Analysis = lazy(() => import('./pages/Analysis'));
 const Visualizations = lazy(() => import('./pages/Visualizations'));
 const HelpResources = lazy(() => import('./pages/HelpResources'));
 const Settings = lazy(() => import('./pages/Settings'));
 
-// This context will allow child components to access and update the active page
+{{ ... }}
 export const PageContext = React.createContext({
   activePage: 'dashboard',
   setActivePage: (page: string) => {},
-});
+{{ ... }}
 
 const DashboardLayoutComponent = () => {
   const [activePage, setActivePage] = useState('dashboard');
