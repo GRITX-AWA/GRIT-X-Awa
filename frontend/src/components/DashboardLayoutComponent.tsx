@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, lazy, Suspense, useEffect, startTransition } from 'react';
 import SideBar from './sideBar';
 import ThemeToggle from './ThemeToggle';
 import FontSizeToggle from './FontSizeToggle';
@@ -27,14 +27,20 @@ const DashboardLayoutComponent = () => {
   // Define a function to update the active page with transition
   const handleSetActivePage = useCallback((page: string) => {
     if (page !== activePage) {
-      setIsTransitioning(true);
+      startTransition(() => {
+        setIsTransitioning(true);
+      });
       // Wait for fade out animation
       setTimeout(() => {
-        setActivePage(page);
-        setDisplayPage(page);
+        startTransition(() => {
+          setActivePage(page);
+          setDisplayPage(page);
+        });
         // Wait a tiny bit then fade in
         setTimeout(() => {
-          setIsTransitioning(false);
+          startTransition(() => {
+            setIsTransitioning(false);
+          });
         }, 50);
       }, 200);
     }

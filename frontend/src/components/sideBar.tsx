@@ -39,14 +39,10 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick, gradi
 export default function SideBar() {
   const { activePage, setActivePage } = useContext(PageContext);
   const { darkMode } = useContext(ThemeContext);
-  const [isDatasetOpen, setIsDatasetOpen] = useState(false);
   const [isModelsOpen, setIsModelsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  console.log('SideBar rendered with activePage:', activePage);
-
   const handlePageChange = (page: string) => {
-    console.log('Changing page to:', page);
     setActivePage(page);
     setIsMobileMenuOpen(false); // Close mobile menu after navigation
   };
