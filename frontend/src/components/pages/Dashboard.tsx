@@ -26,6 +26,105 @@ interface Hyperparameters {
   optimizer: 'adam' | 'sgd' | 'rmsprop';
 }
 
+// Model Performance Metrics
+interface IndividualModelScore {
+  name: string;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+  color: string;
+  icon: string;
+}
+
+interface ModelMetrics {
+  ensembleAccuracy: number;
+  ensemblePrecision: number;
+  ensembleRecall: number;
+  ensembleF1Score: number;
+  modelName: string;
+  description: string;
+  individualModels: IndividualModelScore[];
+}
+
+// Model metrics data from training notebooks - Test Set Performance
+const modelMetricsData: Record<MLModel, ModelMetrics> = {
+  tess: {
+    ensembleAccuracy: 0.9257,
+    ensemblePrecision: 0.9253,
+    ensembleRecall: 0.9257,
+    ensembleF1Score: 0.9252,
+    modelName: 'TESS Exoplanet Classification',
+    description: 'Ensemble of 3 gradient boosting models with weighted voting',
+    individualModels: [
+      {
+        name: 'XGBoost',
+        accuracy: 0.9217,
+        precision: 0.9214,
+        recall: 0.9217,
+        f1Score: 0.9213,
+        color: 'from-red-500 to-orange-500',
+        icon: 'fa-fire'
+      },
+      {
+        name: 'LightGBM',
+        accuracy: 0.9189,
+        precision: 0.9186,
+        recall: 0.9189,
+        f1Score: 0.9185,
+        color: 'from-green-500 to-emerald-500',
+        icon: 'fa-bolt'
+      },
+      {
+        name: 'CatBoost',
+        accuracy: 0.9211,
+        precision: 0.9208,
+        recall: 0.9211,
+        f1Score: 0.9207,
+        color: 'from-blue-500 to-cyan-500',
+        icon: 'fa-cat'
+      }
+    ]
+  },
+  kepler: {
+    ensembleAccuracy: 0.9394,
+    ensemblePrecision: 0.9066,
+    ensembleRecall: 0.9028,
+    ensembleF1Score: 0.9381,
+    modelName: 'Kepler Exoplanet Classification',
+    description: 'Ensemble of 3 gradient boosting models with weighted voting',
+    individualModels: [
+      {
+        name: 'XGBoost',
+        accuracy: 0.9354,
+        precision: 0.9012,
+        recall: 0.8987,
+        f1Score: 0.9341,
+        color: 'from-red-500 to-orange-500',
+        icon: 'fa-fire'
+      },
+      {
+        name: 'LightGBM',
+        accuracy: 0.9323,
+        precision: 0.8976,
+        recall: 0.8951,
+        f1Score: 0.9310,
+        color: 'from-green-500 to-emerald-500',
+        icon: 'fa-bolt'
+      },
+      {
+        name: 'CatBoost',
+        accuracy: 0.9338,
+        precision: 0.8994,
+        recall: 0.8969,
+        f1Score: 0.9325,
+        color: 'from-blue-500 to-cyan-500',
+        icon: 'fa-cat'
+      }
+    ]
+  }
+};
+
 // Hyperparameter Slider Component
 interface HyperparamSliderProps {
   id: string;
@@ -181,6 +280,172 @@ const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, o
           </p>
         </div>
       )}
+    </div>
+  );
+};
+
+// Model Metrics Display Component
+interface ModelMetricsDisplayProps {
+  metrics: ModelMetrics;
+  modelType: MLModel;
+}
+
+const ModelMetricsDisplay: React.FC<ModelMetricsDisplayProps> = ({ metrics, modelType }) => {
+  const ensembleMetrics = [
+    {
+      name: 'Accuracy',
+      value: metrics.ensembleAccuracy,
+      icon: 'fa-bullseye',
+      color: 'from-purple-500 to-pink-600',
+      description: 'Overall prediction correctness'
+    },
+    {
+      name: 'Precision',
+      value: metrics.ensemblePrecision,
+      icon: 'fa-crosshairs',
+      color: 'from-blue-500 to-cyan-600',
+      description: 'Positive prediction accuracy'
+    },
+    {
+      name: 'Recall',
+      value: metrics.ensembleRecall,
+      icon: 'fa-search-plus',
+      color: 'from-green-500 to-emerald-600',
+      description: 'Actual positives found'
+    },
+    {
+      name: 'F1-Score',
+      value: metrics.ensembleF1Score,
+      icon: 'fa-balance-scale',
+      color: 'from-orange-500 to-red-600',
+      description: 'Balanced performance measure'
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Model Info Header */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-5 border border-indigo-200 dark:border-indigo-800">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shadow-lg">
+            <i className="fas fa-brain text-white text-xl"></i>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-gray-900 dark:text-white text-lg">{metrics.modelName}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{metrics.description}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-indigo-300 dark:border-indigo-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Dataset</p>
+            <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400 uppercase">{modelType}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Ensemble Performance - Main Metrics */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <i className="fas fa-trophy text-yellow-500 text-lg"></i>
+          <h4 className="font-bold text-gray-900 dark:text-white">Ensemble Performance</h4>
+          <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded-full font-semibold">Best Results</span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {ensembleMetrics.map((metric) => (
+            <div
+              key={metric.name}
+              className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className={`w-10 h-10 bg-gradient-to-br ${metric.color} rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
+                  <i className={`fas ${metric.icon} text-white text-sm`}></i>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {(metric.value * 100).toFixed(2)}%
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">{metric.name}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{metric.description}</div>
+                {/* Progress bar */}
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                  <div
+                    className={`h-2 bg-gradient-to-r ${metric.color} rounded-full transition-all duration-1000 ease-out`}
+                    style={{ width: `${metric.value * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Individual Models Performance */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <i className="fas fa-layer-group text-indigo-500 text-lg"></i>
+          <h4 className="font-bold text-gray-900 dark:text-white">Individual Model Performance</h4>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {metrics.individualModels.map((model) => (
+            <div
+              key={model.name}
+              className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-800/50 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:scale-102"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-12 h-12 bg-gradient-to-br ${model.color} rounded-lg flex items-center justify-center shadow-md`}>
+                  <i className={`fas ${model.icon} text-white text-lg`}></i>
+                </div>
+                <div>
+                  <h5 className="font-bold text-gray-900 dark:text-white text-lg">{model.name}</h5>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Gradient Boosting</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Accuracy</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">{(model.accuracy * 100).toFixed(2)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div className={`h-1.5 bg-gradient-to-r ${model.color} rounded-full transition-all duration-1000`} style={{ width: `${model.accuracy * 100}%` }}></div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2 pt-2">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Precision</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{(model.precision * 100).toFixed(1)}%</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Recall</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{(model.recall * 100).toFixed(1)}%</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">F1</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{(model.f1Score * 100).toFixed(1)}%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Comparison Info */}
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i className="fas fa-lightbulb text-white text-sm"></i>
+          </div>
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            <p className="font-semibold mb-1">Why Ensemble?</p>
+            <p className="text-xs leading-relaxed">
+              The ensemble model combines predictions from all three algorithms using weighted voting (40% CatBoost, 35% XGBoost, 25% LightGBM). 
+              This approach leverages the strengths of each model to achieve higher accuracy and more reliable predictions than any single model alone.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -440,13 +705,6 @@ const Dashboard: React.FC = () => {
     { name: "Precision", value: 92.8, description: "Ratio of correct positive predictions to total positive predictions" },
     { name: "Recall", value: 91.5, description: "Ratio of correct positive predictions to all actual positives" },
     { name: "F1 Score", value: 92.1, description: "Harmonic mean of precision and recall" }
-  ];
-
-  const modelMetricsWithIcons = [
-    { name: "Accuracy", value: 94.2, icon: "fa-bullseye", color: "from-blue-500 to-cyan-500" },
-    { name: "Precision", value: 92.8, icon: "fa-crosshairs", color: "from-purple-500 to-pink-500" },
-    { name: "Recall", value: 91.5, icon: "fa-chart-line", color: "from-green-500 to-emerald-500" },
-    { name: "F1 Score", value: 92.1, icon: "fa-star", color: "from-orange-500 to-red-500" }
   ];
 
   // Model Change Handler
@@ -761,31 +1019,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Model Metrics Overview */}
-      <DashboardSection
-        variant="cosmic"
-        title="Model Performance"
-        subtitle="Current ML model accuracy metrics"
-        icon={<i className="fas fa-chart-bar"></i>}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          {modelMetricsWithIcons.map((metric, idx) => (
-            <div key={idx} className="group relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-white/80 to-white/40 dark:from-gray-800/80 dark:to-gray-800/40 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <div className="flex items-start justify-between mb-3">
-                <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${metric.color} flex items-center justify-center shadow-lg`}>
-                  <i className={`fas ${metric.icon} text-white text-xl`}></i>
-                </div>
-                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">{metric.name}</span>
-              </div>
-              <p className="text-3xl font-bold text-gray-800 dark:text-white mb-1">{metric.value}%</p>
-              <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div className={`h-full bg-gradient-to-r ${metric.color} rounded-full transition-all duration-1000`} style={{ width: `${metric.value}%` }}></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </DashboardSection>
-
       {/* ML Model Selection & Prediction */}
       <DashboardSection
         variant="nebula"
@@ -849,6 +1082,19 @@ const Dashboard: React.FC = () => {
               optionalColumns={optionalColumns[selectedModel]}
               columnDescriptions={columnDescriptions}
             />
+          </div>
+
+          {/* Model Performance Metrics Section */}
+          <div className="space-y-4" key={`metrics-${selectedModel}`}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300 dark:via-purple-700 to-transparent"></div>
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <i className="fas fa-chart-line text-purple-600 dark:text-purple-400"></i>
+                Model Performance Metrics
+              </h3>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300 dark:via-purple-700 to-transparent"></div>
+            </div>
+            <ModelMetricsDisplay metrics={modelMetricsData[selectedModel]} modelType={selectedModel} />
           </div>
 
           {/* Input Mode Tabs */}
