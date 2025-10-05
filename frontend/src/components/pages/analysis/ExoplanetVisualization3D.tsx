@@ -21,13 +21,13 @@ interface ExoplanetData {
   koi_srad?: number;
 
   // TESS format
-  tic_id?: number;
-  toi_id?: number;
+  tid?: number;        // TIC ID (TESS Input Catalog ID)
+  toi?: number;        // TOI (TESS Object of Interest)
   pl_name?: string;
   pl_rade?: number;
   pl_orbper?: number;
   pl_eqt?: number;
-  pl_orbsmax?: number;
+  pl_insol?: number;
   st_rad?: number;
   st_teff?: number;
   sy_dist?: number;  // Legacy Kepler field
@@ -786,15 +786,15 @@ function Scene({ data, dataType, multipleData, onPlanetClick }: VisualizationPro
       const calculatedDistance = Math.pow(orbitalPeriod / 365.25, 2/3);
 
       return {
-        name: planetData.pl_name || `TOI-${planetData.toi_id}`,
+        name: planetData.pl_name || (planetData.toi ? `TOI-${planetData.toi}` : `TIC-${planetData.tid || index}`),
         radius: planetData.pl_rade || 1,
         temperature: planetData.pl_eqt || 300,
         orbitalPeriod: orbitalPeriod,
-        distance: planetData.pl_orbsmax || calculatedDistance || 1,
+        distance: calculatedDistance || 1,
         starRadius: planetData.st_rad || 1,
         starTemp: planetData.st_teff || 5778,
-        id: planetData.tic_id,
-        uniqueId: planetData.id ? String(planetData.id) : `tess-${planetData.tic_id || index}`,
+        id: planetData.tid,
+        uniqueId: planetData.id ? String(planetData.id) : `tess-${planetData.tid || planetData.toi || index}`,
       };
     }
   };
@@ -1020,10 +1020,6 @@ function Scene({ data, dataType, multipleData, onPlanetClick }: VisualizationPro
                 const minSpacing = numPlanets > 8 ? 2.5 : 3.0;
                 if (currentPlanetInSorted > 0) {
                   // Get the previous planet's visual distance
-                  const prevPlanet = sortedPlanets[currentPlanetInSorted - 1];
-                  const prevIndex = system.planets.findIndex(p => p.originalIndex === prevPlanet.originalIndex);
-
-                  // This is a recursive check, so we need to calculate prev planet's distance
                   // For simplicity, ensure at least minSpacing from theoretical previous position
                   const prevRank = currentPlanetInSorted - 1;
                   const prevNormalized = (sortedPlanets.length - 1) > 0
@@ -1112,12 +1108,12 @@ function InfoPanel({ data, dataType }: VisualizationProps) {
     insolation: `${data.koi_insol?.toFixed(2) || 'N/A'} S⊕`,
     disposition: data.koi_disposition || 'N/A',
   } : {
-    name: data.pl_name || `TOI-${data.toi_id}`,
-    id: `TIC ID: ${data.tic_id}`,
+    name: data.pl_name || (data.toi ? `TOI-${data.toi}` : `TIC-${data.tid}`),
+    id: `TIC ID: ${data.tid || 'N/A'}`,
     radius: `${data.pl_rade?.toFixed(2) || 'N/A'} R⊕`,
     temperature: `${data.pl_eqt?.toFixed(0) || 'N/A'} K`,
     period: `${data.pl_orbper?.toFixed(2) || 'N/A'} days`,
-    distance: `${data.pl_orbsmax?.toFixed(3) || 'N/A'} AU`,
+    distance: data.pl_orbper ? `${Math.pow(data.pl_orbper / 365.25, 2/3).toFixed(3)} AU` : 'N/A',
     systemDistance: `${(data.sy_dist || data.st_dist)?.toFixed(2) || 'N/A'} pc`,
     starTemp: `${data.st_teff?.toFixed(0) || 'N/A'} K`,
   };
@@ -1254,7 +1250,7 @@ function InfoPanel({ data, dataType }: VisualizationProps) {
               
               <div>
                 <span className="font-semibold text-gray-800 dark:text-gray-100">How Far from its Star? </span>
-                <p className="mt-1">{getKidFriendlyDistance(isKepler ? data.koi_sma : data.pl_orbsmax)}</p>
+                <p className="mt-1">{getKidFriendlyDistance(isKepler ? data.koi_sma : (data.pl_orbper ? Math.pow(data.pl_orbper / 365.25, 2/3) : undefined))}</p>
               </div>
 
               {!isKepler && (data.sy_dist || data.st_dist) && (

@@ -1,7 +1,9 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { UploadResponse } from '../services/api';
 import { exoplanetService } from '../services/exoplanetService';
 import { PageContext } from './DashboardLayoutComponent';
+import { ThemeContext } from './ThemeContext';
 
 interface PredictionResultsProps {
   results: UploadResponse;
@@ -12,8 +14,19 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
   const [currentPage, setCurrentPage] = useState(0);
   const [showConfidence, setShowConfidence] = useState(true);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const itemsPerPage = 10;
   const { setActivePage } = useContext(PageContext);
+  const { darkMode } = useContext(ThemeContext);
+
+  useEffect(() => {
+    setMounted(true);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
 
   const totalPages = Math.ceil(results.predictions.length / itemsPerPage);
   const startIndex = currentPage * itemsPerPage;
@@ -100,10 +113,10 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 z-50 overflow-hidden">
+  return mounted ? createPortal(
+    <div className="fixed inset-0 bg-gradient-to-br from-gray-100 via-white to-gray-100 dark:from-gray-900 dark:via-black dark:to-gray-900 z-50 overflow-hidden">
       {/* Animated background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-blue-500/10 animate-pulse" />
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5 dark:from-cyan-500/10 dark:via-transparent dark:to-blue-500/10 animate-pulse" />
 
       {/* Main content container - full page */}
       <div className="relative h-full flex flex-col">
@@ -154,10 +167,10 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
         <div className="flex-1 overflow-y-auto">
           <div className="container mx-auto px-8 py-8 space-y-8">
             {/* Stats Summary */}
-            <div className="bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700/50 p-8">
+            <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1 h-8 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full" />
-                <h3 className="text-2xl font-bold text-white">Class Distribution</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Class Distribution</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 {Object.entries(classDistribution).map(([className, count]) => {
@@ -168,22 +181,22 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
                   return (
                     <div
                       key={className}
-                      className="bg-gradient-to-br from-gray-700/80 to-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-600/50 hover:border-cyan-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20"
+                      className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/80 dark:to-gray-800/80 backdrop-blur-sm rounded-xl p-6 border border-gray-300 dark:border-gray-600/50 hover:border-cyan-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20"
                     >
-                      <div className="text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3 truncate" title={className}>
+                      <div className="text-cyan-600 dark:text-cyan-400 font-bold text-xs uppercase tracking-wider mb-3 truncate" title={className}>
                         {className}
                       </div>
-                      <div className="text-4xl font-bold text-white mb-2">{count}</div>
+                      <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">{count}</div>
                       <div className="space-y-1">
-                        <div className="text-sm text-gray-300 font-semibold">{percentage}%</div>
+                        <div className="text-sm text-gray-700 dark:text-gray-300 font-semibold">{percentage}%</div>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-gray-900/50 rounded-full h-2 overflow-hidden">
+                          <div className="flex-1 bg-gray-200 dark:bg-gray-900/50 rounded-full h-2 overflow-hidden">
                             <div
                               className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
                               style={{ width: `${avgConf * 100}%` }}
                             />
                           </div>
-                          <span className="text-xs text-gray-400 font-mono">
+                          <span className="text-xs text-gray-600 dark:text-gray-400 font-mono">
                             {(avgConf * 100).toFixed(0)}%
                           </span>
                         </div>
@@ -195,7 +208,7 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
             </div>
 
             {/* Controls */}
-            <div className="bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-700/50 p-6">
+            <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700/50 p-6">
               <div className="flex flex-wrap gap-4 items-center justify-between">
                 <div className="flex flex-wrap gap-3">
                   <button
@@ -237,12 +250,12 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
                     Export JSON
                   </button>
                 </div>
-                <label className="flex items-center gap-3 text-white bg-gray-700/50 backdrop-blur-sm px-5 py-3 rounded-xl cursor-pointer hover:bg-gray-700/70 transition-all duration-200">
+                <label className="flex items-center gap-3 text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700/50 backdrop-blur-sm px-5 py-3 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700/70 transition-all duration-200">
                   <input
                     type="checkbox"
                     checked={showConfidence}
                     onChange={(e) => setShowConfidence(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-500 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-gray-800 cursor-pointer"
+                    className="w-5 h-5 rounded border-gray-400 dark:border-gray-500 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-white dark:focus:ring-offset-gray-800 cursor-pointer"
                   />
                   <span className="font-medium">Show Confidence Scores</span>
                 </label>
@@ -250,28 +263,28 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
             </div>
 
             {/* Predictions Table */}
-            <div className="bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
+            <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-white">
-                  <thead className="bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
-                    <tr className="border-b border-gray-700">
-                      <th className="px-6 py-4 text-left font-bold text-cyan-400 uppercase tracking-wider">Row</th>
-                      <th className="px-6 py-4 text-left font-bold text-cyan-400 uppercase tracking-wider">Predicted Class</th>
-                      {showConfidence && <th className="px-6 py-4 text-left font-bold text-cyan-400 uppercase tracking-wider">Confidence Distribution</th>}
+                <table className="w-full text-sm text-gray-900 dark:text-white">
+                  <thead className="bg-gray-100 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
+                    <tr className="border-b border-gray-300 dark:border-gray-700">
+                      <th className="px-6 py-4 text-left font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Row</th>
+                      <th className="px-6 py-4 text-left font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Predicted Class</th>
+                      {showConfidence && <th className="px-6 py-4 text-left font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Confidence Distribution</th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-700/50">
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700/50">
                     {currentPredictions.map((pred, idx) => (
                       <tr
                         key={pred.row_index}
-                        className="hover:bg-gray-700/30 transition-all duration-200 group"
+                        className="hover:bg-gray-100 dark:hover:bg-gray-700/30 transition-all duration-200 group"
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                        <td className="px-6 py-5 font-mono text-gray-400 text-base group-hover:text-cyan-400 transition-colors">
+                        <td className="px-6 py-5 font-mono text-gray-600 dark:text-gray-400 text-base group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                           #{pred.row_index}
                         </td>
                         <td className="px-6 py-5">
-                          <span className="inline-block px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full font-bold text-base shadow-lg group-hover:shadow-cyan-500/50 group-hover:scale-105 transition-all duration-200">
+                          <span className="inline-block px-5 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 rounded-full font-bold text-base text-white shadow-lg group-hover:shadow-cyan-500/50 group-hover:scale-105 transition-all duration-200">
                             {pred.predicted_class}
                           </span>
                         </td>
@@ -282,20 +295,20 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
                                 .sort(([, a], [, b]) => b - a)
                                 .map(([className, conf]) => (
                                   <div key={className} className="flex items-center gap-3">
-                                    <span className="text-sm text-gray-300 w-28 font-medium truncate" title={className}>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300 w-28 font-medium truncate" title={className}>
                                       {className}
                                     </span>
-                                    <div className="flex-1 bg-gray-900/50 rounded-full h-3 overflow-hidden shadow-inner">
+                                    <div className="flex-1 bg-gray-200 dark:bg-gray-900/50 rounded-full h-3 overflow-hidden shadow-inner">
                                       <div
                                         className={`h-full transition-all duration-500 ${
                                           className === pred.predicted_class
                                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/50'
-                                            : 'bg-gray-600'
+                                            : 'bg-gray-400 dark:bg-gray-600'
                                         }`}
                                         style={{ width: `${conf * 100}%` }}
                                       />
                                     </div>
-                                    <span className="text-sm font-mono w-14 text-right font-semibold text-gray-300">
+                                    <span className="text-sm font-mono w-14 text-right font-semibold text-gray-700 dark:text-gray-300">
                                       {(conf * 100).toFixed(1)}%
                                     </span>
                                   </div>
@@ -312,31 +325,31 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-700/50 p-6">
+              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700/50 p-6">
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                     disabled={currentPage === 0}
-                    className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-700 font-semibold flex items-center gap-2 hover:scale-105 hover:shadow-lg"
+                    className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-200 dark:disabled:hover:bg-gray-700 font-semibold flex items-center gap-2 hover:scale-105 hover:shadow-lg"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                     Previous
                   </button>
-                  <div className="text-white font-semibold bg-gray-700/50 backdrop-blur-sm px-6 py-3 rounded-xl">
-                    <span className="text-cyan-400 text-lg">{currentPage + 1}</span>
-                    <span className="text-gray-400 mx-2">/</span>
-                    <span className="text-gray-300">{totalPages}</span>
-                    <span className="text-gray-500 mx-3">•</span>
-                    <span className="text-gray-400 text-sm">
+                  <div className="text-gray-900 dark:text-white font-semibold bg-gray-100 dark:bg-gray-700/50 backdrop-blur-sm px-6 py-3 rounded-xl">
+                    <span className="text-cyan-600 dark:text-cyan-400 text-lg">{currentPage + 1}</span>
+                    <span className="text-gray-500 dark:text-gray-400 mx-2">/</span>
+                    <span className="text-gray-700 dark:text-gray-300">{totalPages}</span>
+                    <span className="text-gray-400 dark:text-gray-500 mx-3">•</span>
+                    <span className="text-gray-600 dark:text-gray-400 text-sm">
                       Showing {startIndex + 1}-{Math.min(endIndex, results.predictions.length)} of {results.predictions.length}
                     </span>
                   </div>
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
                     disabled={currentPage === totalPages - 1}
-                    className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-700 font-semibold flex items-center gap-2 hover:scale-105 hover:shadow-lg"
+                    className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-200 dark:disabled:hover:bg-gray-700 font-semibold flex items-center gap-2 hover:scale-105 hover:shadow-lg"
                   >
                     Next
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -352,6 +365,7 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>,
+    document.body
+  ) : null;
 };

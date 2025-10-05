@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSharedState } from '../context/SharedContext';
 import DashboardSection from '../DashboardSection';
 import Modal from '../Modal';
@@ -7,6 +7,9 @@ import type { RecentActivityRef } from '../RecentActivity';
 import RecentActivity from '../RecentActivity';
 import { PredictionResults } from '../PredictionResults';
 import { apiService, type UploadResponse } from '../../services/api';
+
+// LocalStorage key for prediction results
+const LAST_PREDICTION_KEY = 'lastPredictionResults';
 
 type MLModel = 'tess' | 'kepler';
 type InputMode = 'file' | 'manual';
@@ -191,6 +194,24 @@ const Dashboard: React.FC = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [predictionResults, setPredictionResults] = useState<UploadResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [hasLastResults, setHasLastResults] = useState(false);
+
+  // Load last results from localStorage on mount
+  useEffect(() => {
+    const savedResults = localStorage.getItem(LAST_PREDICTION_KEY);
+    if (savedResults) {
+      try {
+        const parsed = JSON.parse(savedResults);
+        // Verify it has the expected structure
+        if (parsed && parsed.predictions && parsed.job_id) {
+          setHasLastResults(true);
+        }
+      } catch (error) {
+        console.error('Failed to parse saved results:', error);
+        localStorage.removeItem(LAST_PREDICTION_KEY);
+      }
+    }
+  }, []);
   const [fileError, setFileError] = useState<string | null>(null);
   const [fileInfoMessage, setFileInfoMessage] = useState<string | null>(null);
   const [manualData, setManualData] = useState<ManualInputRow[]>([{}]);
@@ -205,6 +226,23 @@ const Dashboard: React.FC = () => {
 
   // Refs
   const recentActivityRef = useRef<RecentActivityRef>(null);
+
+  // Function to view last saved results
+  const viewLastResults = () => {
+    const savedResults = localStorage.getItem(LAST_PREDICTION_KEY);
+    if (savedResults) {
+      try {
+        const parsed = JSON.parse(savedResults);
+        // Remove the savedAt timestamp before displaying (it's not part of UploadResponse)
+        const { savedAt, ...results } = parsed;
+        setPredictionResults(results);
+        setShowResults(true);
+      } catch (error) {
+        console.error('Failed to load saved results:', error);
+        alert('Failed to load saved results. The data may be corrupted.');
+      }
+    }
+  };
 
   // Analysis States
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -570,6 +608,14 @@ const Dashboard: React.FC = () => {
       // Call the real API
       const results = await apiService.uploadAndPredict(uploadedFile!);
       
+      // Save to localStorage with timestamp
+      const resultsWithTimestamp = {
+        ...results,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem(LAST_PREDICTION_KEY, JSON.stringify(resultsWithTimestamp));
+      setHasLastResults(true);
+      
       // Store results and show modal
       setPredictionResults(results);
       setShowResults(true);
@@ -825,6 +871,30 @@ const Dashboard: React.FC = () => {
                   </button>
                 ))}
               </div>
+
+              {/* View Last Results Button */}
+              {hasLastResults && (
+                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl p-4 border border-cyan-200 dark:border-cyan-800">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
+                        <i className="fas fa-history text-white text-lg"></i>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800 dark:text-white text-sm">Previous Results Available</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">View your last ML prediction results</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={viewLastResults}
+                      className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-lg font-semibold transition-all hover:shadow-lg hover:scale-105 text-sm whitespace-nowrap"
+                    >
+                      <i className="fas fa-eye mr-2"></i>
+                      View Last Results
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* File Upload Interface */}
               {inputMode === 'file' && (
