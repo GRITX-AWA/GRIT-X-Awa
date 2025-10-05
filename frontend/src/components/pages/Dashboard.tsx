@@ -943,7 +943,6 @@ const Dashboard: React.FC = () => {
   };
 
   const loadSampleDataset = async () => {
-    setIsAnalyzing(true);
     setFileError(null);
     setFileInfoMessage(null);
 
@@ -990,8 +989,6 @@ const Dashboard: React.FC = () => {
     } catch (error: any) {
       console.error('Sample loading error:', error);
       setFileError(`Failed to load sample dataset: ${error.message || 'Unknown error'}`);
-    } finally {
-      setIsAnalyzing(false);
     }
   };
 

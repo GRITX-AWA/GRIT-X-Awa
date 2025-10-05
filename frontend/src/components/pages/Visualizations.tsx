@@ -22,12 +22,123 @@ interface PlanetCircleProps {
   size: string;
   color: string;
   name: string;
+  radius?: number; // In Earth radii
 }
 
-const PlanetCircle: React.FC<PlanetCircleProps> = ({ size, color, name }) => (
+const PlanetCircle: React.FC<PlanetCircleProps> = ({ size, color, name, radius }) => (
   <div className="flex flex-col items-center group">
     <div className={`${size} rounded-full ${color} shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl`}></div>
     <p className="text-xs mt-3 font-semibold text-gray-800 dark:text-gray-300">{name}</p>
+    {radius !== undefined && (
+      <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">{radius.toFixed(2)} R⊕</p>
+    )}
+  </div>
+);
+
+// Dynamic Planet Size Comparison Component
+interface DynamicPlanetComparisonProps {
+  planets: Array<{ name: string; radius: number; id?: string | number }>;
+}
+
+const DynamicPlanetComparison: React.FC<DynamicPlanetComparisonProps> = ({ planets }) => {
+  // Sort planets by radius for better visualization
+  const sortedPlanets = [...planets].sort((a, b) => a.radius - b.radius);
+  
+  // Calculate sizes relative to the largest planet
+  const maxRadius = Math.max(...sortedPlanets.map(p => p.radius));
+  const baseSize = 160; // Maximum pixel size for the largest planet
+  
+  // Color palette for different sizes (scientific categorization)
+  const getColorByRadius = (radius: number) => {
+    if (radius < 1.25) return 'bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/50'; // Earth-like
+    if (radius < 2.0) return 'bg-gradient-to-br from-green-400 to-emerald-600 shadow-green-500/50'; // Super-Earth
+    if (radius < 4.0) return 'bg-gradient-to-br from-cyan-400 to-cyan-600 shadow-cyan-500/50'; // Mini-Neptune
+    if (radius < 10.0) return 'bg-gradient-to-br from-indigo-400 to-indigo-600 shadow-indigo-500/50'; // Neptune-like
+    return 'bg-gradient-to-br from-orange-400 to-red-600 shadow-orange-500/50'; // Jupiter-like
+  };
+  
+  const getPlanetSize = (radius: number) => {
+    const scaledSize = (radius / maxRadius) * baseSize;
+    // Ensure minimum visible size
+    const size = Math.max(scaledSize, 24);
+    return `${size}px`;
+  };
+  
+  return (
+    <div className="flex flex-wrap items-end justify-center gap-8 min-h-[300px] py-8">
+      {/* Always show Earth as reference */}
+      <div className="flex flex-col items-center group">
+        <div 
+          className="rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/50 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl"
+          style={{ width: getPlanetSize(1.0), height: getPlanetSize(1.0) }}
+        ></div>
+        <p className="text-xs mt-3 font-semibold text-gray-800 dark:text-gray-300">Earth (Reference)</p>
+        <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">1.00 R⊕</p>
+      </div>
+      
+      {/* Analyzed planets */}
+      {sortedPlanets.map((planet, idx) => (
+        <div key={planet.id || idx} className="flex flex-col items-center group">
+          <div 
+            className={`rounded-full ${getColorByRadius(planet.radius)} shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl`}
+            style={{ width: getPlanetSize(planet.radius), height: getPlanetSize(planet.radius) }}
+          ></div>
+          <p className="text-xs mt-3 font-semibold text-gray-800 dark:text-gray-300 max-w-[120px] text-center truncate" title={planet.name}>
+            {planet.name}
+          </p>
+          <p className="text-xs mt-1 text-gray-600 dark:text-gray-400">{planet.radius.toFixed(2)} R⊕</p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Color Legend Component
+const PlanetSizeLegend: React.FC = () => (
+  <div className="mt-6 pt-6 border-t border-green-200/50 dark:border-green-700/50">
+    <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 text-center">
+      <i className="fas fa-palette mr-2"></i>Planet Type Classification
+    </h3>
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 max-w-4xl mx-auto">
+      <div className="flex flex-col items-center p-3 bg-white/50 dark:bg-gray-700/30 rounded-lg">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/50 shadow-md mb-2"></div>
+        <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Earth-like</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">&lt; 1.25 R⊕</p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 text-center">Rocky planets</p>
+      </div>
+      
+      <div className="flex flex-col items-center p-3 bg-white/50 dark:bg-gray-700/30 rounded-lg">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 shadow-green-500/50 shadow-md mb-2"></div>
+        <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Super-Earth</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">1.25 - 2.0 R⊕</p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 text-center">Large rocky</p>
+      </div>
+      
+      <div className="flex flex-col items-center p-3 bg-white/50 dark:bg-gray-700/30 rounded-lg">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 shadow-cyan-500/50 shadow-md mb-2"></div>
+        <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Mini-Neptune</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">2.0 - 4.0 R⊕</p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 text-center">Gas envelope</p>
+      </div>
+      
+      <div className="flex flex-col items-center p-3 bg-white/50 dark:bg-gray-700/30 rounded-lg">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 shadow-indigo-500/50 shadow-md mb-2"></div>
+        <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Neptune-like</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">4.0 - 10.0 R⊕</p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 text-center">Ice giant</p>
+      </div>
+      
+      <div className="flex flex-col items-center p-3 bg-white/50 dark:bg-gray-700/30 rounded-lg">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-red-600 shadow-orange-500/50 shadow-md mb-2"></div>
+        <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Jupiter-like</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400">&gt; 10.0 R⊕</p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 text-center">Gas giant</p>
+      </div>
+    </div>
+    <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
+      <i className="fas fa-info-circle mr-1"></i>
+      R⊕ = Earth Radii (1 R⊕ = 6,371 km)
+    </p>
   </div>
 );
 
@@ -153,6 +264,7 @@ const Visualizations: React.FC = () => {
   // Determine if we're showing multiple planets or a single planet
   const isMultipleMode = selectedExoplanets && selectedExoplanets.length > 0;
   const hasSelection = selectedExoplanet || isMultipleMode;
+  const [downloadingImage, setDownloadingImage] = useState(false);
 
   // Scroll to top when exoplanets are loaded (from predictions)
   useEffect(() => {
@@ -160,6 +272,44 @@ const Visualizations: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [hasSelection]);
+
+  // Download Planet Size Comparison as image
+  const downloadPlanetSizeImage = async () => {
+    try {
+      setDownloadingImage(true);
+      const html2canvas = (await import('html2canvas')).default;
+      
+      const element = document.querySelector('.planet-size-comparison-container');
+      if (!element) {
+        throw new Error('Comparison section not found');
+      }
+
+      const canvas = await html2canvas(element as HTMLElement, {
+        backgroundColor: getComputedStyle(document.body).backgroundColor,
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => resolve(b!), 'image/png');
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const planetCount = isMultipleMode ? selectedExoplanets.length : (selectedExoplanet ? 1 : 'examples');
+      link.download = `planet-size-comparison-${planetCount}-planets-${timestamp}.png`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      alert('Failed to download image. Please try again.');
+    } finally {
+      setDownloadingImage(false);
+    }
+  };
 
   // Sample data for examples
   const sampleTessData = {
@@ -344,21 +494,83 @@ const Visualizations: React.FC = () => {
 
       {/* Planet Size Comparison */}
       <div className="mb-8">
-        <div className="bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-green-900/20 rounded-2xl shadow-xl overflow-hidden border border-green-200/50 dark:border-green-700/50 backdrop-blur-sm">
+        <div className="bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-green-900/20 rounded-2xl shadow-xl overflow-hidden border border-green-200/50 dark:border-green-700/50 backdrop-blur-sm planet-size-comparison-container">
           <div className="p-6 border-b border-green-200/50 dark:border-green-700/50 bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent flex items-center gap-2">
-              <i className="fas fa-balance-scale text-green-600 dark:text-green-400"></i>
-              Planet Size Comparison
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Compare exoplanet sizes to planets in our solar system</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent flex items-center gap-2">
+                  <i className="fas fa-balance-scale text-green-600 dark:text-green-400"></i>
+                  Planet Size Comparison
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {hasSelection 
+                    ? 'Compare your analyzed exoplanet sizes to Earth' 
+                    : 'Compare exoplanet sizes to planets in our solar system'}
+                </p>
+              </div>
+              <button
+                onClick={downloadPlanetSizeImage}
+                disabled={downloadingImage}
+                className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 text-sm"
+                title="Download as PNG image"
+              >
+                {downloadingImage ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    <span>Downloading...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-download"></i>
+                    <span>Download Image</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
           <div className="p-10 bg-gradient-to-br from-green-50/30 to-emerald-50/30 dark:from-green-900/10 dark:to-emerald-900/10">
-            <div className="flex items-end justify-center h-72 gap-8">
-              <PlanetCircle size="w-8 h-8" color="bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/50" name="Earth" />
-              <PlanetCircle size="w-16 h-16" color="bg-gradient-to-br from-orange-400 to-orange-600 shadow-orange-500/50" name="HD 209458 b" />
-              <PlanetCircle size="w-32 h-32" color="bg-gradient-to-br from-red-400 to-red-600 shadow-red-500/50" name="WASP-17b" />
-              <PlanetCircle size="w-6 h-6" color="bg-gradient-to-br from-green-400 to-emerald-600 shadow-green-500/50" name="TRAPPIST-1e" />
-            </div>
+            {hasSelection ? (
+              // Dynamic comparison with analyzed planets
+              <>
+                <DynamicPlanetComparison 
+                  planets={
+                    isMultipleMode 
+                      ? selectedExoplanets.map(planet => ({
+                          name: dataType === 'kepler' 
+                            ? (planet.kepler_name || planet.kepoi_name || `KOI-${planet.kepid}`)
+                            : (planet.pl_name || `TOI-${planet.toi_id || planet.toi}`),
+                          radius: dataType === 'kepler' 
+                            ? (planet.koi_prad || 0)
+                            : (planet.pl_rade || 0),
+                          id: planet.id
+                        })).filter(p => p.radius > 0) // Only show planets with valid radius data
+                      : selectedExoplanet 
+                        ? [{
+                            name: dataType === 'kepler' 
+                              ? (selectedExoplanet.kepler_name || selectedExoplanet.kepoi_name || `KOI-${selectedExoplanet.kepid}`)
+                              : (selectedExoplanet.pl_name || `TOI-${selectedExoplanet.toi_id || selectedExoplanet.toi}`),
+                            radius: dataType === 'kepler' 
+                              ? (selectedExoplanet.koi_prad || 0)
+                              : (selectedExoplanet.pl_rade || 0),
+                            id: selectedExoplanet.id
+                          }].filter(p => p.radius > 0)
+                        : []
+                  }
+                />
+                <PlanetSizeLegend />
+              </>
+            ) : (
+              // Static examples when no planets selected
+              <>
+                <div className="flex items-end justify-center h-72 gap-8">
+                  <PlanetCircle size="w-8 h-8" color="bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-500/50" name="Earth" radius={1.0} />
+                  <PlanetCircle size="w-16 h-16" color="bg-gradient-to-br from-orange-400 to-orange-600 shadow-orange-500/50" name="HD 209458 b" radius={1.38} />
+                  <PlanetCircle size="w-32 h-32" color="bg-gradient-to-br from-red-400 to-red-600 shadow-red-500/50" name="WASP-17b" radius={1.99} />
+                  <PlanetCircle size="w-6 h-6" color="bg-gradient-to-br from-green-400 to-emerald-600 shadow-green-500/50" name="TRAPPIST-1e" radius={0.92} />
+                </div>
+                <PlanetSizeLegend />
+              </>
+            )}
           </div>
         </div>
       </div>

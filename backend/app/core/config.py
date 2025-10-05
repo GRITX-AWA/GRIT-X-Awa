@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # Supabase settings (optional)
     supabase_url: str | None = Field(None, alias="SUPABASE_URL")
     supabase_key: str | None = Field(None, alias="SUPABASE_SERVICE_ROLE_KEY")
-    supabase_bucket: str = Field("nasa-csv", alias="SUPABASE_BUCKET")
+    supabase_bucket: str = Field("exoplanet_csvs", alias="SUPABASE_BUCKET")
     
     # API settings (optional)
     api_host: str = Field("127.0.0.1", alias="API_HOST")

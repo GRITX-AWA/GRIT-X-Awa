@@ -3,7 +3,7 @@ from supabase import create_client
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-BUCKET = os.getenv("SUPABASE_BUCKET", "nasa-csv")
+BUCKET = os.getenv("SUPABASE_BUCKET", "exoplanet_csvs")
 
 # Validate required environment variables
 _supabase_available = bool(SUPABASE_URL and SUPABASE_KEY)

@@ -89,6 +89,117 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
     URL.revokeObjectURL(url);
   };
 
+  const downloadExoplanetTable = async () => {
+    try {
+      setLoadingAction('download-table');
+      
+      // Get CSV text - either from file or from saved data
+      let csvText: string | null = null;
+      
+      if (uploadedFile) {
+        csvText = await uploadedFile.text();
+      } else if (fileData) {
+        csvText = fileData;
+      }
+      
+      if (!csvText) {
+        alert('No exoplanet data available to download.');
+        return;
+      }
+
+      // Parse CSV and add predictions
+      const lines = csvText.split('\n').filter(line => line.trim());
+      if (lines.length < 2) {
+        alert('Invalid data format.');
+        return;
+      }
+
+      const headers = lines[0].split(',').map(h => h.trim());
+      
+      // Create enhanced CSV with predictions
+      const enhancedHeaders = [...headers, 'Predicted_Class', 'Confidence_Score', 'Prediction_Certainty'];
+      const enhancedRows = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const rowIndex = i - 1; // 0-based index for predictions
+        const prediction = results.predictions.find(p => p.row_index === rowIndex);
+        
+        if (prediction) {
+          const values = lines[i].split(',').map(v => v.trim());
+          const predictedClass = prediction.predicted_class;
+          const confidence = (prediction.confidence[predictedClass] * 100).toFixed(2);
+          
+          // Calculate certainty (difference between top 2 confidences)
+          const confidences = Object.values(prediction.confidence).sort((a, b) => b - a);
+          const certainty = confidences.length > 1 
+            ? ((confidences[0] - confidences[1]) * 100).toFixed(2)
+            : '100.00';
+          
+          enhancedRows.push([...values, predictedClass, `${confidence}%`, `${certainty}%`].join(','));
+        } else {
+          enhancedRows.push(lines[i]); // Keep original if no prediction
+        }
+      }
+
+      const enhancedCSV = [enhancedHeaders.join(','), ...enhancedRows].join('\n');
+      
+      // Download
+      const blob = new Blob([enhancedCSV], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exoplanet_analysis_${results.dataset_type}_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading exoplanet table:', error);
+      alert('Failed to download exoplanet table. Please try again.');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const downloadScreenshot = () => {
+    setLoadingAction('screenshot');
+    
+    // Use html2canvas to capture the entire modal
+    import('html2canvas').then(({ default: html2canvas }) => {
+      const element = document.querySelector('.prediction-results-container') as HTMLElement;
+      if (!element) {
+        alert('Unable to capture screenshot.');
+        setLoadingAction(null);
+        return;
+      }
+
+      html2canvas(element, {
+        backgroundColor: darkMode ? '#111827' : '#ffffff',
+        scale: 2, // Higher quality
+        logging: false,
+        useCORS: true,
+      }).then(canvas => {
+        canvas.toBlob(blob => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `exoplanet_predictions_${results.job_id}_${new Date().toISOString().split('T')[0]}.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }
+          setLoadingAction(null);
+        });
+      }).catch(error => {
+        console.error('Screenshot error:', error);
+        alert('Failed to capture screenshot.');
+        setLoadingAction(null);
+      });
+    }).catch(error => {
+      console.error('Failed to load html2canvas:', error);
+      alert('Screenshot feature unavailable. Please try again.');
+      setLoadingAction(null);
+    });
+  };
+
   const viewAll3D = async () => {
     try {
       setLoadingAction('3d-all');
@@ -277,8 +388,113 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
         </div>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto prediction-results-container">
           <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-4 sm:space-y-6 md:space-y-8">
+            
+            {/* Researcher Mode: Advanced Statistics */}
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-2xl border border-purple-200 dark:border-purple-700/50 p-4 sm:p-6 md:p-8">
+              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="w-1 h-6 sm:h-8 bg-gradient-to-b from-purple-400 to-indigo-500 rounded-full" />
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Researcher Statistics
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+                {/* Total Candidates */}
+                <div className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg p-4 border border-purple-300 dark:border-purple-600/50">
+                  <div className="text-purple-600 dark:text-purple-400 text-xs font-bold uppercase tracking-wider mb-2">Total Candidates</div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{results.total_predictions}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Analyzed Objects</div>
+                </div>
+
+                {/* High Confidence Count */}
+                {(() => {
+                  const highConfCount = results.predictions.filter(p => 
+                    p.confidence[p.predicted_class] >= 0.9
+                  ).length;
+                  const percentage = ((highConfCount / results.total_predictions) * 100).toFixed(1);
+                  return (
+                    <div className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg p-4 border border-green-300 dark:border-green-600/50">
+                      <div className="text-green-600 dark:text-green-400 text-xs font-bold uppercase tracking-wider mb-2">High Confidence</div>
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">{highConfCount}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{percentage}% (≥90% confidence)</div>
+                    </div>
+                  );
+                })()}
+
+                {/* Average Certainty */}
+                {(() => {
+                  const avgCertainty = results.predictions.reduce((sum, p) => {
+                    const confidences = Object.values(p.confidence).sort((a, b) => b - a);
+                    const certainty = confidences.length > 1 ? (confidences[0] - confidences[1]) : 1;
+                    return sum + certainty;
+                  }, 0) / results.total_predictions;
+                  return (
+                    <div className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg p-4 border border-blue-300 dark:border-blue-600/50">
+                      <div className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">Avg Certainty</div>
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">{(avgCertainty * 100).toFixed(1)}%</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Prediction Clarity</div>
+                    </div>
+                  );
+                })()}
+
+                {/* Unique Classes */}
+                <div className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg p-4 border border-cyan-300 dark:border-cyan-600/50">
+                  <div className="text-cyan-600 dark:text-cyan-400 text-xs font-bold uppercase tracking-wider mb-2">Unique Classes</div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{Object.keys(classDistribution).length}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Categories Found</div>
+                </div>
+              </div>
+
+              {/* Confidence Distribution Chart */}
+              <div className="mt-6 bg-white/80 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg p-4 border border-purple-300 dark:border-purple-600/50">
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Confidence Score Distribution
+                </h4>
+                {(() => {
+                  const bins = [0, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+                  const distribution = bins.slice(0, -1).map((min, i) => {
+                    const max = bins[i + 1];
+                    const count = results.predictions.filter(p => {
+                      const conf = p.confidence[p.predicted_class];
+                      return conf >= min && conf < max;
+                    }).length;
+                    return { range: `${(min * 100).toFixed(0)}-${(max * 100).toFixed(0)}%`, count, min, max };
+                  });
+                  const maxCount = Math.max(...distribution.map(d => d.count));
+                  
+                  return (
+                    <div className="space-y-2">
+                      {distribution.map((bin, idx) => (
+                        <div key={idx} className="flex items-center gap-3">
+                          <div className="w-24 text-xs font-mono text-gray-700 dark:text-gray-300">{bin.range}</div>
+                          <div className="flex-1 bg-gray-200 dark:bg-gray-900/50 rounded-full h-6 overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
+                              style={{ width: `${(bin.count / maxCount) * 100}%` }}
+                            >
+                              {bin.count > 0 && (
+                                <span className="text-xs font-bold text-white">{bin.count}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="w-12 text-xs text-gray-600 dark:text-gray-400 text-right">
+                            {((bin.count / results.total_predictions) * 100).toFixed(1)}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
             {/* Stats Summary */}
             <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 p-4 sm:p-6 md:p-8">
               <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
@@ -322,18 +538,88 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
 
             {/* Controls */}
             <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700/50 p-3 sm:p-4 md:p-6">
-              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 items-stretch sm:items-center">
-                <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 flex-1">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export & Visualization Tools
+              </h4>
+              <div className="flex flex-col gap-3">
+                {/* Main action buttons */}
+                <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
                   <button
                     onClick={viewAll3D}
                     disabled={loadingAction === '3d-all'}
                     className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 font-semibold shadow-lg hover:shadow-indigo-500/50 active:scale-95 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base touch-manipulation"
                   >
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
-                    </svg>
-                    <span className="whitespace-nowrap">View All in 3D</span>
+                    {loadingAction === '3d-all' ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="whitespace-nowrap">Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                        </svg>
+                        <span className="whitespace-nowrap">View All in 3D</span>
+                      </>
+                    )}
                   </button>
+                  
+                  <button
+                    onClick={downloadExoplanetTable}
+                    disabled={loadingAction === 'download-table'}
+                    className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 font-semibold shadow-lg hover:shadow-purple-500/50 active:scale-95 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base touch-manipulation"
+                  >
+                    {loadingAction === 'download-table' ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="whitespace-nowrap">Preparing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span className="whitespace-nowrap">Download Full Table</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={downloadScreenshot}
+                    disabled={loadingAction === 'screenshot'}
+                    className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 text-white rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 font-semibold shadow-lg hover:shadow-pink-500/50 active:scale-95 sm:hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base touch-manipulation"
+                  >
+                    {loadingAction === 'screenshot' ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="whitespace-nowrap">Capturing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="whitespace-nowrap">Screenshot</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Secondary export buttons */}
+                <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
                   <button
                     onClick={downloadCSV}
                     className="px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 font-semibold shadow-lg hover:shadow-green-500/50 active:scale-95 sm:hover:scale-105 text-sm sm:text-base touch-manipulation"
@@ -341,7 +627,7 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span className="whitespace-nowrap">Export CSV</span>
+                    <span className="whitespace-nowrap">Predictions CSV</span>
                   </button>
                   <button
                     onClick={downloadJSON}
@@ -350,18 +636,18 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span className="whitespace-nowrap">Export JSON</span>
+                    <span className="whitespace-nowrap">Results JSON</span>
                   </button>
+                  <label className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700/50 backdrop-blur-sm px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700/70 transition-all duration-200 text-sm sm:text-base touch-manipulation flex-1">
+                    <input
+                      type="checkbox"
+                      checked={showConfidence}
+                      onChange={(e) => setShowConfidence(e.target.checked)}
+                      className="w-4 h-4 sm:w-5 sm:h-5 rounded border-gray-400 dark:border-gray-500 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-white dark:focus:ring-offset-gray-800 cursor-pointer"
+                    />
+                    <span className="font-medium whitespace-nowrap">Show Confidence Scores</span>
+                  </label>
                 </div>
-                <label className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700/50 backdrop-blur-sm px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 rounded-lg sm:rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700/70 transition-all duration-200 text-sm sm:text-base touch-manipulation">
-                  <input
-                    type="checkbox"
-                    checked={showConfidence}
-                    onChange={(e) => setShowConfidence(e.target.checked)}
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded border-gray-400 dark:border-gray-500 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-white dark:focus:ring-offset-gray-800 cursor-pointer"
-                  />
-                  <span className="font-medium whitespace-nowrap">Show Confidence Scores</span>
-                </label>
               </div>
             </div>
 

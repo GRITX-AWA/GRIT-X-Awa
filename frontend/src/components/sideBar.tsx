@@ -163,8 +163,20 @@ export default function SideBar() {
           onClick={() => handlePageChange("settings")}
         />
 
-        {/* NASA Attribution */}
+        {/* GRIT Logo */}
         <div className="mt-3 pt-3 border-t border-purple-500/10">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <img 
+              src="/grit-logo.svg" 
+              alt="GRIT Logo" 
+              className="w-10 h-10 opacity-70 hover:opacity-100 transition-opacity duration-300"
+            />
+            <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">GRIT-X AWA</span>
+          </div>
+        </div>
+
+        {/* NASA Attribution */}
+        <div className="border-t border-purple-500/10 pt-2">
           <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
             <i className="fas fa-satellite-dish text-purple-400/50"></i>
             <span>Powered by NASA Data</span>
