@@ -3,6 +3,7 @@ import React, { useState, useRef } from 'react';
 import { useSharedState } from '../context/SharedContext';
 import DashboardSection from '../DashboardSection';
 import Modal from '../Modal';
+import type { RecentActivityRef } from '../RecentActivity';
 import RecentActivity from '../RecentActivity';
 import { PredictionResults } from '../PredictionResults';
 import { apiService, type UploadResponse } from '../../services/api';

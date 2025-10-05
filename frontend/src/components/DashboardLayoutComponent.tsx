@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, lazy, Suspense, useEffect, startTransition } from 'react';
+import type { ReactNode } from 'react';
 import SideBar from './sideBar';
 import ThemeToggle from './ThemeToggle';
 import FontSizeToggle from './FontSizeToggle';
@@ -6,25 +7,30 @@ import { SharedProvider } from './context/SharedContext';
 import { ExoplanetProvider } from '../contexts/ExoplanetContext';
 import { ThemeProvider } from './ThemeContext';
 
-const Dashboard = lazy(() =>
-  import('./pages/Dashboard').then((module) => ({ default: (module as any).default }))
-);
+// Type for the page context
+interface PageContextType {
+  activePage: string;
+  setActivePage: (page: string) => void;
+}
+
+// Lazy load page components
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Exoplanets = lazy(() => import('./pages/Exoplanets'));
 const Analysis = lazy(() => import('./pages/Analysis'));
 const Visualizations = lazy(() => import('./pages/Visualizations'));
 const HelpResources = lazy(() => import('./pages/HelpResources'));
 const Settings = lazy(() => import('./pages/Settings'));
 
-{{ ... }}
-export const PageContext = React.createContext({
+// Create context with proper type
+export const PageContext = React.createContext<PageContextType>({
   activePage: 'dashboard',
-  setActivePage: (page: string) => {},
-{{ ... }}
+  setActivePage: () => {}
+});
 
-const DashboardLayoutComponent = () => {
-  const [activePage, setActivePage] = useState('dashboard');
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [displayPage, setDisplayPage] = useState('dashboard');
+const DashboardLayoutComponent: React.FC = () => {
+  const [activePage, setActivePage] = useState<string>('dashboard');
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const [displayPage, setDisplayPage] = useState<string>('dashboard');
 
   // Define a function to update the active page with transition
   const handleSetActivePage = useCallback((page: string) => {
@@ -55,7 +61,7 @@ const DashboardLayoutComponent = () => {
   }), [activePage, handleSetActivePage]);
 
   // Render different content based on activePage state
-  const renderContent = () => {
+  const renderContent = (): JSX.Element => {
     switch (displayPage) {
       case 'dashboard':
         return <Dashboard />;
