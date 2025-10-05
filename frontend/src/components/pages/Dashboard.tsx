@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { useSharedState } from '../context/SharedContext';
 import DashboardSection from '../DashboardSection';
 import Modal from '../Modal';
+import RecentActivity from '../RecentActivity';
+import type { RecentActivityRef } from '../RecentActivity';
 
 type MLModel = 'tess' | 'kepler';
 type InputMode = 'file' | 'manual';
@@ -692,9 +694,10 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Main Content - Left Side (2/3 width) */}
-      <div className="lg:col-span-2 space-y-4 md:space-y-6">
+    <>
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Main Content - Full Width */}
+      <div className="space-y-4 md:space-y-6">
         {/* Model Metrics Overview */}
         <DashboardSection
           variant="cosmic"
@@ -803,16 +806,17 @@ const Dashboard: React.FC = () => {
                 ))}
               </div>
 
-            {/* Required Columns Display */}
-            <RequiredColumns
-              columns={modelColumns[selectedModel]}
-              modelName={selectedModel.toUpperCase()}
-              optionalColumns={optionalColumns[selectedModel]}
-            />
-          </div>
+              {/* Required Columns Display */}
+              <RequiredColumns
+                columns={modelColumns[selectedModel]}
+                modelName={selectedModel.toUpperCase()}
+                optionalColumns={optionalColumns[selectedModel]}
+                columnDescriptions={columnDescriptions}
+              />
+            </div>
 
-          {/* Input Mode Tabs */}
-              <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+            {/* Input Mode Tabs */}
+            <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
                 {[
                   { mode: 'file' as InputMode, icon: 'fa-file-upload', label: 'File Upload' },
                   { mode: 'manual' as InputMode, icon: 'fa-keyboard', label: 'Manual Input' }
@@ -1120,7 +1124,11 @@ const Dashboard: React.FC = () => {
           )}
         </DashboardSection>
       )}
+      </div>
+    </div>
 
+    {/* Bottom Full-Width Section - Recent Discoveries & Activity */}
+    <div className="max-w-7xl mx-auto mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Recent Discoveries */}
       <DashboardSection
         variant="cosmic"
@@ -1128,46 +1136,42 @@ const Dashboard: React.FC = () => {
         subtitle="Latest exoplanet candidates identified by ML models"
         icon={<i className="fas fa-telescope"></i>}
       >
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Object</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Confidence</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Date</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {[
-                { id: 'KIC 8462852', type: 'Super-Earth', confidence: 89, date: 'Today', color: 'from-green-500 to-emerald-600' },
-                { id: 'TIC 260128333', type: 'Hot Neptune', confidence: 78, date: 'Yesterday', color: 'from-yellow-500 to-orange-600' },
-                { id: 'EPIC 249631677', type: 'Mini Neptune', confidence: 92, date: '2 days ago', color: 'from-green-500 to-emerald-600' }
-              ].map((discovery, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-gray-800 dark:text-white">{discovery.id}</td>
-                  <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{discovery.type}</td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden max-w-[100px]">
-                        <div className={`h-full bg-gradient-to-r ${discovery.color} rounded-full`} style={{ width: `${discovery.confidence}%` }}></div>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{discovery.confidence}%</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{discovery.date}</td>
-                  <td className="px-4 py-4 text-right">
-                    <button className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium">
-                      View →
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 gap-4">
+          {[
+            { id: 'KIC 8462852', type: 'Super-Earth', confidence: 89, date: 'Today', color: 'from-green-500 to-emerald-600' },
+            { id: 'TIC 260128333', type: 'Hot Neptune', confidence: 78, date: 'Yesterday', color: 'from-yellow-500 to-orange-600' },
+            { id: 'EPIC 249631677', type: 'Mini Neptune', confidence: 92, date: '2 days ago', color: 'from-green-500 to-emerald-600' }
+          ].map((discovery, idx) => (
+            <div key={idx} className="p-5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-500 transition-all hover:shadow-lg hover:scale-105">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h4 className="font-bold text-gray-800 dark:text-white text-base">{discovery.id}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{discovery.type}</p>
+                </div>
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{discovery.date}</span>
+              </div>
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Confidence</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{discovery.confidence}%</span>
+                </div>
+                <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className={`h-full bg-gradient-to-r ${discovery.color} rounded-full transition-all duration-500`} style={{ width: `${discovery.confidence}%` }}></div>
+                </div>
+              </div>
+              <button className="w-full text-sm text-purple-600 dark:text-purple-400 hover:text-white font-medium text-center py-2.5 border border-purple-200 dark:border-purple-800 rounded-lg hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:border-transparent transition-all">
+                View Details →
+              </button>
+            </div>
+          ))}
         </div>
       </DashboardSection>
+
+      {/* Recent Activity */}
+      <div className="flex justify-center">
+        <RecentActivity ref={recentActivityRef} />
+      </div>
+    </div>
 
       {/* Hyperparameters Modal */}
       <Modal isOpen={showHyperparamsModal} onClose={() => setShowHyperparamsModal(false)}>
@@ -1404,7 +1408,7 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
       </Modal>
-    </div>
+    </>
   );
 };
 
