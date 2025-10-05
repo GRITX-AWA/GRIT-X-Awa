@@ -99,9 +99,9 @@ const DashboardLayoutComponent: React.FC = () => {
               </div>
 
               {/* Main content area */}
-              <main className="flex-1 overflow-y-auto themed-scrollbar p-4 md:p-6 pt-16 md:pt-4 relative z-10">
+              <main className="flex-1 overflow-y-auto themed-scrollbar p-3 sm:p-4 md:p-6 pt-20 sm:pt-16 md:pt-4 relative z-10">
                 {/* Theme and Font Size toggle buttons */}
-                <div className="flex justify-end mb-4 gap-2">
+                <div className="flex justify-end mb-3 sm:mb-4 gap-2 sm:gap-3">
                   <FontSizeToggle />
                   <ThemeToggle />
                 </div>

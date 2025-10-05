@@ -49,26 +49,28 @@ export default function SideBar() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button - Fixed position with safe area */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/50 transition-all duration-300 hover:scale-110"
+        className="md:hidden fixed top-4 left-4 z-[60] w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/50 transition-all duration-300 active:scale-95 touch-manipulation"
+        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
       >
-        <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-white text-xl`}></i>
+        <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-white text-2xl`}></i>
       </button>
 
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[50] transition-all duration-300 animate-in fade-in"
           onClick={() => setIsMobileMenuOpen(false)}
+          aria-label="Close menu overlay"
         />
       )}
 
       {/* Sidebar - Desktop and Mobile */}
       <div className={`
-        fixed md:relative inset-y-0 left-0 z-40
-        m-2 bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-black dark:via-purple-950/30 dark:to-black backdrop-blur-md rounded-2xl flex flex-col h-[calc(100vh-16px)] w-64 md:w-72 shadow-2xl border border-purple-300/40 dark:border-purple-400/30 overflow-hidden transition-all duration-300
+        fixed md:relative inset-y-0 left-0 z-[55]
+        m-0 md:m-2 bg-gradient-to-b from-white via-purple-50/30 to-white dark:from-black dark:via-purple-950/30 dark:to-black backdrop-blur-md md:rounded-2xl flex flex-col h-screen md:h-[calc(100vh-16px)] w-[85vw] max-w-[320px] md:w-72 shadow-2xl border-r md:border border-purple-300/40 dark:border-purple-400/30 overflow-hidden transition-transform duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}
       style={{ touchAction: 'pan-y' }}
@@ -81,8 +83,8 @@ export default function SideBar() {
       </div>
 
       {/* Logo and title */}
-      <div className="relative z-10 p-4 md:p-5 border-b border-purple-500/20 dark:border-purple-400/20 flex-shrink-0 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent">
-        <div className="flex items-center gap-2 md:gap-3 mb-3">
+      <div className="relative z-10 p-3 sm:p-4 md:p-5 border-b border-purple-500/20 dark:border-purple-400/20 flex-shrink-0 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent">
+        <div className="flex items-center gap-2 md:gap-3 mb-2 sm:mb-3">
           <a href="/" title="Return to landing page">
             <div className="group w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 flex items-center justify-center hover:scale-110 transform transition-all duration-300 shadow-lg shadow-purple-500/50 hover:shadow-purple-400/70 hover:rotate-6">
               <i className="fa-solid fa-arrow-left text-white text-sm md:text-base group-hover:scale-110 transition-transform"></i>
@@ -109,7 +111,7 @@ export default function SideBar() {
       </div>
 
       {/* Navigation - with overflow scrolling */}
-      <div className="relative z-10 p-4 flex flex-col gap-2 flex-1 themed-scrollbar overflow-y-auto">
+      <div className="relative z-10 p-3 sm:p-4 flex flex-col gap-2 flex-1 themed-scrollbar overflow-y-auto overscroll-contain">
         <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2 px-2">
           <i className="fas fa-rocket mr-2"></i>Explore
         </div>
@@ -147,7 +149,7 @@ export default function SideBar() {
       </div>
 
       {/* Footer links */}
-      <div className="relative z-10 p-4 border-t border-purple-500/20 dark:border-purple-400/20 flex-shrink-0 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent space-y-2">
+      <div className="relative z-10 p-3 sm:p-4 border-t border-purple-500/20 dark:border-purple-400/20 flex-shrink-0 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent space-y-2">
         <NavItem
           icon={<i className="fas fa-book-open"></i>}
           label="Help & Resources"
