@@ -99,7 +99,7 @@ export default function SideBar() {
         {/* Team badge */}
         <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-lg border border-purple-400/30 dark:border-purple-500/20">
           <i className="fas fa-users text-purple-600 dark:text-purple-400 text-xs"></i>
-          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">GRIT-X Team</span>
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">GRIT-X AWA Team</span>
           <div className="ml-auto flex -space-x-1 flex-shrink-0">
             <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white dark:border-slate-900"></div>
             <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-white dark:border-slate-900"></div>
@@ -143,10 +143,6 @@ export default function SideBar() {
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
           <i className="fas fa-star text-purple-400/50 text-xs"></i>
           <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
-        </div>
-
-        <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2 px-2">
-          <i className="fas fa-satellite mr-2"></i>Resources
         </div>
       </div>
 
