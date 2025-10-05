@@ -26,7 +26,8 @@ build/
 # Astro specific
 .astro/
 *.astro.js
-
+new tess/
+csv/
 # Testing
 coverage/
 *.lcov

@@ -129,6 +129,26 @@ async def upload_csv_file(
 
         # 7. Save analyzed exoplanets to database for tracking and validation
         try:
+            # Define valid fields for AnalyzedExoplanet model
+            valid_fields = {
+                'kepid', 'kepler_name', 'koi_disposition', 'koi_pdisposition',
+                'koi_score', 'koi_fpflag_nt', 'koi_fpflag_ss', 'koi_fpflag_co',
+                'koi_fpflag_ec', 'koi_period', 'koi_impact', 'koi_duration',
+                'koi_depth', 'koi_prad', 'koi_teq', 'koi_insol', 'koi_model_snr',
+                'koi_tce_plnt_num', 'koi_steff', 'koi_slogg', 'koi_srad', 'koi_kepmag',
+                'toi', 'tid', 'tfopwg_disp', 'rastr', 'decstr', 'pl_orbper',
+                'pl_rade', 'pl_trandep', 'pl_trandurh', 'pl_eqt', 'pl_insol',
+                'st_rad', 'st_teff', 'st_logg', 'st_dist', 'st_pmra', 'st_pmdec',
+                'st_tmag', 'toi_created', 'rowupdate', 'ra', 'dec'
+            }
+            
+            # Field name mappings for variations in CSV column names
+            field_mappings = {
+                'kepoi_name': 'kepler_name',
+                'tic_id': 'tid',
+                'toi_id': 'toi',
+            }
+            
             for idx, (pred_class, proba) in enumerate(zip(predicted_classes, probabilities)):
                 # Get max confidence
                 max_confidence = float(max(proba))
@@ -142,16 +162,23 @@ async def upload_csv_file(
                     'confidence_score': max_confidence,
                 }
 
-                # Add original data from CSV
+                # Add original data from CSV (only valid fields)
                 original_row = original_df.iloc[idx].to_dict()
                 for key, value in original_row.items():
+                    # Apply field name mapping if exists
+                    mapped_key = field_mappings.get(key, key)
+                    
+                    # Only add if it's a valid field
+                    if mapped_key not in valid_fields:
+                        continue
+                    
                     # Convert numpy types to python types
                     if hasattr(value, 'item'):
                         value = value.item()
                     # Skip NaN values
                     if value != value:  # NaN check
                         continue
-                    exoplanet_data[key] = value
+                    exoplanet_data[mapped_key] = value
 
                 # Create and save exoplanet
                 exoplanet = AnalyzedExoplanet(**exoplanet_data)

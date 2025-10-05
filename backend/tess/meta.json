@@ -1,1 +1,24 @@
-{"feature_order": ["ra", "dec", "st_teff", "st_logg", "st_rad", "st_dist", "st_pmra", "st_pmdec", "st_tmag", "pl_orbper", "pl_rade", "pl_trandep", "pl_trandurh", "pl_eqt", "pl_insol"], "weights": [0.4, 0.35, 0.25], "class_names": ["APC", "CP", "FA", "FP", "KP", "PC"]}
+{
+  "feature_order": [
+    "ra",
+    "dec",
+    "st_teff",
+    "st_logg",
+    "st_rad",
+    "st_dist",
+    "st_pmra",
+    "st_pmdec",
+    "st_tmag",
+    "pl_orbper",
+    "pl_rade",
+    "pl_trandep",
+    "pl_trandurh",
+    "pl_eqt",
+    "pl_insol",
+    "pl_tranmid",
+    "pl_pnum"
+  ],
+  "weights": [0.4, 0.35, 0.25],
+  "class_names": ["APC", "CP", "FA", "FP", "KP", "PC"],
+  "note": "Models trained with feature engineering pipeline. Requires 17 base features that are transformed into ~66 engineered features."
+}

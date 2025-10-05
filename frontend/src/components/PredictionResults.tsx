@@ -4,13 +4,16 @@ import type { UploadResponse } from '../services/api';
 import { exoplanetService } from '../services/exoplanetService';
 import { PageContext } from './DashboardLayoutComponent';
 import { ThemeContext } from './ThemeContext';
+import { useExoplanet } from '../contexts/ExoplanetContext';
 
 interface PredictionResultsProps {
   results: UploadResponse;
   onClose: () => void;
+  uploadedFile?: File | null;
+  fileData?: string | null;
 }
 
-export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, onClose }) => {
+export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, onClose, uploadedFile, fileData }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [showConfidence, setShowConfidence] = useState(true);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -18,6 +21,7 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
   const itemsPerPage = 10;
   const { setActivePage } = useContext(PageContext);
   const { darkMode } = useContext(ThemeContext);
+  const { setSelectedExoplanets } = useExoplanet();
 
   useEffect(() => {
     setMounted(true);
@@ -102,18 +106,63 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({ results, o
   const viewAll3D = async () => {
     try {
       setLoadingAction('3d-all');
+      
+      // Get CSV text - either from file or from saved data
+      let csvText: string | null = null;
+      
+      if (uploadedFile) {
+        csvText = await uploadedFile.text();
+      } else if (fileData) {
+        csvText = fileData;
+      }
+      
+      // Parse CSV to get exoplanet data
+      if (csvText) {
+        const lines = csvText.split('\n').filter(line => line.trim());
+        
+        if (lines.length > 1) {
+          const headers = lines[0].split(',').map(h => h.trim());
+          const exoplanets = [];
+          
+          // Parse each row (skip header)
+          for (let i = 1; i < Math.min(lines.length, 101); i++) { // Limit to 100 exoplanets for performance
+            const values = lines[i].split(',').map(v => v.trim());
+            const rowData: any = {};
+            
+            headers.forEach((header, index) => {
+              const value = values[index];
+              // Convert numeric values
+              if (value && !isNaN(Number(value))) {
+                rowData[header] = Number(value);
+              } else {
+                rowData[header] = value;
+              }
+            });
+            
+            exoplanets.push(rowData);
+          }
+          
+          // Determine dataset type and set in context
+          const datasetType = results.dataset_type as 'kepler' | 'tess';
+          setSelectedExoplanets(exoplanets, datasetType);
+          
+          console.log(`Loaded ${exoplanets.length} exoplanets for 3D visualization`);
+        }
+      } else {
+        console.warn('No file data available for 3D visualization');
+        alert('Unable to load exoplanet data for 3D visualization. Please re-run the prediction.');
+      }
+      
       // Navigate to visualizations page
       setActivePage('visualizations');
       onClose();
     } catch (error) {
       console.error('Error navigating to 3D view:', error);
-      alert('Failed to navigate to 3D visualization');
+      alert('Failed to navigate to 3D visualization. Please try again.');
     } finally {
       setLoadingAction(null);
     }
-  };
-
-  return mounted ? createPortal(
+  };  return mounted ? createPortal(
     <div className="fixed inset-0 bg-gradient-to-br from-gray-100 via-white to-gray-100 dark:from-gray-900 dark:via-black dark:to-gray-900 z-50 overflow-hidden">
       {/* Animated background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5 dark:from-cyan-500/10 dark:via-transparent dark:to-blue-500/10 animate-pulse" />

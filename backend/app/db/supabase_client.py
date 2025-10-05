@@ -36,7 +36,11 @@ def is_supabase_available() -> bool:
 
 def upload_file_bytes(path_in_bucket: str, file_bytes: bytes):
     sb = get_supabase()
-    return sb.storage.from_(BUCKET).upload(path_in_bucket, file_bytes, {"upsert": True})
+    return sb.storage.from_(BUCKET).upload(
+        path_in_bucket, 
+        file_bytes, 
+        file_options={"content-type": "application/octet-stream", "upsert": "true"}
+    )
 
 def get_public_url(path_in_bucket: str):
     sb = get_supabase()

@@ -268,7 +268,7 @@ class ExoplanetValidationService:
                 sb_client.storage.from_("user-uploads").upload(
                     bucket_path,
                     csv_bytes,
-                    {"upsert": True}
+                    file_options={"content-type": "text/csv", "upsert": "true"}
                 )
 
                 # Update exoplanet record

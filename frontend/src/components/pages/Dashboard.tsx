@@ -10,6 +10,7 @@ import { apiService, type UploadResponse } from '../../services/api';
 
 // LocalStorage key for prediction results
 const LAST_PREDICTION_KEY = 'lastPredictionResults';
+const LAST_FILE_DATA_KEY = 'lastPredictionFileData';
 
 type MLModel = 'tess' | 'kepler';
 type InputMode = 'file' | 'manual';
@@ -457,6 +458,7 @@ const Dashboard: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<MLModel>('tess');
   const [inputMode, setInputMode] = useState<InputMode>('file');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [lastUploadedFileData, setLastUploadedFileData] = useState<string | null>(null);
   const [predictionResults, setPredictionResults] = useState<UploadResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [hasLastResults, setHasLastResults] = useState(false);
@@ -495,6 +497,7 @@ const Dashboard: React.FC = () => {
   // Function to view last saved results
   const viewLastResults = () => {
     const savedResults = localStorage.getItem(LAST_PREDICTION_KEY);
+    const savedFileData = localStorage.getItem(LAST_FILE_DATA_KEY);
     if (savedResults) {
       try {
         const parsed = JSON.parse(savedResults);
@@ -502,6 +505,9 @@ const Dashboard: React.FC = () => {
         const { savedAt, ...results } = parsed;
         setPredictionResults(results);
         setShowResults(true);
+        
+        // Set the file data for 3D visualization
+        setLastUploadedFileData(savedFileData);
       } catch (error) {
         console.error('Failed to load saved results:', error);
         alert('Failed to load saved results. The data may be corrupted.');
@@ -872,6 +878,17 @@ const Dashboard: React.FC = () => {
         savedAt: new Date().toISOString()
       };
       localStorage.setItem(LAST_PREDICTION_KEY, JSON.stringify(resultsWithTimestamp));
+      
+      // Save file data (as text) for 3D visualization later
+      if (uploadedFile) {
+        try {
+          const fileText = await uploadedFile.text();
+          localStorage.setItem(LAST_FILE_DATA_KEY, fileText);
+        } catch (err) {
+          console.warn('Failed to save file data:', err);
+        }
+      }
+      
       setHasLastResults(true);
       
       // Store results and show modal
@@ -1729,7 +1746,12 @@ const Dashboard: React.FC = () => {
       {showResults && predictionResults && (
         <PredictionResults
           results={predictionResults}
-          onClose={() => setShowResults(false)}
+          onClose={() => {
+            setShowResults(false);
+            setLastUploadedFileData(null); // Clear file data when closing
+          }}
+          uploadedFile={uploadedFile}
+          fileData={lastUploadedFileData}
         />
       )}
     </div>

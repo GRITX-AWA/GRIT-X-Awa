@@ -130,45 +130,32 @@ class CSVProcessor:
 
     def preprocess_tess(self, df: pd.DataFrame) -> np.ndarray:
         """
-        Preprocess TESS dataset using trained imputer and encoders
+        Preprocess TESS dataset using feature engineering and trained imputer
 
         Args:
-            df: Raw DataFrame with TESS features
+            df: Raw DataFrame with TESS base features (17 features)
 
         Returns:
-            Preprocessed feature array ready for prediction
+            Preprocessed feature array ready for prediction (~66 engineered features)
         """
+        from app.services.tess_feature_engineering import TessFeatureEngineer
+
         models = self.model_loader.get_tess_models()
         metadata = models['metadata']
         feature_order = metadata['feature_order']
 
-        # Ensure we have all required features
+        # Ensure we have all required base features
         missing_features = set(feature_order) - set(df.columns)
         if missing_features:
             raise ValueError(f"Missing required features: {missing_features}")
 
-        # Select and order features according to training
-        df_ordered = df[feature_order].copy()
+        # Apply feature engineering pipeline
+        feature_engineer = TessFeatureEngineer()
+        df_engineered = feature_engineer.engineer_features(df)
 
-        # Handle categorical encoding if present
-        encoders = models['encoders']
-        if isinstance(encoders, dict):
-            for col, encoder in encoders.items():
-                if col in df_ordered.columns:
-                    try:
-                        df_ordered[col] = encoder.transform(df_ordered[col])
-                    except ValueError as e:
-                        # Get known classes
-                        known_classes = encoder.classes_ if hasattr(encoder, 'classes_') else []
-                        unknown_values = set(df_ordered[col].unique()) - set(known_classes)
-                        raise ValueError(
-                            f"Column '{col}' contains unknown values: {unknown_values}. "
-                            f"Expected one of: {list(known_classes)}"
-                        )
-
-        # Impute missing values
+        # Impute missing values using the trained imputer
         imputer = models['imputer']
-        X_imputed = imputer.transform(df_ordered.values)
+        X_imputed = imputer.transform(df_engineered.values)
 
         return X_imputed
 

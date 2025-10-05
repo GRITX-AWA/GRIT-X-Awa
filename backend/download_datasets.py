@@ -116,7 +116,7 @@ def download_and_convert():
                     supabase.storage.from_(BUCKET).upload(
                         f"{dataset_name}_chunks/metadata.json",
                         f.read(),
-                        {"upsert": "true"}
+                        file_options={"content-type": "application/json", "upsert": "true"}
                     )
 
                 # Upload each chunk
@@ -126,7 +126,7 @@ def download_and_convert():
                         supabase.storage.from_(BUCKET).upload(
                             f"{dataset_name}_chunks/chunk_{i}.json",
                             f.read(),
-                            {"upsert": "true"}
+                            file_options={"content-type": "application/json", "upsert": "true"}
                         )
 
                 print(f"   [OK] Uploaded {total_chunks} chunks + metadata to Supabase")
