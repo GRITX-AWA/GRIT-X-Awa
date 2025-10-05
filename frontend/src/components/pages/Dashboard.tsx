@@ -3,9 +3,9 @@ import React, { useState, useRef } from 'react';
 import { useSharedState } from '../context/SharedContext';
 import DashboardSection from '../DashboardSection';
 import Modal from '../Modal';
-import RecentCard from '../RecentCard';
 import RecentActivity from '../RecentActivity';
-import type { RecentActivityRef } from '../RecentActivity';
+import { PredictionResults } from '../PredictionResults';
+import { apiService, type UploadResponse } from '../../services/api';
 
 type MLModel = 'tess' | 'kepler';
 type InputMode = 'file' | 'manual';
@@ -188,6 +188,8 @@ const Dashboard: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<MLModel>('tess');
   const [inputMode, setInputMode] = useState<InputMode>('file');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [predictionResults, setPredictionResults] = useState<UploadResponse | null>(null);
+  const [showResults, setShowResults] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [fileInfoMessage, setFileInfoMessage] = useState<string | null>(null);
   const [manualData, setManualData] = useState<ManualInputRow[]>([{}]);
@@ -448,10 +450,10 @@ const Dashboard: React.FC = () => {
     setFileInfoMessage(null);
     setValidationErrors([]);
 
-    // Validate file size (5MB)
-    const maxSize = 5 * 1024 * 1024;
+    // Validate file size (50MB for ML processing)
+    const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
-      setFileError(`File size (${(file.size / 1024 / 1024).toFixed(2)} MB) exceeds 5MB limit`);
+      setFileError(`File size (${(file.size / 1024 / 1024).toFixed(2)} MB) exceeds 50MB limit`);
       setUploadedFile(null);
       return;
     }
@@ -466,16 +468,15 @@ const Dashboard: React.FC = () => {
       return;
     }
 
-    // Parse and validate CSV/TXT for column names
+    // For CSV/TXT: Do lightweight validation but don't block upload
     if (file.name.toLowerCase().endsWith('.csv') || file.name.toLowerCase().endsWith('.txt')) {
-      // Set uploaded file first (like Dashboard copy - validates but still sets file)
+      // Set uploaded file first
       setUploadedFile(file);
 
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const text = e.target?.result as string;
-          const errors: string[] = [];
 
           // Filter out empty lines and comments
           const allLines = text.split('\n');
@@ -500,47 +501,31 @@ const Dashboard: React.FC = () => {
           const headers = lines[0].split(',').map(h => h.trim());
           const requiredCols = modelColumns[selectedModel];
 
-          // Check for missing required columns
+          // Check for missing required columns - but show as INFO, not error
           const missingCols = requiredCols.filter(col => !headers.includes(col));
+          
           if (missingCols.length > 0) {
-            errors.push(`Missing required columns: ${missingCols.join(', ')}`);
-          }
-
-          // Check for duplicate columns
-          const duplicates = headers.filter((item, index) => headers.indexOf(item) !== index);
-          if (duplicates.length > 0) {
-            errors.push(`Duplicate columns found: ${[...new Set(duplicates)].join(', ')}`);
-          }
-
-          // Validate data rows
-          const dataRows = lines.slice(1);
-          const columnCount = headers.length;
-
-          // Sample validate first 10 rows
-          const rowsToValidate = dataRows.slice(0, 10);
-          rowsToValidate.forEach((row, idx) => {
-            const cells = row.split(',');
-            if (cells.length !== columnCount) {
-              errors.push(`Row ${idx + 2}: Expected ${columnCount} columns, found ${cells.length}`);
-            }
-          });
-
-          // Show errors but keep file set (like Dashboard copy)
-          if (errors.length > 0) {
-            setValidationErrors(errors.slice(0, 5)); // Show max 5 errors
-            if (errors.length > 5) {
-              setValidationErrors(prev => [...prev, `...and ${errors.length - 5} more errors`]);
-            }
+            // Show informational message instead of blocking
+            setFileInfoMessage(
+              `ℹ️ Note: This file may not match the ${selectedModel.toUpperCase()} model columns. ` +
+              `The backend will auto-detect the dataset type (Kepler or TESS) when you run the analysis. ` +
+              `If columns don't match either dataset, you'll get an error during processing.`
+            );
           } else {
-            setValidationErrors([]);
+            // File looks good!
+            setFileInfoMessage(`✓ File validated successfully! Found ${lines.length - 1} data rows with correct ${selectedModel.toUpperCase()} columns.`);
           }
+
+          // No validation errors - let backend handle detailed validation
+          setValidationErrors([]);
+
         } catch (error) {
-          setFileError('Error parsing file. Please check the format.');
+          setFileError(`Error reading file: ${error instanceof Error ? error.message : 'Unknown error'}`);
           setUploadedFile(null);
         }
       };
       reader.onerror = () => {
-        setFileError('Error reading file. Please try again.');
+        setFileError('Failed to read file');
         setUploadedFile(null);
       };
       reader.readAsText(file);
@@ -568,12 +553,6 @@ const Dashboard: React.FC = () => {
   const handleAnalyze = async () => {
     if (!uploadedFile && inputMode === 'file') return;
 
-    // Final validation check before running ML model
-    if (validationErrors.length > 0) {
-      setFileError('Cannot run ML analysis: Please fix all validation errors first.');
-      return;
-    }
-
     // Additional check for XLSX files
     if (uploadedFile?.name.toLowerCase().endsWith('.xlsx')) {
       const confirmRun = window.confirm(
@@ -584,20 +563,35 @@ const Dashboard: React.FC = () => {
     }
 
     setIsAnalyzing(true);
+    setFileError(null);
+    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Call the real API
+      const results = await apiService.uploadAndPredict(uploadedFile!);
+      
+      // Store results and show modal
+      setPredictionResults(results);
+      setShowResults(true);
+      
+      // Set a simple success message in the analysis result
       setAnalysisResult({
-        confidence: Math.random() * 0.5 + 0.5,
-        type: selectedModel === 'kepler' ? 'Confirmed' : 'PC',
-        confirmed: null
+        confidence: 1,
+        type: `${results.dataset_type.toUpperCase()}: ${results.total_predictions} predictions`,
+        confirmed: true
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      
+      // Extract error message from API response
+      const errorMessage = error?.data?.detail || error?.message || 'Analysis failed. Please try again.';
+      
       setAnalysisResult({
         confidence: 0,
         confirmed: null,
-        error: 'Analysis failed. Please try again.'
+        error: errorMessage
       });
+      
+      setFileError(`Upload failed: ${errorMessage}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -1392,6 +1386,14 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
       </Modal>
+
+      {/* Prediction Results Modal */}
+      {showResults && predictionResults && (
+        <PredictionResults
+          results={predictionResults}
+          onClose={() => setShowResults(false)}
+        />
+      )}
     </div>
   );
 };

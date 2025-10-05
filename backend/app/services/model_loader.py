@@ -6,6 +6,13 @@ from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
 import numpy as np
 
+# Try to import joblib for compatibility
+try:
+    import joblib
+    HAS_JOBLIB = True
+except ImportError:
+    HAS_JOBLIB = False
+
 class ModelLoader:
     """
     Loads and caches ensemble ML models (CatBoost, XGBoost, LightGBM)
@@ -22,9 +29,22 @@ class ModelLoader:
         self._tess_cache: Optional[Dict[str, Any]] = None
 
     def _load_pickle(self, file_path: Path) -> Any:
-        """Load a pickle file"""
-        with open(file_path, 'rb') as f:
-            return pickle.load(f)
+        """Load a pickle or joblib file"""
+        # Try joblib first (more common for sklearn models)
+        if HAS_JOBLIB:
+            try:
+                return joblib.load(file_path)
+            except Exception as e_joblib:
+                # If joblib fails, try pickle
+                try:
+                    with open(file_path, 'rb') as f:
+                        return pickle.load(f)
+                except Exception as e_pickle:
+                    raise Exception(f"Failed to load {file_path}: joblib error: {e_joblib}, pickle error: {e_pickle}")
+        else:
+            # Only pickle available
+            with open(file_path, 'rb') as f:
+                return pickle.load(f)
 
     def _load_json(self, file_path: Path) -> Dict:
         """Load a JSON file"""
