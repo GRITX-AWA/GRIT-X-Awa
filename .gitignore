@@ -23,6 +23,7 @@ build/
 .vercel/
 .netlify/
 *.csv
+tess-new/
 # Astro specific
 .astro/
 *.astro.js

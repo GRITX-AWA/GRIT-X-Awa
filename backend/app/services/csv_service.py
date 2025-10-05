@@ -21,11 +21,12 @@ class CSVProcessor:
         'koi_srad', 'ra', 'dec', 'koi_kepmag'
     }
 
-    # TESS base features (15 features - must match training data exactly)
+    # TESS base features (17 features for new v2.0 model with feature engineering)
     TESS_FEATURES = {
         'ra', 'dec', 'st_teff', 'st_logg', 'st_rad', 'st_dist',
         'st_pmra', 'st_pmdec', 'st_tmag', 'pl_orbper', 'pl_rade',
-        'pl_trandep', 'pl_trandurh', 'pl_eqt', 'pl_insol'
+        'pl_trandep', 'pl_trandurh', 'pl_eqt', 'pl_insol',
+        'pl_tranmid', 'pl_pnum'  # New model requires these additional features
     }
 
     def __init__(self):
@@ -131,38 +132,64 @@ class CSVProcessor:
 
     def preprocess_tess(self, df: pd.DataFrame) -> np.ndarray:
         """
-        Preprocess TESS dataset using winsorization and trained imputer
+        Preprocess TESS dataset using new optimized pipeline with feature engineering
+
+        This implements the new TESS model (v2.0) with 92.3% accuracy:
+        1. Winsorization (1% each tail)
+        2. Feature engineering (17 base -> 34 engineered features)
+        3. KNN imputation
 
         Args:
-            df: Raw DataFrame with TESS base features (15 features)
+            df: Raw DataFrame with TESS base features (17 features)
 
         Returns:
-            Preprocessed feature array ready for prediction (15 features)
+            Preprocessed feature array ready for prediction (34 features)
         """
-        from scipy.stats.mstats import winsorize
+        from app.services.tess_new_feature_engineering import get_tess_new_feature_engineer
 
         models = self.model_loader.get_tess_models()
         metadata = models['metadata']
-        feature_order = metadata['feature_order']
 
-        # Ensure we have all required base features
-        missing_features = set(feature_order) - set(df.columns)
-        if missing_features:
-            raise ValueError(f"Missing required features: {missing_features}")
+        # Check if this is the new model requiring feature engineering
+        requires_engineering = metadata.get('requires_feature_engineering', False)
 
-        # Select and order features according to training
-        df_ordered = df[feature_order].copy()
+        if requires_engineering:
+            # New model path with feature engineering
+            feature_engineer = get_tess_new_feature_engineer()
 
-        # Apply winsorization (1% on each tail) to handle outliers
-        for col in feature_order:
-            if col in df_ordered.columns:
-                df_ordered[col] = winsorize(df_ordered[col], limits=[0.01, 0.01])
+            # This handles: winsorization + feature engineering
+            # Returns 34 features in correct order
+            df_engineered = feature_engineer.preprocess(df)
 
-        # Apply imputation using trained imputer
-        imputer = models['imputer']
-        X_imputed = imputer.transform(df_ordered.values)
+            # Apply imputation using trained imputer
+            imputer = models['imputer']
+            X_imputed = imputer.transform(df_engineered.values)
 
-        return X_imputed
+            return X_imputed
+        else:
+            # Legacy model path (15 features, simple preprocessing)
+            from scipy.stats.mstats import winsorize
+
+            feature_order = metadata['feature_order']
+
+            # Ensure we have all required base features
+            missing_features = set(feature_order) - set(df.columns)
+            if missing_features:
+                raise ValueError(f"Missing required features: {missing_features}")
+
+            # Select and order features according to training
+            df_ordered = df[feature_order].copy()
+
+            # Apply winsorization (1% on each tail) to handle outliers
+            for col in feature_order:
+                if col in df_ordered.columns:
+                    df_ordered[col] = winsorize(df_ordered[col], limits=[0.01, 0.01])
+
+            # Apply imputation using trained imputer
+            imputer = models['imputer']
+            X_imputed = imputer.transform(df_ordered.values)
+
+            return X_imputed
 
     def polish_csv(self, df: pd.DataFrame, dataset_type: str = None) -> pd.DataFrame:
         """
