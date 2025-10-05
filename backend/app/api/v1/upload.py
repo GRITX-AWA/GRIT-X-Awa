@@ -1,17 +1,25 @@
 # app/api/v1/upload.py
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, BackgroundTasks
 from datetime import datetime
 import uuid
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import supabase_client as sb
+from app.db.database import get_db
 from app.services.csv_service import get_csv_processor
 from app.services.model_loader import get_model_loader
+from app.services.validation_service import get_validation_service
 from app.modules.ml.schemas import UploadResponse, UploadLogCreate
+from app.models.exoplanet import AnalyzedExoplanet
 
 router = APIRouter(prefix="/api/v1/upload", tags=["upload"])
 
 
 @router.post("/csv", response_model=UploadResponse)
-async def upload_csv_file(file: UploadFile = File(...)):
+async def upload_csv_file(
+    file: UploadFile = File(...),
+    background_tasks: BackgroundTasks = None,
+    db: AsyncSession = Depends(get_db)
+):
     """
     Upload a CSV file, run ML predictions, and save results to Supabase
 
@@ -119,7 +127,56 @@ async def upload_csv_file(file: UploadFile = File(...)):
             print(f"⚠️  Warning: Failed to save predictions to Supabase: {str(e)}")
             # Still return results even if saving fails
 
-        # 7. Return response
+        # 7. Save analyzed exoplanets to database for tracking and validation
+        try:
+            for idx, (pred_class, proba) in enumerate(zip(predicted_classes, probabilities)):
+                # Get max confidence
+                max_confidence = float(max(proba))
+
+                # Create exoplanet record with all original data
+                exoplanet_data = {
+                    'job_id': job_id,
+                    'row_index': idx,
+                    'dataset_type': dataset_type,
+                    'predicted_class': class_names[pred_class],
+                    'confidence_score': max_confidence,
+                }
+
+                # Add original data from CSV
+                original_row = original_df.iloc[idx].to_dict()
+                for key, value in original_row.items():
+                    # Convert numpy types to python types
+                    if hasattr(value, 'item'):
+                        value = value.item()
+                    # Skip NaN values
+                    if value != value:  # NaN check
+                        continue
+                    exoplanet_data[key] = value
+
+                # Create and save exoplanet
+                exoplanet = AnalyzedExoplanet(**exoplanet_data)
+                db.add(exoplanet)
+
+            await db.commit()
+            print(f"✅ Saved {len(predictions_list)} analyzed exoplanets to database")
+
+            # 8. Trigger background validation
+            if background_tasks:
+                validation_service = get_validation_service()
+                background_tasks.add_task(
+                    validation_service.validate_batch,
+                    job_id,
+                    db
+                )
+                print(f"🔍 Background validation queued for job {job_id}")
+
+        except Exception as e:
+            print(f"⚠️  Warning: Failed to save analyzed exoplanets: {str(e)}")
+            # Don't fail the request if saving fails
+            import traceback
+            traceback.print_exc()
+
+        # 9. Return response
         return UploadResponse(
             success=True,
             message=f"Successfully processed {len(predictions_list)} predictions",

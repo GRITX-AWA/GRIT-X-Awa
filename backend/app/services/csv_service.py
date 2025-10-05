@@ -98,11 +98,29 @@ class CSVProcessor:
         if isinstance(encoders, dict):
             for col, encoder in encoders.items():
                 if col in df_ordered.columns:
-                    df_ordered[col] = encoder.transform(df_ordered[col])
+                    try:
+                        df_ordered[col] = encoder.transform(df_ordered[col])
+                    except ValueError as e:
+                        # Get known classes
+                        known_classes = encoder.classes_ if hasattr(encoder, 'classes_') else []
+                        unknown_values = set(df_ordered[col].unique()) - set(known_classes)
+                        raise ValueError(
+                            f"Column '{col}' contains unknown values: {unknown_values}. "
+                            f"Expected one of: {list(known_classes)}"
+                        )
         else:
             # If encoders is a single LabelEncoder for koi_pdisposition
             if 'koi_pdisposition' in df_ordered.columns:
-                df_ordered['koi_pdisposition'] = encoders.transform(df_ordered['koi_pdisposition'])
+                try:
+                    df_ordered['koi_pdisposition'] = encoders.transform(df_ordered['koi_pdisposition'])
+                except ValueError as e:
+                    # Get known classes
+                    known_classes = encoders.classes_ if hasattr(encoders, 'classes_') else []
+                    unknown_values = set(df_ordered['koi_pdisposition'].unique()) - set(known_classes)
+                    raise ValueError(
+                        f"Column 'koi_pdisposition' contains unknown values: {unknown_values}. "
+                        f"Expected one of: {list(known_classes)}"
+                    )
 
         # Impute missing values
         imputer = models['imputer']
@@ -137,13 +155,69 @@ class CSVProcessor:
         if isinstance(encoders, dict):
             for col, encoder in encoders.items():
                 if col in df_ordered.columns:
-                    df_ordered[col] = encoder.transform(df_ordered[col])
+                    try:
+                        df_ordered[col] = encoder.transform(df_ordered[col])
+                    except ValueError as e:
+                        # Get known classes
+                        known_classes = encoder.classes_ if hasattr(encoder, 'classes_') else []
+                        unknown_values = set(df_ordered[col].unique()) - set(known_classes)
+                        raise ValueError(
+                            f"Column '{col}' contains unknown values: {unknown_values}. "
+                            f"Expected one of: {list(known_classes)}"
+                        )
 
         # Impute missing values
         imputer = models['imputer']
         X_imputed = imputer.transform(df_ordered.values)
 
         return X_imputed
+
+    def polish_csv(self, df: pd.DataFrame, dataset_type: str = None) -> pd.DataFrame:
+        """
+        Remove unused columns from CSV, keeping only features used by the model
+
+        Args:
+            df: Input DataFrame
+            dataset_type: 'kepler' or 'tess'. If None, auto-detects.
+
+        Returns:
+            DataFrame with only model-relevant columns
+        """
+        # Auto-detect if not specified
+        if dataset_type is None:
+            dataset_type = self.detect_dataset_type(df)
+
+        # Get the feature order from model metadata
+        models = self.model_loader.get_kepler_models() if dataset_type == 'kepler' else self.model_loader.get_tess_models()
+        required_features = models['metadata']['feature_order']
+
+        # Find which required features are present in the dataframe
+        available_features = [col for col in required_features if col in df.columns]
+
+        # Return only the available model features in the correct order
+        return df[available_features].copy()
+
+    def polish_csv_bytes(self, file_bytes: bytes, dataset_type: str = None) -> bytes:
+        """
+        Polish CSV file bytes by removing unused columns
+
+        Args:
+            file_bytes: CSV file content as bytes
+            dataset_type: 'kepler' or 'tess'. If None, auto-detects.
+
+        Returns:
+            Polished CSV as bytes
+        """
+        # Parse CSV
+        df = self.parse_csv(file_bytes)
+
+        # Polish the dataframe
+        polished_df = self.polish_csv(df, dataset_type)
+
+        # Convert back to CSV bytes
+        buffer = BytesIO()
+        polished_df.to_csv(buffer, index=False)
+        return buffer.getvalue()
 
     def process_csv_file(self, file_bytes: bytes) -> Tuple[str, np.ndarray, pd.DataFrame]:
         """
