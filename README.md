@@ -266,7 +266,7 @@ backend/
   - Support for batch predictions (1000+ rows)
 
 - **🤖 AI Chatbot Assistant**
-  - Powered by OpenAI GPT-4
+  - Powered by OpenAI GPT-3.5-Turbo
   - Expert guidance on exoplanet data analysis
   - Interactive Q&A about ML model predictions
   - Help with interpreting confidence scores and results
@@ -357,7 +357,7 @@ backend/
 ### **External APIs & Services**
 | Service | Purpose | Cost |
 |---------|---------|------|
-| **OpenAI API (GPT-4)** | AI chatbot assistant for exoplanet analysis | Paid (usage-based) |
+| **OpenAI API (GPT-3.5-Turbo)** | AI chatbot assistant for exoplanet analysis | Paid (usage-based) |
 | **NASA Exoplanet Archive** | Data source for Kepler & TESS datasets | Free |
 | **Supabase** | PostgreSQL database & file storage | Free tier available |
 | **Google Cloud Run** | Backend hosting & auto-scaling | Pay-per-use |
@@ -754,10 +754,10 @@ Response: {
   - TESS TOI Catalog: Training data for TESS ML model
   - Regular updates with new discoveries
 
-#### **OpenAI API (GPT-4)**
+#### **OpenAI API (GPT-3.5-Turbo)**
 - **Purpose:** Powers the AI chatbot assistant for intelligent data analysis help
 - **URL:** [https://platform.openai.com](https://platform.openai.com)
-- **Cost:** Pay-per-use (approximately $0.03 per 1K tokens for GPT-4)
+- **Cost:** Pay-per-use (approximately $0.002 per 1K tokens for GPT-3.5-Turbo)
 - **Features:**
   - Context-aware responses about exoplanet data
   - ML model interpretation assistance

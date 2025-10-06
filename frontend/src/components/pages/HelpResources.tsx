@@ -127,6 +127,7 @@ const HelpResources: React.FC = () => {
                   <li>• SQLAlchemy - ORM</li>
                   <li>• Supabase - Database & Storage</li>
                   <li>• OpenAI GPT-3.5-Turbo - AI Chatbot</li>
+                  <li>• Google Colab - Training environment</li>
                 </ul>
               </div>
 
@@ -142,6 +143,20 @@ const HelpResources: React.FC = () => {
                   <li>• TensorFlow & Keras</li>
                   <li>• Scikit-learn</li>
                   <li>• NASA Exoplanet Archive</li>
+                </ul>
+              </div>
+
+              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200/50 dark:border-purple-700/50">
+                <h4 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                  <i className="fas fa-robot text-purple-500"></i>
+                  AI Development Tools
+                </h4>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <li>• Grok (xAI) - AI assistant</li>
+                  <li>• Google Gemini - AI model</li>
+                  <li>• BlackBox AI - Code assistant</li>
+                  <li>• Windsurf - AI code editor</li>
+                  <li>• GitHub Copilot - Code completion</li>
                 </ul>
               </div>
             </div>
@@ -357,7 +372,7 @@ const HelpResources: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <i className="fas fa-robot text-purple-500"></i>
-                    <span><strong>OpenAI GPT-4</strong> - AI Chatbot</span>
+                    <span><strong>OpenAI GPT-3.5-Turbo</strong> - AI Chatbot</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <i className="fas fa-satellite text-blue-500"></i>

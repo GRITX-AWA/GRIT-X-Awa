@@ -1464,63 +1464,8 @@ const Dashboard: React.FC = () => {
         </DashboardSection>
       )}
 
-      {/* Recent Discoveries and Activity Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        {/* Recent Discoveries */}
-        <div className="md:col-span-2">
-          <DashboardSection
-            variant="cosmic"
-            title="Recent Discoveries"
-            subtitle="Latest exoplanet candidates identified by ML models"
-            icon={<i className="fas fa-telescope"></i>}
-          >
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Object</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Confidence</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Date</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {[
-                    { id: 'KIC 8462852', type: 'Super-Earth', confidence: 89, date: 'Today', color: 'from-green-500 to-emerald-600' },
-                    { id: 'TIC 260128333', type: 'Hot Neptune', confidence: 78, date: 'Yesterday', color: 'from-yellow-500 to-orange-600' },
-                    { id: 'EPIC 249631677', type: 'Mini Neptune', confidence: 92, date: '2 days ago', color: 'from-green-500 to-emerald-600' }
-                  ].map((discovery, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                      <td className="px-4 py-4 text-sm font-medium text-gray-800 dark:text-white">{discovery.id}</td>
-                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{discovery.type}</td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden max-w-[100px]">
-                            <div className={`h-full bg-gradient-to-r ${discovery.color} rounded-full`} style={{ width: `${discovery.confidence}%` }}></div>
-                          </div>
-                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{discovery.confidence}%</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{discovery.date}</td>
-                      <td className="px-4 py-4 text-right">
-                        <button className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium">
-                          View →
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </DashboardSection>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="md:col-span-1">
-          <RecentActivity ref={recentActivityRef} />
-        </div>
-      </div>
+      {/* Recent Activity */}
+      <RecentActivity ref={recentActivityRef} />
 
       {/* Hyperparameters Modal - Coming Soon */}
       <Modal isOpen={showHyperparamsModal} onClose={() => setShowHyperparamsModal(false)}>

@@ -285,7 +285,7 @@ Provide accurate, scientific, and helpful responses. Use emojis occasionally to 
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
               <i className="fas fa-info-circle mr-1"></i>
-              Powered by OpenAI GPT-4 • Your questions help improve the analysis
+              Powered by OpenAI GPT-3.5-Turbo • Your questions help improve the analysis
             </p>
           </div>
         </div>
