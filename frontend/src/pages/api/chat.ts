@@ -88,23 +88,30 @@ export const POST: APIRoute = async ({ request }) => {
     }
     
     // Get API key from environment variable (server-side only)
-    // Try both import.meta.env and process.env for compatibility
-    const apiKey = import.meta.env.OPENAI_API_KEY || 
-                   (typeof process !== 'undefined' ? process.env.OPENAI_API_KEY : undefined);
+    // Astro automatically loads .env files and exposes them via import.meta.env
+    const apiKey = import.meta.env.OPENAI_API_KEY;
     
     if (!apiKey) {
       console.error('❌ OPENAI_API_KEY not found!');
-      console.error('📁 Check if .env file exists in frontend/ directory');
+      console.error('📁 Current directory:', process.cwd());
+      console.error('📁 For local dev: Ensure .env file exists in frontend/ directory');
       console.error('📝 File should contain: OPENAI_API_KEY=sk-proj-...');
-      console.error('🔄 After adding, restart the dev server');
+      console.error('🔄 After adding .env file, RESTART the dev server');
+      console.error('📊 Available env vars:', Object.keys(import.meta.env).filter(k => !k.startsWith('_')).join(', '));
       return new Response(
         JSON.stringify({ 
           error: 'Server configuration error',
-          message: 'OpenAI API key is not configured. Please check the server logs and ensure OPENAI_API_KEY is set in your .env file, then restart the server.'
+          message: 'OpenAI API key is not configured. Please ensure OPENAI_API_KEY is set in your .env file and restart the server.',
+          debug: process.env.NODE_ENV === 'development' ? {
+            availableVars: Object.keys(import.meta.env).filter(k => !k.startsWith('_')),
+            cwd: process.cwd()
+          } : undefined
         }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
+    
+    console.log('✅ API key found (length: ' + apiKey.length + '), making request to OpenAI...');
     
     // Call OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
