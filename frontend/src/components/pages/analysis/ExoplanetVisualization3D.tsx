@@ -719,132 +719,41 @@ function ExoplanetModel({
           </>
         )}
 
-        {/* Label with distance from Earth - Enhanced Cosmic Tooltip with Research Data */}
+        {/* Label - ULTRA Compact Tooltip */}
         {showLabel && (
           <Html distanceFactor={10}>
-            <div className="relative group">
-              {/* Glow effect background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-blue-500/30 rounded-xl blur-md"></div>
-
-              {/* Main tooltip content - Enhanced for researchers */}
-              <div className="relative bg-gradient-to-br from-gray-900/95 via-purple-900/90 to-gray-900/95 text-white px-5 py-4 rounded-xl text-xs border-2 border-purple-500/50 pointer-events-none backdrop-blur-md shadow-2xl max-w-md">
-                {/* Planet name with gradient */}
-                <div className="font-bold text-lg bg-gradient-to-r from-purple-300 via-pink-300 to-blue-300 bg-clip-text text-transparent mb-2 flex items-center gap-2">
-                  <i className="fas fa-planet-ringed text-purple-400"></i>
+            <div className="relative">
+              {/* Tiny tooltip */}
+              <div className="relative bg-gray-900/95 text-white px-2 py-1.5 rounded-md text-[10px] border border-purple-500/40 pointer-events-none backdrop-blur-sm shadow-lg w-[140px]">
+                {/* Planet name */}
+                <div className="font-bold text-[11px] text-purple-300 mb-1 truncate flex items-center gap-1">
+                  <i className="fas fa-circle text-[6px]"></i>
                   {name}
                 </div>
 
-                {/* Distance from Earth */}
-                {(planetData?.sy_dist || planetData?.st_dist) && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-blue-200 mb-2 bg-blue-500/10 px-2 py-1.5 rounded-md">
-                    <i className="fas fa-globe text-blue-400"></i>
-                    <span className="font-semibold">{(planetData.sy_dist || planetData.st_dist)?.toFixed(2)} parsecs</span>
-                    <span className="text-blue-300/70">({((planetData.sy_dist || planetData.st_dist) * 3.26).toFixed(1)} light-years from Earth)</span>
+                {/* Key stats only - ultra compact */}
+                <div className="space-y-0.5 text-[9px]">
+                  <div className="flex justify-between">
+                    <span className="text-orange-300">🌡️ {temperature.toFixed(0)}K</span>
+                    <span className="text-purple-300">⭕ {radius.toFixed(1)}R⊕</span>
                   </div>
-                )}
-
-                {/* Planetary Parameters Grid */}
-                <div className="grid grid-cols-2 gap-2 mt-2 mb-2">
-                  {/* Temperature */}
-                  <div className="bg-orange-500/10 px-2 py-1.5 rounded-md">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <i className="fas fa-thermometer-half text-orange-400 text-[10px]"></i>
-                      <span className="text-orange-200 text-[10px] font-semibold">Temperature</span>
-                    </div>
-                    <div className="text-orange-100 font-bold">{temperature.toFixed(0)}K</div>
-                    <div className="text-orange-300/70 text-[9px]">({(temperature - 273.15).toFixed(0)}°C)</div>
-                  </div>
-
-                  {/* Radius */}
-                  <div className="bg-purple-500/10 px-2 py-1.5 rounded-md">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <i className="fas fa-circle text-purple-400 text-[10px]"></i>
-                      <span className="text-purple-200 text-[10px] font-semibold">Radius</span>
-                    </div>
-                    <div className="text-purple-100 font-bold">{radius.toFixed(2)} R⊕</div>
-                    <div className="text-purple-300/70 text-[9px]">({(radius * 6371).toFixed(0)} km)</div>
-                  </div>
-
-                  {/* Orbital Period */}
-                  <div className="bg-cyan-500/10 px-2 py-1.5 rounded-md">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <i className="fas fa-sync text-cyan-400 text-[10px]"></i>
-                      <span className="text-cyan-200 text-[10px] font-semibold">Orbital Period</span>
-                    </div>
-                    <div className="text-cyan-100 font-bold">{orbitalPeriod.toFixed(1)} days</div>
-                    <div className="text-cyan-300/70 text-[9px]">({(orbitalPeriod / 365.25).toFixed(2)} years)</div>
-                  </div>
-
-                  {/* Orbital Distance */}
-                  <div className="bg-indigo-500/10 px-2 py-1.5 rounded-md">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <i className="fas fa-arrows-alt-h text-indigo-400 text-[10px]"></i>
-                      <span className="text-indigo-200 text-[10px] font-semibold">Distance from Star</span>
-                    </div>
-                    <div className="text-indigo-100 font-bold">{distance.toFixed(3)} AU</div>
-                    <div className="text-indigo-300/70 text-[9px]">({(distance * 149.6).toFixed(1)} million km)</div>
+                  <div className="flex justify-between">
+                    <span className="text-cyan-300">🔄 {orbitalPeriod.toFixed(0)}d</span>
+                    <span className="text-indigo-300">📏 {distance.toFixed(2)}AU</span>
                   </div>
                 </div>
 
-                {/* Host Star Information */}
+                {/* Host star - single line */}
                 {(planetData?.koi_steff || planetData?.st_teff) && (
-                  <div className="bg-amber-500/10 px-2 py-1.5 rounded-md mt-2 border border-amber-500/30">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <i className="fas fa-star text-amber-400 text-[10px]"></i>
-                      <span className="text-amber-200 text-[10px] font-semibold">Host Star</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-[10px]">
-                      <div>
-                        <span className="text-amber-300/70">Temp: </span>
-                        <span className="text-amber-100 font-semibold">{(planetData.koi_steff || planetData.st_teff)?.toFixed(0)}K</span>
-                      </div>
-                      {(planetData?.koi_srad || planetData?.st_rad) && (
-                        <div>
-                          <span className="text-amber-300/70">Radius: </span>
-                          <span className="text-amber-100 font-semibold">{(planetData.koi_srad || planetData.st_rad)?.toFixed(2)} R☉</span>
-                        </div>
-                      )}
-                    </div>
+                  <div className="mt-1 pt-1 border-t border-purple-500/20 text-[8px] text-amber-200">
+                    ⭐ {(planetData.koi_steff || planetData.st_teff)?.toFixed(0)}K
                   </div>
                 )}
 
-                {/* Habitability Indicator */}
+                {/* Habitability badge - tiny */}
                 {temperature >= 273 && temperature <= 373 && (
-                  <div className="bg-green-500/20 border border-green-500/50 px-2 py-1.5 rounded-md mt-2 flex items-center gap-2">
-                    <i className="fas fa-check-circle text-green-400"></i>
-                    <span className="text-green-200 text-[10px] font-semibold">IN HABITABLE ZONE</span>
-                    <i className="fas fa-droplet text-blue-400 text-[10px]"></i>
-                  </div>
+                  <div className="mt-1 text-[8px] text-green-300">✓ Habitable</div>
                 )}
-                {temperature < 273 && temperature >= 200 && (
-                  <div className="bg-blue-500/20 border border-blue-500/50 px-2 py-1.5 rounded-md mt-2 flex items-center gap-2">
-                    <i className="fas fa-snowflake text-blue-400"></i>
-                    <span className="text-blue-200 text-[10px]">Cold - Possible subsurface water</span>
-                  </div>
-                )}
-                {temperature > 373 && temperature <= 450 && (
-                  <div className="bg-red-500/20 border border-red-500/50 px-2 py-1.5 rounded-md mt-2 flex items-center gap-2">
-                    <i className="fas fa-fire text-red-400"></i>
-                    <span className="text-red-200 text-[10px]">Hot - No liquid surface water</span>
-                  </div>
-                )}
-
-                {/* Scientific Classification */}
-                <div className="mt-2 pt-2 border-t border-purple-500/30 text-[10px] text-gray-300">
-                  <div className="flex items-center gap-2">
-                    <i className="fas fa-flask text-purple-400"></i>
-                    <span className="font-semibold">
-                      {radius < 1.25 ? 'Earth-like (Rocky)' : 
-                       radius < 2.0 ? 'Super-Earth' :
-                       radius < 4.0 ? 'Mini-Neptune' :
-                       radius < 10.0 ? 'Neptune-like' : 'Gas Giant'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Decorative corner accents */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-purple-400 rounded-tl-lg"></div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-pink-400 rounded-br-lg"></div>
               </div>
             </div>
           </Html>
