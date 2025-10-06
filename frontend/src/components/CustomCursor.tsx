@@ -277,6 +277,20 @@ export default function CustomCursor() {
         input, textarea {
           cursor: text !important;
         }
+
+        /* For 3D visualization fullscreen, use normal cursor */
+        .fixed.inset-0.z-50,
+        .fixed.inset-0.z-50 *,
+        canvas,
+        div[class*="bg-gray-900"] canvas {
+          cursor: auto !important;
+        }
+
+        /* Hide custom cursor when fullscreen is active */
+        body:has(.fixed.inset-0.z-50) .custom-cursor-ring,
+        body:has(.fixed.inset-0.z-50) .custom-cursor-dot {
+          display: none !important;
+        }
       `}</style>
     </>
   );

@@ -92,76 +92,6 @@ const HelpResources: React.FC = () => {
             </div>
           </div>
 
-          {/* Technologies Used */}
-          <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-              <i className="fas fa-cogs text-green-500"></i>
-              Technologies & Frameworks
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200/50 dark:border-orange-700/50">
-                <h4 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
-                  <i className="fas fa-rocket text-orange-500"></i>
-                  Frontend
-                </h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>• Astro 5.14.1 - Static site generation</li>
-                  <li>• React 18.3.1 - UI components</li>
-                  <li>• TypeScript - Type safety</li>
-                  <li>• Tailwind CSS - Styling</li>
-                  <li>• Three.js - 3D visualizations</li>
-                  <li>• Plotly.js - Interactive charts</li>
-                  <li>• TensorFlow.js - Client-side ML</li>
-                </ul>
-              </div>
-
-              <div className="p-4 rounded-xl bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border border-green-200/50 dark:border-green-700/50">
-                <h4 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
-                  <i className="fas fa-server text-green-500"></i>
-                  Backend
-                </h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>• FastAPI - Web framework</li>
-                  <li>• Python 3.11 - Language</li>
-                  <li>• Uvicorn - ASGI server</li>
-                  <li>• SQLAlchemy - ORM</li>
-                  <li>• Supabase - Database & Storage</li>
-                  <li>• OpenAI GPT-3.5-Turbo - AI Chatbot</li>
-                  <li>• Google Colab - Training environment</li>
-                </ul>
-              </div>
-
-              <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-700/50">
-                <h4 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
-                  <i className="fas fa-brain text-blue-500"></i>
-                  Machine Learning
-                </h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>• CatBoost (40% weight)</li>
-                  <li>• XGBoost (35% weight)</li>
-                  <li>• LightGBM (25% weight)</li>
-                  <li>• TensorFlow & Keras</li>
-                  <li>• Scikit-learn</li>
-                  <li>• NASA Exoplanet Archive</li>
-                </ul>
-              </div>
-
-              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200/50 dark:border-purple-700/50">
-                <h4 className="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
-                  <i className="fas fa-robot text-purple-500"></i>
-                  AI Development Tools
-                </h4>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>• Grok (xAI) - AI assistant</li>
-                  <li>• Google Gemini - AI model</li>
-                  <li>• BlackBox AI - Code assistant</li>
-                  <li>• Windsurf - AI code editor</li>
-                  <li>• GitHub Copilot - Code completion</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
           {/* ML Model Information */}
           <div className="space-y-3">
             <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
@@ -308,7 +238,7 @@ const HelpResources: React.FC = () => {
               <i className="fas fa-cogs text-green-500"></i>
               Technologies Used
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Frontend Stack */}
               <div className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-700/50">
                 <h4 className="font-bold text-blue-700 dark:text-blue-300 mb-3 flex items-center gap-2">
@@ -393,28 +323,70 @@ const HelpResources: React.FC = () => {
                 </h4>
                 <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                   <div className="flex items-center gap-2">
+                    <i className="fas fa-chart-bar text-green-500"></i>
+                    <span><strong>CatBoost</strong> - 40% Weight</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-chart-bar text-red-500"></i>
+                    <span><strong>XGBoost</strong> - 35% Weight</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-chart-bar text-yellow-500"></i>
+                    <span><strong>LightGBM</strong> - 25% Weight</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <i className="fas fa-network-wired text-orange-500"></i>
-                    <span><strong>TensorFlow</strong> - Deep Learning</span>
+                    <span><strong>TensorFlow & Keras</strong> - Deep Learning</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <i className="fas fa-flask text-blue-500"></i>
                     <span><strong>Scikit-learn</strong> - ML Utilities</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="fas fa-chart-bar text-red-500"></i>
-                    <span><strong>XGBoost</strong> - Gradient Boosting</span>
+                    <i className="fas fa-book text-orange-500"></i>
+                    <span><strong>Google Colab</strong> - Training Environment</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="fas fa-chart-bar text-yellow-500"></i>
-                    <span><strong>LightGBM</strong> - Gradient Boosting</span>
+                    <i className="fas fa-satellite text-indigo-500"></i>
+                    <span><strong>NASA Archive</strong> - Exoplanet Data</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Development Tools */}
+              <div className="p-4 rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border border-orange-200/50 dark:border-orange-700/50">
+                <h4 className="font-bold text-orange-700 dark:text-orange-300 mb-3 flex items-center gap-2">
+                  <i className="fas fa-robot text-sm"></i>
+                  AI Development Tools
+                </h4>
+                <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-bolt text-purple-600"></i>
+                    <span><strong>Grok</strong> (xAI) - AI Assistant</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="fas fa-chart-bar text-green-500"></i>
-                    <span><strong>CatBoost</strong> - Gradient Boosting</span>
+                    <i className="fas fa-gem text-blue-500"></i>
+                    <span><strong>Google Gemini</strong> - AI Model</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="fas fa-layer-group text-purple-500"></i>
-                    <span><strong>Ensemble</strong> - Weighted Voting</span>
+                    <i className="fas fa-brain text-orange-500"></i>
+                    <span><strong>Claude AI</strong> - AI Assistant</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-cube text-gray-700 dark:text-gray-400"></i>
+                    <span><strong>BlackBox AI</strong> - Code Assistant</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-wind text-cyan-500"></i>
+                    <span><strong>Windsurf</strong> - AI Code Editor</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fab fa-github text-gray-800 dark:text-gray-300"></i>
+                    <span><strong>GitHub Copilot</strong> - Code Completion</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-microphone-alt text-purple-500"></i>
+                    <span><strong>Eleven Labs</strong> - AI Voice Generation</span>
                   </div>
                 </div>
               </div>
@@ -423,86 +395,129 @@ const HelpResources: React.FC = () => {
 
           {/* Development Tools & Infrastructure */}
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              <i className="fas fa-tools text-gray-400 text-sm"></i>
-              <span className="text-sm">Development Tools & Infrastructure</span>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+              <i className="fas fa-tools text-blue-500"></i>
+              Development Tools & Infrastructure
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               <a
                 href="https://cloud.google.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-blue-400/50 transition-all text-center"
+                className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200/50 dark:border-blue-700/50 hover:shadow-lg transition-all text-center"
                 title="Google Cloud Platform"
               >
-                <i className="fab fa-google text-blue-500 text-lg mb-1 block"></i>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Google Cloud</span>
+                <i className="fab fa-google text-blue-500 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">Google Cloud</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Cloud Platform</span>
               </a>
 
               <a
                 href="https://supabase.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-green-400/50 transition-all text-center"
+                className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-700/50 hover:shadow-lg transition-all text-center"
                 title="Supabase"
               >
-                <i className="fas fa-database text-green-500 text-lg mb-1 block"></i>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Supabase</span>
+                <i className="fas fa-database text-green-500 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">Supabase</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">PostgreSQL DB</span>
               </a>
 
               <a
                 href="https://vercel.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-gray-900/50 dark:hover:border-gray-100/50 transition-all text-center"
+                className="p-4 rounded-lg bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-900/20 dark:to-slate-900/20 border border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-all text-center"
                 title="Vercel"
               >
-                <i className="fas fa-bolt text-gray-900 dark:text-white text-lg mb-1 block"></i>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Vercel</span>
+                <i className="fas fa-bolt text-gray-900 dark:text-white text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">Vercel</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Frontend Hosting</span>
               </a>
 
               <a
                 href="https://www.docker.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-blue-500/50 transition-all text-center"
+                className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-700/50 hover:shadow-lg transition-all text-center"
                 title="Docker"
               >
-                <i className="fab fa-docker text-blue-500 text-lg mb-1 block"></i>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Docker</span>
+                <i className="fab fa-docker text-blue-500 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">Docker</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Containerization</span>
+              </a>
+
+              <a
+                href="https://github.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-lg bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-900/20 dark:to-slate-900/20 border border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-all text-center"
+                title="GitHub"
+              >
+                <i className="fab fa-github text-gray-700 dark:text-gray-300 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">GitHub</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Version Control</span>
+              </a>
+
+              <a
+                href="https://www.npmjs.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-lg bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200/50 dark:border-red-700/50 hover:shadow-lg transition-all text-center"
+                title="npm"
+              >
+                <i className="fab fa-npm text-red-500 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">npm</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Package Manager</span>
+              </a>
+
+              <a
+                href="https://pip.pypa.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-lg bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-200/50 dark:border-yellow-700/50 hover:shadow-lg transition-all text-center"
+                title="pip"
+              >
+                <i className="fab fa-python text-yellow-600 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">pip</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Python Packages</span>
+              </a>
+
+              <a
+                href="https://colab.research.google.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 rounded-lg bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 border border-orange-200/50 dark:border-orange-700/50 hover:shadow-lg transition-all text-center"
+                title="Google Colab"
+              >
+                <i className="fas fa-book text-orange-500 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">Google Colab</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">ML Training</span>
               </a>
 
               <a
                 href="https://github.com/features/copilot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-purple-400/50 transition-all text-center"
+                className="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200/50 dark:border-purple-700/50 hover:shadow-lg transition-all text-center"
                 title="GitHub Copilot"
               >
-                <i className="fab fa-github text-gray-700 dark:text-gray-300 text-lg mb-1 block"></i>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Copilot</span>
+                <i className="fab fa-github text-purple-500 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">Copilot</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">AI Code Assistant</span>
               </a>
 
               <a
-                href="https://www.anthropic.com/claude"
+                href="https://code.visualstudio.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-orange-400/50 transition-all text-center"
-                title="Claude AI"
+                className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200/50 dark:border-blue-700/50 hover:shadow-lg transition-all text-center"
+                title="VS Code"
               >
-                <i className="fas fa-robot text-orange-500 text-lg mb-1 block"></i>
-                <span className="text-xs text-gray-600 dark:text-gray-400">Claude</span>
-              </a>
-
-              <a
-                href="https://openai.com/chatgpt"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-300/30 dark:border-gray-700/30 hover:border-teal-400/50 transition-all text-center"
-                title="ChatGPT"
-              >
-                <i className="fas fa-comments text-teal-500 text-lg mb-1 block"></i>
-                <span className="text-xs text-gray-600 dark:text-gray-400">ChatGPT</span>
+                <i className="fas fa-code text-blue-600 text-2xl mb-2 block"></i>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">VS Code</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Code Editor</span>
               </a>
             </div>
           </div>
