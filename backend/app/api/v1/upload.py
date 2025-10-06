@@ -14,26 +14,74 @@ from app.models.exoplanet import AnalyzedExoplanet
 router = APIRouter(prefix="/api/v1/upload", tags=["upload"])
 
 
-@router.post("/csv", response_model=UploadResponse)
+@router.post("/csv", response_model=UploadResponse, summary="Upload CSV and Run Predictions")
 async def upload_csv_file(
-    file: UploadFile = File(...),
+    file: UploadFile = File(..., description="CSV file containing exoplanet data (Kepler or TESS format)"),
     background_tasks: BackgroundTasks = None,
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Upload a CSV file, run ML predictions, and save results to Supabase
-
-    Flow:
-    1. Upload CSV to Supabase bucket
-    2. Log the upload event
-    3. Parse and detect dataset type (Kepler/TESS)
-    4. Preprocess data
-    5. Run ensemble predictions
-    6. Save predictions to Supabase
-    7. Return results with job ID
-
+    Upload a CSV file, automatically detect dataset type, run ML predictions, and save results
+    
+    **This is the primary prediction endpoint for the application.**
+    
+    ## Workflow:
+    1. 📤 Upload CSV to cloud storage (Supabase)
+    2. 📊 Parse and auto-detect dataset type (Kepler or TESS)
+    3. 🔄 Preprocess and validate data
+    4. 🤖 Run ensemble ML predictions (XGBoost + LightGBM + CatBoost)
+    5. 💾 Save predictions to database
+    6. 🔍 Queue background validation (optional)
+    7. ✅ Return results with job ID for tracking
+    
+    ## Supported Dataset Types:
+    - **Kepler**: KOI (Kepler Objects of Interest) data
+    - **TESS**: TOI (TESS Objects of Interest) data
+    
+    ## Required CSV Columns:
+    
+    ### TESS Format:
+    - `ra`, `dec`, `st_teff`, `st_logg`, `st_rad`, `st_dist`
+    - `st_pmra`, `st_pmdec`, `st_tmag`
+    - `pl_orbper`, `pl_rade`, `pl_trandep`, `pl_trandurh`
+    - `pl_eqt`, `pl_insol`, `pl_tranmid`
+    
+    ### Kepler Format:
+    - `koi_disposition`, `koi_pdisposition`, `koi_score`
+    - `koi_fpflag_nt`, `koi_fpflag_ss`, `koi_fpflag_co`, `koi_fpflag_ec`
+    - `koi_period`, `koi_impact`, `koi_duration`, `koi_depth`
+    - `koi_prad`, `koi_teq`, `koi_insol`, `koi_model_snr`
+    - `koi_tce_plnt_num`, `koi_steff`, `koi_slogg`, `koi_srad`
+    - `ra`, `dec`, `koi_kepmag`
+    
+    ## Response:
+    Returns an `UploadResponse` with:
+    - `job_id`: Unique identifier to retrieve predictions later
+    - `dataset_type`: Auto-detected type (kepler/tess)
+    - `total_predictions`: Number of exoplanets processed
+    - `predictions`: Array of prediction results with confidence scores
+    - `file_url`: Public URL of uploaded file
+    
+    ## Example Usage:
+    ```python
+    import requests
+    
+    files = {'file': open('tess_data.csv', 'rb')}
+    response = requests.post('http://localhost:8000/api/v1/upload/csv', files=files)
+    data = response.json()
+    
+    job_id = data['job_id']
+    print(f"Predictions: {data['total_predictions']}")
+    ```
+    
+    ## Error Handling:
+    - `400`: Invalid CSV format or missing required columns
+    - `500`: Prediction model error or server issue
+    
     Args:
-        file: CSV file upload
+        file: CSV file upload (multipart/form-data)
+        background_tasks: FastAPI background tasks for async validation
+        db: Database session dependency
 
     Returns:
         UploadResponse with job_id, predictions, and metadata

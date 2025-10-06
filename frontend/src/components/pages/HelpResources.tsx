@@ -110,6 +110,8 @@ const HelpResources: React.FC = () => {
                   <li>• TypeScript - Type safety</li>
                   <li>• Tailwind CSS - Styling</li>
                   <li>• Three.js - 3D visualizations</li>
+                  <li>• Plotly.js - Interactive charts</li>
+                  <li>• TensorFlow.js - Client-side ML</li>
                 </ul>
               </div>
 
@@ -123,7 +125,8 @@ const HelpResources: React.FC = () => {
                   <li>• Python 3.11 - Language</li>
                   <li>• Uvicorn - ASGI server</li>
                   <li>• SQLAlchemy - ORM</li>
-                  <li>• Supabase - Database</li>
+                  <li>• Supabase - Database & Storage</li>
+                  <li>• OpenAI GPT-3.5-Turbo - AI Chatbot</li>
                 </ul>
               </div>
 
@@ -138,6 +141,7 @@ const HelpResources: React.FC = () => {
                   <li>• LightGBM (25% weight)</li>
                   <li>• TensorFlow & Keras</li>
                   <li>• Scikit-learn</li>
+                  <li>• NASA Exoplanet Archive</li>
                 </ul>
               </div>
             </div>
@@ -161,7 +165,7 @@ const HelpResources: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Accuracy:</span>
-                    <span className="font-bold text-green-600 dark:text-green-400">95.2%</span>
+                    <span className="font-bold text-green-600 dark:text-green-400">93.94%</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Features:</span>
@@ -185,11 +189,11 @@ const HelpResources: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Accuracy:</span>
-                    <span className="font-bold text-green-600 dark:text-green-400">92.7%</span>
+                    <span className="font-bold text-green-600 dark:text-green-400">92.20%</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Features:</span>
-                    <span className="font-semibold text-gray-800 dark:text-white">15 parameters</span>
+                    <span className="font-semibold text-gray-800 dark:text-white">28 parameters</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Classes:</span>
@@ -321,6 +325,10 @@ const HelpResources: React.FC = () => {
                     <i className="fas fa-chart-line text-pink-500"></i>
                     <span><strong>Plotly.js</strong> - Visualizations</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-brain text-orange-500"></i>
+                    <span><strong>TensorFlow.js</strong> - Client ML</span>
+                  </div>
                 </div>
               </div>
 
@@ -328,7 +336,7 @@ const HelpResources: React.FC = () => {
               <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-700/50">
                 <h4 className="font-bold text-green-700 dark:text-green-300 mb-3 flex items-center gap-2">
                   <i className="fas fa-server text-sm"></i>
-                  Backend
+                  Backend & APIs
                 </h4>
                 <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                   <div className="flex items-center gap-2">
@@ -348,12 +356,16 @@ const HelpResources: React.FC = () => {
                     <span><strong>Supabase</strong> - PostgreSQL DB</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="fas fa-table text-orange-500"></i>
-                    <span><strong>Pandas</strong> - Data Processing</span>
+                    <i className="fas fa-robot text-purple-500"></i>
+                    <span><strong>OpenAI GPT-4</strong> - AI Chatbot</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <i className="fas fa-calculator text-blue-600"></i>
-                    <span><strong>NumPy</strong> - Numerical Computing</span>
+                    <i className="fas fa-satellite text-blue-500"></i>
+                    <span><strong>NASA API</strong> - Exoplanet Data</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-table text-orange-500"></i>
+                    <span><strong>Pandas</strong> - Data Processing</span>
                   </div>
                 </div>
               </div>

@@ -179,17 +179,16 @@ const OrbitalPeriodChart: React.FC<OrbitalPeriodChartProps> = ({ planets, dataTy
 
     return (
       <div className="h-80 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-200/30 dark:border-purple-700/30">
-        <div className="flex items-end justify-between h-full space-x-2">
+        <div className="h-64 flex items-end justify-between space-x-2 mb-4">
           {binData.map((bar, idx) => {
             const heightPercentage = maxCount > 0 ? (bar.count / maxCount) * 100 : 0;
-            const height = `${Math.max(heightPercentage, 10)}%`;
             
             return (
-              <div key={idx} className="flex-1 flex flex-col items-center group">
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-xl overflow-hidden relative" style={{ height }}>
+              <div key={idx} className="flex-1 flex flex-col justify-end items-center group h-full">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-xl overflow-hidden relative transition-all duration-300 group-hover:shadow-lg" style={{ height: `${Math.max(heightPercentage, 5)}%` }}>
                   <div className={`absolute inset-0 bg-gradient-to-t ${bar.color} transition-all duration-500 group-hover:scale-105`}></div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">{bar.count}</span>
+                    <span className="text-white font-bold text-sm drop-shadow-md">{bar.count}</span>
                   </div>
                 </div>
                 <div className="mt-2 text-xs font-semibold text-gray-700 dark:text-gray-300">{bar.label}</div>
@@ -197,7 +196,7 @@ const OrbitalPeriodChart: React.FC<OrbitalPeriodChartProps> = ({ planets, dataTy
             );
           })}
         </div>
-        <div className="mt-4 text-center">
+        <div className="text-center">
           <p className="text-xs text-gray-600 dark:text-gray-400">
             <i className="fas fa-info-circle mr-1"></i>
             Showing distribution of {periods.length} exoplanet{periods.length !== 1 ? 's' : ''} with orbital period data
@@ -210,26 +209,26 @@ const OrbitalPeriodChart: React.FC<OrbitalPeriodChartProps> = ({ planets, dataTy
   // Default mock data when no planets are provided
   return (
     <div className="h-80 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-200/30 dark:border-purple-700/30">
-      <div className="flex items-end justify-between h-full space-x-2">
+      <div className="h-64 flex items-end justify-between space-x-2 mb-4">
         {[
-          { height: '25%', count: 342, label: '0-10d', color: 'from-blue-500 to-cyan-500' },
-          { height: '60%', count: 1243, label: '10-50d', color: 'from-purple-500 to-pink-500' },
-          { height: '45%', count: 856, label: '50-100d', color: 'from-indigo-500 to-purple-500' },
-          { height: '30%', count: 523, label: '100-365d', color: 'from-violet-500 to-fuchsia-500' },
-          { height: '15%', count: 187, label: '>365d', color: 'from-pink-500 to-rose-500' }
+          { heightPercent: 25, count: 342, label: '0-10d', color: 'from-blue-500 to-cyan-500' },
+          { heightPercent: 60, count: 1243, label: '10-50d', color: 'from-purple-500 to-pink-500' },
+          { heightPercent: 45, count: 856, label: '50-100d', color: 'from-indigo-500 to-purple-500' },
+          { heightPercent: 30, count: 523, label: '100-365d', color: 'from-violet-500 to-fuchsia-500' },
+          { heightPercent: 15, count: 187, label: '>365d', color: 'from-pink-500 to-rose-500' }
         ].map((bar, idx) => (
-          <div key={idx} className="flex-1 flex flex-col items-center group">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-xl overflow-hidden relative" style={{ height: bar.height }}>
+          <div key={idx} className="flex-1 flex flex-col justify-end items-center group h-full">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-xl overflow-hidden relative transition-all duration-300 group-hover:shadow-lg" style={{ height: `${bar.heightPercent}%` }}>
               <div className={`absolute inset-0 bg-gradient-to-t ${bar.color} transition-all duration-500 group-hover:scale-105`}></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">{bar.count}</span>
+                <span className="text-white font-bold text-sm drop-shadow-md">{bar.count}</span>
               </div>
             </div>
             <div className="mt-2 text-xs font-semibold text-gray-700 dark:text-gray-300">{bar.label}</div>
           </div>
         ))}
       </div>
-      <div className="mt-4 text-center">
+      <div className="text-center">
         <p className="text-xs text-gray-500 dark:text-gray-400 italic">
           <i className="fas fa-star mr-1"></i>
           Example data - select exoplanets from Predictions or Exoplanets page to see real data

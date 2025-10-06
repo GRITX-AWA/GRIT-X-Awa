@@ -150,13 +150,6 @@ export default function SideBar() {
           isActive={activePage === "help"}
           onClick={() => handlePageChange("help")}
         />
-        <NavItem
-          icon={<i className="fas fa-sliders-h"></i>}
-          label="Settings"
-          isActive={activePage === "settings"}
-          onClick={() => handlePageChange("settings")}
-        />
-
         {/* GRIT Logo */}
         <div className="mt-3 pt-3 border-t border-purple-500/10">
           <div className="flex items-center justify-center gap-2 mb-2">

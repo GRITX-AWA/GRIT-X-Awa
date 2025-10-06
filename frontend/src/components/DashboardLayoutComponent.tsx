@@ -18,7 +18,6 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Exoplanets = lazy(() => import('./pages/Exoplanets'));
 const Visualizations = lazy(() => import('./pages/Visualizations'));
 const HelpResources = lazy(() => import('./pages/HelpResources'));
-const Settings = lazy(() => import('./pages/Settings'));
 
 // Create context with proper type
 export const PageContext = React.createContext<PageContextType>({
@@ -70,8 +69,6 @@ const DashboardLayoutComponent: React.FC = () => {
         return <Visualizations />;
       case 'help':
         return <HelpResources />;
-      case 'settings':
-        return <Settings />;
       default:
         return <Dashboard />;
     }

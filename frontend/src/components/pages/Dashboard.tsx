@@ -441,6 +441,19 @@ const Dashboard: React.FC = () => {
         
         // Set the file data for 3D visualization
         setLastUploadedFileData(savedFileData);
+        
+        // Calculate and set the actual average confidence from saved predictions
+        if (results.predictions && results.predictions.length > 0) {
+          const avgConfidence = results.predictions.reduce((sum: number, p: any) => {
+            return sum + p.confidence[p.predicted_class];
+          }, 0) / results.total_predictions;
+          
+          setAnalysisResult({
+            confidence: avgConfidence,
+            type: `${results.dataset_type.toUpperCase()}: ${results.total_predictions} predictions`,
+            confirmed: true
+          });
+        }
       } catch (error) {
         console.error('Failed to load saved results:', error);
         alert('Failed to load saved results. The data may be corrupted.');
@@ -828,9 +841,14 @@ const Dashboard: React.FC = () => {
       setPredictionResults(results);
       setShowResults(true);
       
-      // Set a simple success message in the analysis result
+      // Calculate the actual average confidence from predictions
+      const avgConfidence = results.predictions.reduce((sum, p) => {
+        return sum + p.confidence[p.predicted_class];
+      }, 0) / results.total_predictions;
+      
+      // Set analysis result with real confidence score
       setAnalysisResult({
-        confidence: 1,
+        confidence: avgConfidence,
         type: `${results.dataset_type.toUpperCase()}: ${results.total_predictions} predictions`,
         confirmed: true
       });
@@ -1504,95 +1522,52 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Hyperparameters Modal */}
+      {/* Hyperparameters Modal - Coming Soon */}
       <Modal isOpen={showHyperparamsModal} onClose={() => setShowHyperparamsModal(false)}>
         <div className="bg-white dark:bg-gray-800 px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
           <div className="sm:flex sm:items-start">
             <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl leading-6 font-bold text-gray-900 dark:text-white">
+                <h3 className="text-xl leading-6 font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <i className="fas fa-sliders-h text-purple-600 dark:text-purple-400"></i>
                   Adjust Hyperparameters
                 </h3>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  selectedModel === 'tess' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                }`}>
-                  {selectedModel.toUpperCase()} Model
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">
+                  Coming Soon
                 </span>
               </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Fine-tune the {selectedModel} model by adjusting these parameters to optimize performance for your specific data.
-              </p>
-
-              {/* Model Performance Summary */}
-              <div className="mt-5 grid grid-cols-2 gap-3 p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600">
-                {modelMetrics.map((metric, index) => (
-                  <div key={index} className="text-center p-2 bg-white dark:bg-gray-800/50 rounded-md">
-                    <div className="text-xs font-medium text-gray-600 dark:text-gray-400">{metric.name}</div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">{metric.value}%</div>
-                  </div>
-                ))}
-              </div>
               
-              <div className="mt-6 space-y-6">
-                <HyperparamSlider
-                  id="learningRate"
-                  label="Learning Rate"
-                  value={hyperparameters.learningRate}
-                  min="0.0001"
-                  max="0.01"
-                  step="0.0001"
-                  onChange={(value) => handleHyperparamChange('learningRate', value)}
-                  isFloat={true}
-                />
-
-                <HyperparamSlider
-                  id="epochs"
-                  label="Epochs"
-                  value={hyperparameters.epochs}
-                  min="10"
-                  max="200"
-                  step="10"
-                  onChange={(value) => handleHyperparamChange('epochs', value)}
-                />
-
-                <HyperparamSlider
-                  id="batchSize"
-                  label="Batch Size"
-                  value={hyperparameters.batchSize}
-                  min="8"
-                  max="128"
-                  step="8"
-                  onChange={(value) => handleHyperparamChange('batchSize', value)}
-                />
-
-                <HyperparamSlider
-                  id="dropout"
-                  label="Dropout Rate"
-                  value={hyperparameters.dropout}
-                  min="0"
-                  max="0.5"
-                  step="0.05"
-                  onChange={(value) => handleHyperparamChange('dropout', value)}
-                  isFloat={true}
-                />
-
-                {/* Optimizer */}
-                <div className="p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600">
-                  <label htmlFor="optimizer" className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                    Optimizer Algorithm
-                  </label>
-                  <select
-                    id="optimizer"
-                    value={hyperparameters.optimizer}
-                    onChange={(e) => handleHyperparamChange('optimizer', e.target.value)}
-                    className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2.5 shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:outline-none font-medium"
-                  >
-                    <option value="adam">Adam (Adaptive Moment Estimation)</option>
-                    <option value="sgd">SGD (Stochastic Gradient Descent)</option>
-                    <option value="rmsprop">RMSprop (Root Mean Square Propagation)</option>
-                  </select>
+              <div className="mt-6 text-center py-12">
+                <div className="mb-6">
+                  <i className="fas fa-rocket text-6xl text-purple-500 dark:text-purple-400 opacity-50"></i>
                 </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Feature Under Development
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                  We're working on bringing you the ability to fine-tune model hyperparameters. This feature will allow you to:
+                </p>
+                <ul className="text-left max-w-md mx-auto space-y-2 mb-8">
+                  <li className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+                    <i className="fas fa-check-circle text-green-500 mt-0.5"></i>
+                    <span>Adjust learning rates and batch sizes</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+                    <i className="fas fa-check-circle text-green-500 mt-0.5"></i>
+                    <span>Configure dropout and regularization</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+                    <i className="fas fa-check-circle text-green-500 mt-0.5"></i>
+                    <span>Select different optimizers</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+                    <i className="fas fa-check-circle text-green-500 mt-0.5"></i>
+                    <span>Real-time model retraining</span>
+                  </li>
+                </ul>
+                <p className="text-xs text-gray-500 dark:text-gray-500 italic">
+                  Stay tuned for updates!
+                </p>
               </div>
             </div>
           </div>
@@ -1600,23 +1575,11 @@ const Dashboard: React.FC = () => {
         <div className="bg-gray-100 dark:bg-gray-700 px-6 py-4 sm:px-8 sm:flex sm:flex-row-reverse gap-3 border-t border-gray-200 dark:border-gray-600">
           <button 
             type="button"
-            onClick={handleSaveHyperparameters}
+            onClick={() => setShowHyperparamsModal(false)}
             className="w-full inline-flex justify-center items-center gap-2 rounded-lg border border-transparent shadow-md px-6 py-3 bg-purple-600 text-base font-semibold text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:w-auto transition-all"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            Save Changes
-          </button>
-          <button 
-            type="button"
-            onClick={() => setShowHyperparamsModal(false)}
-            className="mt-3 w-full inline-flex justify-center items-center gap-2 rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-sm px-6 py-3 bg-white dark:bg-gray-600 text-base font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:mt-0 sm:w-auto transition-all"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Cancel
+            <i className="fas fa-check mr-1"></i>
+            Got It
           </button>
         </div>
       </Modal>
