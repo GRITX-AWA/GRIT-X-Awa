@@ -1,4 +1,4 @@
-# 🪐 GRIT-X-AWA - Exoplanet ML Explorer 
+# 🪐 GRIT-X-AWA - Exoplanet ML Explore
 
 > An interactive web platform for NASA exoplanet classification using ensemble machine learning models trained on Kepler and TESS mission data.
 
