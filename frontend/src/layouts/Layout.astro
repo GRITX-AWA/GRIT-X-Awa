@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import CustomCursor from '../components/CustomCursor';
 
 export interface Props {
   title: string;
@@ -49,6 +50,7 @@ const { title, description = "A World Away: Hunting for Exoplanets with AI" } = 
     </script>
   </head>
   <body class="transition-colors duration-200">
+    <CustomCursor client:load />
     <slot />
   </body>
 </html>
