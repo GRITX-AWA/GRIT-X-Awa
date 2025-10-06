@@ -7,7 +7,7 @@ from app.db.init_db import init_models
 from app.db.seed import seed_models
 from app.api.v1 import predict, train, stats
 from app.api.v1 import models, data, predictions
-from app.api.v1 import analysis, upload, logs, exoplanets
+from app.api.v1 import analysis, upload, logs, exoplanets, classifications
 from app.services.model_loader import get_model_loader
 
 app = FastAPI(
@@ -36,6 +36,7 @@ app.include_router(analysis.router)
 app.include_router(upload.router)  # New upload router
 app.include_router(logs.router)  # Logs router
 app.include_router(exoplanets.router)  # Analyzed exoplanets router
+app.include_router(classifications.router)  # Planet and star classification router
 
 
 @app.on_event("startup")

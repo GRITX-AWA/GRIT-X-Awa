@@ -382,8 +382,16 @@ export default function Exoplanets() {
   };
 
   const handleView3D = (exoplanet: SpaceData) => {
+    console.log('🎯 handleView3D called with:', {
+      exoplanet,
+      datasetType,
+      hasSetSelectedExoplanet: !!setSelectedExoplanet,
+      hasSetActivePage: !!setActivePage
+    });
     setSelectedExoplanet(exoplanet, datasetType);
+    console.log('✅ setSelectedExoplanet called');
     setActivePage('visualizations');
+    console.log('✅ setActivePage called with: visualizations');
   };
 
   const handleToggleSelect = (planet: SpaceData) => {
@@ -438,8 +446,16 @@ export default function Exoplanets() {
       filteredCount: selected.length,
       totalDatasets: datasets.length
     });
+    console.log('📊 handleViewMultiple3D called with:', {
+      selectedCount: selected.length,
+      datasetType,
+      hasSetSelectedExoplanets: !!setSelectedExoplanets,
+      hasSetActivePage: !!setActivePage
+    });
     setSelectedExoplanets(selected, datasetType);
+    console.log('✅ setSelectedExoplanets called');
     setActivePage('visualizations');
+    console.log('✅ setActivePage called with: visualizations');
   };
 
   const renderBadge = (disposition: string) => {

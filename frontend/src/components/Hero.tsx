@@ -37,8 +37,7 @@ export default function Hero() {
           </h1>
 
           <p className="hero-description">
-            An AI-powered tool built on NASA’s Kepler and TESS data to classify 
-            and explore exoplanets—designed for both researchers and the curious.
+            A bridge from data to discovery, with AI unlocking the secrets of worlds beyond our own.
           </p>
 
           <a

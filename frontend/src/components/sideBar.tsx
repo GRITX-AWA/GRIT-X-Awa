@@ -128,12 +128,6 @@ export default function SideBar() {
           onClick={() => handlePageChange("exoplanets")}
         />
         <NavItem
-          icon={<i className="fas fa-microscope"></i>}
-          label="Data Analysis"
-          isActive={activePage === "analysis"}
-          onClick={() => handlePageChange("analysis")}
-        />
-        <NavItem
           icon={<i className="fas fa-chart-area"></i>}
           label="Visualizations"
           isActive={activePage === "visualizations"}

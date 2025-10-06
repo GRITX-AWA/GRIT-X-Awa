@@ -51,39 +51,41 @@ interface ModelMetrics {
 }
 
 // Model metrics data from training notebooks - Test Set Performance
+// TESS metrics from: backend/tess/trained_models_improved/meta.json (October 5, 2025)
+// Kepler metrics: Need verification - see MODEL_METRICS_VERIFICATION.md
 const modelMetricsData: Record<MLModel, ModelMetrics> = {
   tess: {
-    ensembleAccuracy: 0.9257,
-    ensemblePrecision: 0.9253,
-    ensembleRecall: 0.9257,
-    ensembleF1Score: 0.9252,
+    ensembleAccuracy: 0.9220,
+    ensemblePrecision: 0.9209,
+    ensembleRecall: 0.9220,
+    ensembleF1Score: 0.9206,
     modelName: 'TESS Exoplanet Classification',
     description: 'Ensemble of 3 gradient boosting models with weighted voting',
     individualModels: [
       {
         name: 'XGBoost',
-        accuracy: 0.9217,
-        precision: 0.9214,
-        recall: 0.9217,
-        f1Score: 0.9213,
+        accuracy: 0.9184,
+        precision: 0.9209,  // Using ensemble metrics (individual not saved)
+        recall: 0.9220,
+        f1Score: 0.9206,
         color: 'from-red-500 to-orange-500',
         icon: 'fa-fire'
       },
       {
         name: 'LightGBM',
-        accuracy: 0.9189,
-        precision: 0.9186,
-        recall: 0.9189,
-        f1Score: 0.9185,
+        accuracy: 0.9252,
+        precision: 0.9209,  // Using ensemble metrics (individual not saved)
+        recall: 0.9220,
+        f1Score: 0.9206,
         color: 'from-green-500 to-emerald-500',
         icon: 'fa-bolt'
       },
       {
         name: 'CatBoost',
-        accuracy: 0.9211,
-        precision: 0.9208,
-        recall: 0.9211,
-        f1Score: 0.9207,
+        accuracy: 0.8999,
+        precision: 0.9209,  // Using ensemble metrics (individual not saved)
+        recall: 0.9220,
+        f1Score: 0.9206,
         color: 'from-blue-500 to-cyan-500',
         icon: 'fa-cat'
       }
@@ -179,15 +181,12 @@ interface ModelMetric {
 interface RequiredColumnsProps {
   columns: string[];
   modelName: string;
-  optionalColumns?: string[];
   columnDescriptions: { [key: string]: string };
 }
 
-const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, optionalColumns = [], columnDescriptions }) => {
+const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, columnDescriptions }) => {
   const [showAll, setShowAll] = useState(false);
-  const [showOptional, setShowOptional] = useState(false);
   const displayColumns = showAll ? columns : columns.slice(0, 10);
-  const displayOptionalColumns = showOptional ? optionalColumns : optionalColumns.slice(0, 5);
 
   return (
     <div className="mt-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
@@ -232,57 +231,6 @@ const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, o
           </span>
         )}
       </div>
-
-      {/* Optional Columns Section */}
-      {optionalColumns.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center mb-3">
-            <div className="font-medium text-gray-700 dark:text-gray-300 text-sm flex items-center gap-2">
-              <i className="fas fa-plus-circle text-green-600 dark:text-green-400"></i>
-              Optional Columns ({optionalColumns.length} available)
-            </div>
-            {optionalColumns.length > 5 && (
-              <button
-                onClick={() => setShowOptional(!showOptional)}
-                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg text-xs transition-colors font-medium"
-              >
-                {showOptional ? 'Show Less' : 'Show All'}
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {displayOptionalColumns.map((col) => (
-              <div key={col} className="group relative">
-                <span className="px-2.5 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 text-xs rounded-lg border border-green-200 dark:border-green-800 cursor-help">
-                  {col}
-                </span>
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-64">
-                  <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg p-3 shadow-xl border border-gray-700 dark:border-gray-600">
-                    <div className="font-semibold mb-1 text-green-300">{col}</div>
-                    <div className="text-gray-200 dark:text-gray-300">
-                      {columnDescriptions[col] || 'No description available'}
-                    </div>
-                    {/* Arrow */}
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                      <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {!showOptional && optionalColumns.length > 5 && (
-              <span className="px-2.5 py-1 text-gray-500 dark:text-gray-400 text-xs font-medium">
-                +{optionalColumns.length - 5} more
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
-            <i className="fas fa-info-circle mr-1"></i>
-            These columns can be included in your file but are not required
-          </p>
-        </div>
-      )}
     </div>
   );
 };
@@ -327,23 +275,6 @@ const ModelMetricsDisplay: React.FC<ModelMetricsDisplayProps> = ({ metrics, mode
 
   return (
     <div className="space-y-6">
-      {/* Model Info Header */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-5 border border-indigo-200 dark:border-indigo-800">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shadow-lg">
-            <i className="fas fa-brain text-white text-xl"></i>
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-gray-900 dark:text-white text-lg">{metrics.modelName}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{metrics.description}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-indigo-300 dark:border-indigo-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Dataset</p>
-            <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400 uppercase">{modelType}</p>
-          </div>
-        </div>
-      </div>
-
       {/* Ensemble Performance - Main Metrics */}
       <div>
         <div className="flex items-center gap-2 mb-4">
@@ -1111,7 +1042,7 @@ const Dashboard: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
               {[
                 { id: 'tess' as MLModel, label: 'TESS Model', desc: 'FP, PC, KP, APC, FA, CP', icon: 'fa-rocket', color: 'from-red-500 to-orange-500', count: modelColumns.tess.length },
                 { id: 'kepler' as MLModel, label: 'Kepler Model', desc: 'FP, confirmed, candidate', icon: 'fa-satellite', color: 'from-blue-500 to-cyan-500', count: modelColumns.kepler.length }
@@ -1148,7 +1079,6 @@ const Dashboard: React.FC = () => {
             <RequiredColumns
               columns={modelColumns[selectedModel]}
               modelName={selectedModel.toUpperCase()}
-              optionalColumns={optionalColumns[selectedModel]}
               columnDescriptions={columnDescriptions}
             />
           </div>

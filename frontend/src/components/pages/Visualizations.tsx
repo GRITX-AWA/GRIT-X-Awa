@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useExoplanet } from '../../contexts/ExoplanetContext';
 import ExoplanetVisualization3D from './analysis/ExoplanetVisualization3D';
+import { classificationService } from '../../services/classificationService';
 
 // Visualization Card Component
 interface VisualizationCardProps {
@@ -142,60 +143,218 @@ const PlanetSizeLegend: React.FC = () => (
   </div>
 );
 
-// Mock Chart Components
-const OrbitalPeriodChart: React.FC = () => (
-  <div className="h-80 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-200/30 dark:border-purple-700/30">
-    <div className="flex items-end justify-between h-full space-x-2">
-      {[
-        { height: '25%', count: 342, label: '0-10d', color: 'from-blue-500 to-cyan-500' },
-        { height: '60%', count: 1243, label: '10-50d', color: 'from-purple-500 to-pink-500' },
-        { height: '45%', count: 856, label: '50-100d', color: 'from-indigo-500 to-purple-500' },
-        { height: '30%', count: 523, label: '100-365d', color: 'from-violet-500 to-fuchsia-500' },
-        { height: '15%', count: 187, label: '>365d', color: 'from-pink-500 to-rose-500' }
-      ].map((bar, idx) => (
-        <div key={idx} className="flex-1 flex flex-col items-center group">
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-xl overflow-hidden relative" style={{ height: bar.height }}>
-            <div className={`absolute inset-0 bg-gradient-to-t ${bar.color} transition-all duration-500 group-hover:scale-105`}></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">{bar.count}</span>
-            </div>
-          </div>
-          <div className="mt-2 text-xs font-semibold text-gray-700 dark:text-gray-300">{bar.label}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+// Dynamic Orbital Period Chart Component
+interface OrbitalPeriodChartProps {
+  planets?: Array<any>;
+  dataType?: 'kepler' | 'tess' | null;
+}
 
-const DiscoveryMethodChart: React.FC = () => (
-  <div className="h-80 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200/30 dark:border-blue-700/30">
-    <div className="space-y-4">
-      {[
-        { method: 'Transit', percentage: 76, count: 3821, color: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
-        { method: 'Radial Velocity', percentage: 15, count: 753, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
-        { method: 'Imaging', percentage: 5, count: 251, color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
-        { method: 'Microlensing', percentage: 3, count: 151, color: 'bg-gradient-to-r from-orange-500 to-red-500' },
-        { method: 'Other', percentage: 1, count: 50, color: 'bg-gradient-to-r from-gray-500 to-gray-600' }
-      ].map((item, idx) => (
-        <div key={idx} className="group">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{item.method}</span>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">{item.count} planets</span>
-              <span className="text-sm font-bold text-purple-600 dark:text-purple-400">{item.percentage}%</span>
+const OrbitalPeriodChart: React.FC<OrbitalPeriodChartProps> = ({ planets, dataType }) => {
+  // If we have planet data, calculate real distribution
+  if (planets && planets.length > 0) {
+    const periods = planets.map(p => {
+      if (dataType === 'kepler') {
+        return p.koi_period || p.pl_orbper || 0;
+      } else {
+        return p.pl_orbper || p.koi_period || 0;
+      }
+    }).filter(p => p > 0);
+
+    // Define bins
+    const bins = [
+      { min: 0, max: 10, label: '0-10d', color: 'from-blue-500 to-cyan-500' },
+      { min: 10, max: 50, label: '10-50d', color: 'from-purple-500 to-pink-500' },
+      { min: 50, max: 100, label: '50-100d', color: 'from-indigo-500 to-purple-500' },
+      { min: 100, max: 365, label: '100-365d', color: 'from-violet-500 to-fuchsia-500' },
+      { min: 365, max: Infinity, label: '>365d', color: 'from-pink-500 to-rose-500' }
+    ];
+
+    // Count planets in each bin
+    const binData = bins.map(bin => ({
+      ...bin,
+      count: periods.filter(p => p >= bin.min && p < bin.max).length
+    }));
+
+    const maxCount = Math.max(...binData.map(b => b.count), 1);
+
+    return (
+      <div className="h-80 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-200/30 dark:border-purple-700/30">
+        <div className="flex items-end justify-between h-full space-x-2">
+          {binData.map((bar, idx) => {
+            const heightPercentage = maxCount > 0 ? (bar.count / maxCount) * 100 : 0;
+            const height = `${Math.max(heightPercentage, 10)}%`;
+            
+            return (
+              <div key={idx} className="flex-1 flex flex-col items-center group">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-xl overflow-hidden relative" style={{ height }}>
+                  <div className={`absolute inset-0 bg-gradient-to-t ${bar.color} transition-all duration-500 group-hover:scale-105`}></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">{bar.count}</span>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs font-semibold text-gray-700 dark:text-gray-300">{bar.label}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            <i className="fas fa-info-circle mr-1"></i>
+            Showing distribution of {periods.length} exoplanet{periods.length !== 1 ? 's' : ''} with orbital period data
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Default mock data when no planets are provided
+  return (
+    <div className="h-80 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-200/30 dark:border-purple-700/30">
+      <div className="flex items-end justify-between h-full space-x-2">
+        {[
+          { height: '25%', count: 342, label: '0-10d', color: 'from-blue-500 to-cyan-500' },
+          { height: '60%', count: 1243, label: '10-50d', color: 'from-purple-500 to-pink-500' },
+          { height: '45%', count: 856, label: '50-100d', color: 'from-indigo-500 to-purple-500' },
+          { height: '30%', count: 523, label: '100-365d', color: 'from-violet-500 to-fuchsia-500' },
+          { height: '15%', count: 187, label: '>365d', color: 'from-pink-500 to-rose-500' }
+        ].map((bar, idx) => (
+          <div key={idx} className="flex-1 flex flex-col items-center group">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-t-xl overflow-hidden relative" style={{ height: bar.height }}>
+              <div className={`absolute inset-0 bg-gradient-to-t ${bar.color} transition-all duration-500 group-hover:scale-105`}></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">{bar.count}</span>
+              </div>
+            </div>
+            <div className="mt-2 text-xs font-semibold text-gray-700 dark:text-gray-300">{bar.label}</div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+          <i className="fas fa-star mr-1"></i>
+          Example data - select exoplanets from Predictions or Exoplanets page to see real data
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// Dynamic Discovery Method Chart Component
+interface DiscoveryMethodChartProps {
+  planets?: Array<any>;
+  dataType?: 'kepler' | 'tess' | null;
+}
+
+const DiscoveryMethodChart: React.FC<DiscoveryMethodChartProps> = ({ planets, dataType }) => {
+  // If we have planet data, calculate real distribution
+  if (planets && planets.length > 0 && dataType) {
+    const methods: Record<string, number> = {
+      'Transit': 0,
+      'Radial Velocity': 0,
+      'Imaging': 0,
+      'Microlensing': 0,
+      'Other': 0
+    };
+
+    // For TESS and Kepler missions, the primary method is Transit
+    // We can infer or use disposition fields if available
+    planets.forEach(planet => {
+      // Most Kepler and TESS discoveries are via transit method
+      if (dataType === 'kepler' || dataType === 'tess') {
+        methods['Transit']++;
+      } else {
+        // For other datasets, you might have a discovery method field
+        const method = planet.discoverymethod || planet.pl_discmethod || 'Transit';
+        if (methods[method]) {
+          methods[method]++;
+        } else {
+          methods['Other']++;
+        }
+      }
+    });
+
+    const total = planets.length;
+    const methodData = [
+      { method: 'Transit', count: methods['Transit'], color: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
+      { method: 'Radial Velocity', count: methods['Radial Velocity'], color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
+      { method: 'Imaging', count: methods['Imaging'], color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
+      { method: 'Microlensing', count: methods['Microlensing'], color: 'bg-gradient-to-r from-orange-500 to-red-500' },
+      { method: 'Other', count: methods['Other'], color: 'bg-gradient-to-r from-gray-500 to-gray-600' }
+    ]
+      .filter(item => item.count > 0)
+      .map(item => ({
+        ...item,
+        percentage: total > 0 ? Math.round((item.count / total) * 100) : 0
+      }));
+
+    return (
+      <div className="h-80 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200/30 dark:border-blue-700/30">
+        <div className="space-y-4">
+          {methodData.map((item, idx) => (
+            <div key={idx} className="group">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{item.method}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">{item.count} planet{item.count !== 1 ? 's' : ''}</span>
+                  <span className="text-sm font-bold text-purple-600 dark:text-purple-400">{item.percentage}%</span>
+                </div>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
+                <div
+                  className={`h-full ${item.color} transition-all duration-700 group-hover:scale-105 origin-left shadow-lg`}
+                  style={{ width: `${item.percentage}%` }}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
+            <i className="fas fa-info-circle mr-1"></i>
+            Showing discovery methods for {total} exoplanet{total !== 1 ? 's' : ''}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Default mock data when no planets are provided
+  return (
+    <div className="h-80 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200/30 dark:border-blue-700/30">
+      <div className="space-y-4">
+        {[
+          { method: 'Transit', percentage: 76, count: 3821, color: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
+          { method: 'Radial Velocity', percentage: 15, count: 753, color: 'bg-gradient-to-r from-purple-500 to-pink-500' },
+          { method: 'Imaging', percentage: 5, count: 251, color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
+          { method: 'Microlensing', percentage: 3, count: 151, color: 'bg-gradient-to-r from-orange-500 to-red-500' },
+          { method: 'Other', percentage: 1, count: 50, color: 'bg-gradient-to-r from-gray-500 to-gray-600' }
+        ].map((item, idx) => (
+          <div key={idx} className="group">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{item.method}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">{item.count} planets</span>
+                <span className="text-sm font-bold text-purple-600 dark:text-purple-400">{item.percentage}%</span>
+              </div>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
+              <div
+                className={`h-full ${item.color} transition-all duration-700 group-hover:scale-105 origin-left shadow-lg`}
+                style={{ width: `${item.percentage}%` }}
+              ></div>
             </div>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
-            <div
-              className={`h-full ${item.color} transition-all duration-700 group-hover:scale-105 origin-left shadow-lg`}
-              style={{ width: `${item.percentage}%` }}
-            ></div>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
+      <div className="mt-6 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+          <i className="fas fa-star mr-1"></i>
+          Example data - select exoplanets to see real discovery method data
+        </p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Dynamic Star Type Chart Component
 interface StarTypeChartProps {
@@ -204,16 +363,9 @@ interface StarTypeChartProps {
 }
 
 const StarTypeChart: React.FC<StarTypeChartProps> = ({ planets, dataType }) => {
-  // Function to classify star type based on effective temperature
+  // Function to classify star type based on effective temperature - using improved logic
   const classifyStarType = (teff: number): string => {
-    if (teff >= 30000) return 'O-type';
-    if (teff >= 10000) return 'B-type';
-    if (teff >= 7500) return 'A-type';
-    if (teff >= 6000) return 'F-type';
-    if (teff >= 5200) return 'G-type';
-    if (teff >= 3700) return 'K-type';
-    if (teff >= 2400) return 'M-type';
-    return 'Unknown';
+    return classificationService.classifyStarType(teff);
   };
 
   // Count star types from the planets
@@ -332,9 +484,8 @@ const StarTypeChart: React.FC<StarTypeChartProps> = ({ planets, dataType }) => {
                   strokeWidth="20"
                   strokeDasharray={dashArray}
                   strokeDashoffset={-offset}
-                  className="transition-all duration-500 hover:brightness-125 cursor-pointer drop-shadow-lg"
+                  className="transition-all duration-500 hover:brightness-125 cursor-pointer"
                   style={{
-                    filter: 'drop-shadow(0 0 8px currentColor)',
                     opacity: 0.9,
                   }}
                   onMouseEnter={(e) => {
@@ -433,6 +584,18 @@ const Visualizations: React.FC = () => {
   const isMultipleMode = selectedExoplanets && selectedExoplanets.length > 0;
   const hasSelection = selectedExoplanet || isMultipleMode;
   const [downloadingImage, setDownloadingImage] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🎨 Visualizations Component State:', {
+      selectedExoplanet,
+      selectedExoplanets,
+      selectedExoplanetsLength: selectedExoplanets?.length,
+      dataType,
+      isMultipleMode,
+      hasSelection
+    });
+  }, [selectedExoplanet, selectedExoplanets, dataType, isMultipleMode, hasSelection]);
 
   // Scroll to top when exoplanets are loaded (from predictions)
   useEffect(() => {
@@ -754,10 +917,17 @@ const Visualizations: React.FC = () => {
             <i className="fas fa-chart-bar text-purple-600 dark:text-purple-400"></i>
             Orbital Period Distribution
           </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Distribution of orbital periods for confirmed exoplanets</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            {hasSelection 
+              ? `Distribution of orbital periods for your ${isMultipleMode ? selectedExoplanets.length : 'selected'} exoplanet${isMultipleMode && selectedExoplanets.length > 1 ? 's' : ''}`
+              : 'Distribution of orbital periods for confirmed exoplanets'}
+          </p>
         </div>
         <div className="p-8">
-          <OrbitalPeriodChart />
+          <OrbitalPeriodChart 
+            planets={isMultipleMode ? selectedExoplanets : (selectedExoplanet ? [selectedExoplanet] : undefined)}
+            dataType={dataType}
+          />
         </div>
       </div>
       
@@ -769,10 +939,17 @@ const Visualizations: React.FC = () => {
               <i className="fas fa-microscope text-blue-600 dark:text-blue-400"></i>
               Discovery Methods
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Breakdown of exoplanet discovery methods</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {hasSelection 
+                ? `Discovery methods for your ${isMultipleMode ? selectedExoplanets.length : 'selected'} exoplanet${isMultipleMode && selectedExoplanets.length > 1 ? 's' : ''}`
+                : 'Breakdown of exoplanet discovery methods'}
+            </p>
           </div>
           <div className="p-8">
-            <DiscoveryMethodChart />
+            <DiscoveryMethodChart 
+              planets={isMultipleMode ? selectedExoplanets : (selectedExoplanet ? [selectedExoplanet] : undefined)}
+              dataType={dataType}
+            />
           </div>
         </div>
 

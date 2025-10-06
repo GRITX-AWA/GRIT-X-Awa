@@ -16,7 +16,6 @@ interface PageContextType {
 // Lazy load page components
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Exoplanets = lazy(() => import('./pages/Exoplanets'));
-const Analysis = lazy(() => import('./pages/Analysis'));
 const Visualizations = lazy(() => import('./pages/Visualizations'));
 const HelpResources = lazy(() => import('./pages/HelpResources'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -67,8 +66,6 @@ const DashboardLayoutComponent: React.FC = () => {
         return <Dashboard />;
       case 'exoplanets':
         return <Exoplanets />;
-      case 'analysis':
-        return <Analysis />;
       case 'visualizations':
         return <Visualizations />;
       case 'help':
