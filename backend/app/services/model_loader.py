@@ -22,8 +22,8 @@ class ModelLoader:
     def __init__(self):
         self.base_path = Path(__file__).parent.parent.parent  # backend/
         self.kepler_path = self.base_path / "kepler"
-        # TESS models are in the trained_models subdirectory
-        self.tess_path = self.base_path / "tess" / "trained_models"
+        # TESS models - use improved models (91.13% confidence)
+        self.tess_path = self.base_path / "tess" / "trained_models_improved"
 
         # Cache for loaded models
         self._kepler_cache: Optional[Dict[str, Any]] = None

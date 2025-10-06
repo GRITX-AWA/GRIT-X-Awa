@@ -145,32 +145,36 @@ class CSVProcessor:
         Returns:
             Preprocessed feature array ready for prediction (34 features)
         """
-        from app.services.tess_new_feature_engineering import get_tess_new_feature_engineer
+        from app.services.tess_improved_features import engineer_improved_features
 
         models = self.model_loader.get_tess_models()
         metadata = models['metadata']
+        feature_order = metadata['feature_order']
 
-        # Check if this is the new model requiring feature engineering
-        requires_engineering = metadata.get('requires_feature_engineering', False)
+        # Check if this uses the improved model (28 features including engineered ones)
+        uses_improved_features = len(feature_order) > 20
 
-        if requires_engineering:
-            # New model path with feature engineering
-            feature_engineer = get_tess_new_feature_engineer()
+        if uses_improved_features:
+            # Improved model path with 28 features (16 base + 12 engineered)
+            # Engineer features
+            df_engineered = engineer_improved_features(df)
 
-            # This handles: winsorization + feature engineering
-            # Returns 34 features in correct order
-            df_engineered = feature_engineer.preprocess(df)
+            # Ensure we have all required features after engineering
+            missing_features = set(feature_order) - set(df_engineered.columns)
+            if missing_features:
+                raise ValueError(f"Missing required features after engineering: {missing_features}")
+
+            # Select and order features according to training
+            df_ordered = df_engineered[feature_order].copy()
 
             # Apply imputation using trained imputer
             imputer = models['imputer']
-            X_imputed = imputer.transform(df_engineered.values)
+            X_imputed = imputer.transform(df_ordered.values)
 
             return X_imputed
         else:
-            # Legacy model path (15 features, simple preprocessing)
+            # Legacy model path (15-17 features, simple preprocessing)
             from scipy.stats.mstats import winsorize
-
-            feature_order = metadata['feature_order']
 
             # Ensure we have all required base features
             missing_features = set(feature_order) - set(df.columns)

@@ -1,4 +1,8 @@
 {
+  "model_version": "2.0",
+  "model_type": "new_engineered",
+  "created_date": "2025-10-05",
+  "description": "Optimized TESS model with feature engineering - 92.3% accuracy",
   "feature_order": [
     "ra",
     "dec",
@@ -18,7 +22,63 @@
     "pl_tranmid",
     "pl_pnum"
   ],
+  "engineered_features": [
+    "planet_star_ratio",
+    "transit_depth_normalized",
+    "transit_depth_anomaly",
+    "detection_quality",
+    "transit_duration_fraction",
+    "pl_orbper_log",
+    "st_teff_log",
+    "st_dist_log",
+    "is_m_dwarf",
+    "deep_long_transit",
+    "is_earth_sized",
+    "is_neptune_sized",
+    "is_sun_like",
+    "pl_insol_log",
+    "is_short_transit",
+    "high_snr_detection",
+    "is_nearby"
+  ],
+  "total_features": 34,
+  "base_features": 17,
   "weights": [0.4, 0.35, 0.25],
   "class_names": ["APC", "CP", "FA", "FP", "KP", "PC"],
-  "note": "Models trained with feature engineering pipeline. Requires 17 base features that are transformed into ~66 engineered features."
+  "hyperparameters": {
+    "catboost": {
+      "iterations": 992,
+      "learning_rate": 0.1477,
+      "depth": 5,
+      "l2_leaf_reg": 2.42
+    },
+    "xgboost": {
+      "n_estimators": 654,
+      "learning_rate": 0.0582,
+      "max_depth": 7,
+      "subsample": 0.8595,
+      "colsample_bytree": 0.9961
+    },
+    "lightgbm": {
+      "n_estimators": 536,
+      "learning_rate": 0.01604,
+      "max_depth": 10,
+      "num_leaves": 84,
+      "min_data_in_leaf": 100,
+      "subsample": 0.9998,
+      "colsample_bytree": 0.6115
+    }
+  },
+  "accuracies": {
+    "test_set": 0.9232,
+    "5_fold_cv_mean": 0.9187,
+    "5_fold_cv_best": 0.9226
+  },
+  "preprocessing_steps": [
+    "winsorization (1% each tail)",
+    "feature engineering (17 -> 34 features)",
+    "KNN imputation (k=5)",
+    "SMOTE oversampling (training only)"
+  ],
+  "requires_feature_engineering": true
 }

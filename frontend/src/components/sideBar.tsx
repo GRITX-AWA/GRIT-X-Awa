@@ -167,7 +167,7 @@ export default function SideBar() {
         <div className="mt-3 pt-3 border-t border-purple-500/10">
           <div className="flex items-center justify-center gap-2 mb-2">
             <img 
-              src="/grit-logo.svg" 
+              src="/grit-logo-2.svg" 
               alt="GRIT Logo" 
               className="w-10 h-10 opacity-70 hover:opacity-100 transition-opacity duration-300"
             />
