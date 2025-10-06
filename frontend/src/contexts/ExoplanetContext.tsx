@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 
-interface ExoplanetData {
+export interface ExoplanetData {
   // Kepler format
   kepid?: number;
   kepler_name?: string;
@@ -32,6 +32,7 @@ interface ExoplanetData {
 interface ExoplanetContextType {
   selectedExoplanet: ExoplanetData | null;
   selectedExoplanets: ExoplanetData[];
+  exoplanetData: ExoplanetData[];
   dataType: 'kepler' | 'tess' | null;
   setSelectedExoplanet: (data: ExoplanetData | null, type: 'kepler' | 'tess') => void;
   setSelectedExoplanets: (data: ExoplanetData[], type: 'kepler' | 'tess') => void;
@@ -46,6 +47,7 @@ const ExoplanetContext = createContext<ExoplanetContextType | undefined>(undefin
 export const ExoplanetProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [selectedExoplanet, setSelectedExoplanetState] = useState<ExoplanetData | null>(null);
   const [selectedExoplanets, setSelectedExoplanetsState] = useState<ExoplanetData[]>([]);
+  const [exoplanetData, setExoplanetData] = useState<ExoplanetData[]>([]);
   const [dataType, setDataType] = useState<'kepler' | 'tess' | null>(null);
 
   const setSelectedExoplanet = (data: ExoplanetData | null, type: 'kepler' | 'tess') => {
@@ -89,6 +91,7 @@ export const ExoplanetProvider: React.FC<{ children: ReactNode }> = ({ children 
       value={{
         selectedExoplanet,
         selectedExoplanets,
+        exoplanetData,
         dataType,
         setSelectedExoplanet,
         setSelectedExoplanets,

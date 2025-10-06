@@ -1,6 +1,11 @@
 import os
+from dotenv import load_dotenv
 from supabase import create_client
 
+# Load environment variables
+load_dotenv()
+
+# Supabase Configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 BUCKET = os.getenv("SUPABASE_BUCKET", "nasa-csv")
@@ -16,37 +21,82 @@ if not _supabase_available:
         UserWarning
     )
 
+# Global Supabase client instance
+_supabase_client = None
+
 def get_supabase():
     """
-    Get Supabase client instance.
-
+    Get or create a Supabase client instance with connection pooling.
+    
+    Returns:
+        supabase.Client: Configured Supabase client instance
+        
     Raises:
-        ValueError: If Supabase credentials are not configured
+        ValueError: If Supabase credentials are not properly configured
+    """
+    global _supabase_client
+    
+    if _supabase_client is None:
+        if not _supabase_available:
+            raise ValueError(
+                "Supabase is not configured. Please set SUPABASE_URL and "
+                "SUPABASE_SERVICE_ROLE_KEY environment variables in your .env file."
+            )
+            
+        try:
+            _supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            # Test the connection with a simple query
+            _supabase_client.table('recent_discoveries').select('*', count='exact').limit(1).execute()
+            print("✅ Successfully connected to Supabase")
+        except Exception as e:
+            _supabase_client = None
+            print(f"❌ Failed to connect to Supabase: {str(e)}")
+            raise
+            
+    return _supabase_client
+
+def get_recent_discoveries(limit: int = 10):
+    """
+    Get recent discoveries from the database
+
+    Args:
+        limit: maximum number of discoveries to return (default: 10)
+        
+    Returns:
+        List of recent discoveries with fields: id, object, Type, Confidence, Date
     """
     if not _supabase_available:
-        raise ValueError(
-            "Supabase is not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY "
-            "environment variables."
-        )
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
-
-def is_supabase_available() -> bool:
-    """Check if Supabase credentials are configured"""
-    return _supabase_available
-
-def upload_file_bytes(path_in_bucket: str, file_bytes: bytes):
-    sb = get_supabase()
-    return sb.storage.from_(BUCKET).upload(path_in_bucket, file_bytes, {"upsert": True})
-
-def get_public_url(path_in_bucket: str):
-    sb = get_supabase()
-    return sb.storage.from_(BUCKET).get_public_url(path_in_bucket)
+        print("Supabase not available. Check if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.")
+        return []
+    
+    try:
+        supabase = get_supabase()
+        
+        # Query the recent_discoveries table
+        response = supabase.table('recent_discoveries')\
+                         .select('*')\
+                         .order('Date', desc=True)\
+                         .limit(limit)\
+                         .execute()
+        
+        if hasattr(response, 'data'):
+            return response.data or []
+        return []
+        
+    except Exception as e:
+        error_msg = f"Error fetching recent discoveries: {str(e)}"
+        if hasattr(e, 'message'):
+            error_msg += f"\nMessage: {e.message}"
+        if hasattr(e, 'details'):
+            error_msg += f"\nDetails: {e.details}"
+        print(error_msg)
+        return []
 
 def insert_predictions(preds: list):
     sb = get_supabase()
     return sb.table("predictions").insert(preds).execute()
 
-def insert_raw_rows(rows: list):
+def insert_nasa_data(rows: list):
     sb = get_supabase()
     return sb.table("nasa_data").insert(rows).execute()
 

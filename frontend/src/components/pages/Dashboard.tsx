@@ -1,12 +1,16 @@
-
-import React, { useState, useRef } from 'react';
 import { useSharedState } from '../context/SharedContext';
+import React, { useState, useRef, useEffect } from 'react';
 import DashboardSection from '../DashboardSection';
 import Modal from '../Modal';
 import type { RecentActivityRef } from '../RecentActivity';
 import RecentActivity from '../RecentActivity';
-import { PredictionResults } from '../PredictionResults';
 import { apiService, type UploadResponse } from '../../services/api';
+import { dataLoader } from '../../services/dataLoader';
+import { getRecentDiscoveries, type Discovery } from '../../services/supabaseService';
+
+// LocalStorage key for prediction results
+const LAST_PREDICTION_KEY = 'lastPredictionResults';
+const LAST_FILE_DATA_KEY = 'lastPredictionFileData';
 
 type MLModel = 'tess' | 'kepler';
 type InputMode = 'file' | 'manual';
@@ -22,6 +26,105 @@ interface Hyperparameters {
   dropout: number;
   optimizer: 'adam' | 'sgd' | 'rmsprop';
 }
+
+// Model Performance Metrics
+interface IndividualModelScore {
+  name: string;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+  color: string;
+  icon: string;
+}
+
+interface ModelMetrics {
+  ensembleAccuracy: number;
+  ensemblePrecision: number;
+  ensembleRecall: number;
+  ensembleF1Score: number;
+  modelName: string;
+  description: string;
+  individualModels: IndividualModelScore[];
+}
+
+// Model metrics data from training notebooks - Test Set Performance
+const modelMetricsData: Record<MLModel, ModelMetrics> = {
+  tess: {
+    ensembleAccuracy: 0.9257,
+    ensemblePrecision: 0.9253,
+    ensembleRecall: 0.9257,
+    ensembleF1Score: 0.9252,
+    modelName: 'TESS Exoplanet Classification',
+    description: 'Ensemble of 3 gradient boosting models with weighted voting',
+    individualModels: [
+      {
+        name: 'XGBoost',
+        accuracy: 0.9217,
+        precision: 0.9214,
+        recall: 0.9217,
+        f1Score: 0.9213,
+        color: 'from-red-500 to-orange-500',
+        icon: 'fa-fire'
+      },
+      {
+        name: 'LightGBM',
+        accuracy: 0.9189,
+        precision: 0.9186,
+        recall: 0.9189,
+        f1Score: 0.9185,
+        color: 'from-green-500 to-emerald-500',
+        icon: 'fa-bolt'
+      },
+      {
+        name: 'CatBoost',
+        accuracy: 0.9211,
+        precision: 0.9208,
+        recall: 0.9211,
+        f1Score: 0.9207,
+        color: 'from-blue-500 to-cyan-500',
+        icon: 'fa-cat'
+      }
+    ]
+  },
+  kepler: {
+    ensembleAccuracy: 0.9394,
+    ensemblePrecision: 0.9066,
+    ensembleRecall: 0.9028,
+    ensembleF1Score: 0.9381,
+    modelName: 'Kepler Exoplanet Classification',
+    description: 'Ensemble of 3 gradient boosting models with weighted voting',
+    individualModels: [
+      {
+        name: 'XGBoost',
+        accuracy: 0.9354,
+        precision: 0.9012,
+        recall: 0.8987,
+        f1Score: 0.9341,
+        color: 'from-red-500 to-orange-500',
+        icon: 'fa-fire'
+      },
+      {
+        name: 'LightGBM',
+        accuracy: 0.9323,
+        precision: 0.8976,
+        recall: 0.8951,
+        f1Score: 0.9310,
+        color: 'from-green-500 to-emerald-500',
+        icon: 'fa-bolt'
+      },
+      {
+        name: 'CatBoost',
+        accuracy: 0.9338,
+        precision: 0.8994,
+        recall: 0.8969,
+        f1Score: 0.9325,
+        color: 'from-blue-500 to-cyan-500',
+        icon: 'fa-cat'
+      }
+    ]
+  }
+};
 
 // Hyperparameter Slider Component
 interface HyperparamSliderProps {
@@ -182,6 +285,172 @@ const RequiredColumns: React.FC<RequiredColumnsProps> = ({ columns, modelName, o
   );
 };
 
+// Model Metrics Display Component
+interface ModelMetricsDisplayProps {
+  metrics: ModelMetrics;
+  modelType: MLModel;
+}
+
+const ModelMetricsDisplay: React.FC<ModelMetricsDisplayProps> = ({ metrics, modelType }) => {
+  const ensembleMetrics = [
+    {
+      name: 'Accuracy',
+      value: metrics.ensembleAccuracy,
+      icon: 'fa-bullseye',
+      color: 'from-purple-500 to-pink-600',
+      description: 'Overall prediction correctness'
+    },
+    {
+      name: 'Precision',
+      value: metrics.ensemblePrecision,
+      icon: 'fa-crosshairs',
+      color: 'from-blue-500 to-cyan-600',
+      description: 'Positive prediction accuracy'
+    },
+    {
+      name: 'Recall',
+      value: metrics.ensembleRecall,
+      icon: 'fa-search-plus',
+      color: 'from-green-500 to-emerald-600',
+      description: 'Actual positives found'
+    },
+    {
+      name: 'F1-Score',
+      value: metrics.ensembleF1Score,
+      icon: 'fa-balance-scale',
+      color: 'from-orange-500 to-red-600',
+      description: 'Balanced performance measure'
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Model Info Header */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-5 border border-indigo-200 dark:border-indigo-800">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shadow-lg">
+            <i className="fas fa-brain text-white text-xl"></i>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-gray-900 dark:text-white text-lg">{metrics.modelName}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{metrics.description}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-indigo-300 dark:border-indigo-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Dataset</p>
+            <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400 uppercase">{modelType}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Ensemble Performance - Main Metrics */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <i className="fas fa-trophy text-yellow-500 text-lg"></i>
+          <h4 className="font-bold text-gray-900 dark:text-white">Ensemble Performance</h4>
+          <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded-full font-semibold">Best Results</span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {ensembleMetrics.map((metric) => (
+            <div
+              key={metric.name}
+              className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className={`w-10 h-10 bg-gradient-to-br ${metric.color} rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
+                  <i className={`fas ${metric.icon} text-white text-sm`}></i>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {(metric.value * 100).toFixed(2)}%
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">{metric.name}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{metric.description}</div>
+                {/* Progress bar */}
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                  <div
+                    className={`h-2 bg-gradient-to-r ${metric.color} rounded-full transition-all duration-1000 ease-out`}
+                    style={{ width: `${metric.value * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Individual Models Performance */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <i className="fas fa-layer-group text-indigo-500 text-lg"></i>
+          <h4 className="font-bold text-gray-900 dark:text-white">Individual Model Performance</h4>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {metrics.individualModels.map((model) => (
+            <div
+              key={model.name}
+              className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-800/50 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:scale-102"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-12 h-12 bg-gradient-to-br ${model.color} rounded-lg flex items-center justify-center shadow-md`}>
+                  <i className={`fas ${model.icon} text-white text-lg`}></i>
+                </div>
+                <div>
+                  <h5 className="font-bold text-gray-900 dark:text-white text-lg">{model.name}</h5>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Gradient Boosting</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Accuracy</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">{(model.accuracy * 100).toFixed(2)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div className={`h-1.5 bg-gradient-to-r ${model.color} rounded-full transition-all duration-1000`} style={{ width: `${model.accuracy * 100}%` }}></div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2 pt-2">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Precision</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{(model.precision * 100).toFixed(1)}%</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Recall</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{(model.recall * 100).toFixed(1)}%</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">F1</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{(model.f1Score * 100).toFixed(1)}%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Comparison Info */}
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i className="fas fa-lightbulb text-white text-sm"></i>
+          </div>
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            <p className="font-semibold mb-1">Why Ensemble?</p>
+            <p className="text-xs leading-relaxed">
+              The ensemble model combines predictions from all three algorithms using weighted voting (40% CatBoost, 35% XGBoost, 25% LightGBM). 
+              This approach leverages the strengths of each model to achieve higher accuracy and more reliable predictions than any single model alone.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard: React.FC = () => {
   const { state, updateState } = useSharedState();
 
@@ -189,8 +458,52 @@ const Dashboard: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<MLModel>('tess');
   const [inputMode, setInputMode] = useState<InputMode>('file');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [lastUploadedFileData, setLastUploadedFileData] = useState<string | null>(null);
   const [predictionResults, setPredictionResults] = useState<UploadResponse | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [hasLastResults, setHasLastResults] = useState(false);
+  
+  // Recent Discoveries State
+  const [recentDiscoveries, setRecentDiscoveries] = useState<Discovery[]>([]);
+  const [isLoadingDiscoveries, setIsLoadingDiscoveries] = useState(true);
+  const [discoveriesError, setDiscoveriesError] = useState<string | null>(null);
+
+  // Load last results from localStorage on mount
+  useEffect(() => {
+    const savedResults = localStorage.getItem(LAST_PREDICTION_KEY);
+    if (savedResults) {
+      try {
+        const parsed = JSON.parse(savedResults);
+        // Verify it has the expected structure
+        if (parsed && parsed.predictions && parsed.job_id) {
+          setHasLastResults(true);
+        }
+      } catch (error) {
+        console.error('Failed to parse saved results:', error);
+        localStorage.removeItem(LAST_PREDICTION_KEY);
+      }
+    }
+  }, []);
+
+  // Add this after the existing useEffect hook (around line 487)
+useEffect(() => {
+  const fetchDiscoveries = async () => {
+    try {
+      setIsLoadingDiscoveries(true);
+      setDiscoveriesError(null);
+      const discoveries = await getRecentDiscoveries(5); // Get 5 most recent discoveries
+      setRecentDiscoveries(discoveries);
+    } catch (error) {
+      console.error('Error fetching recent discoveries:', error);
+      setDiscoveriesError('Failed to load recent discoveries. Please try again later.');
+    } finally {
+      setIsLoadingDiscoveries(false);
+    }
+  };
+
+  fetchDiscoveries();
+}, []);
+
   const [fileError, setFileError] = useState<string | null>(null);
   const [fileInfoMessage, setFileInfoMessage] = useState<string | null>(null);
   const [manualData, setManualData] = useState<ManualInputRow[]>([{}]);
@@ -205,6 +518,27 @@ const Dashboard: React.FC = () => {
 
   // Refs
   const recentActivityRef = useRef<RecentActivityRef>(null);
+
+  // Function to view last saved results
+  const viewLastResults = () => {
+    const savedResults = localStorage.getItem(LAST_PREDICTION_KEY);
+    const savedFileData = localStorage.getItem(LAST_FILE_DATA_KEY);
+    if (savedResults) {
+      try {
+        const parsed = JSON.parse(savedResults);
+        // Remove the savedAt timestamp before displaying (it's not part of UploadResponse)
+        const { savedAt, ...results } = parsed;
+        setPredictionResults(results);
+        setShowResults(true);
+        
+        // Set the file data for 3D visualization
+        setLastUploadedFileData(savedFileData);
+      } catch (error) {
+        console.error('Failed to load saved results:', error);
+        alert('Failed to load saved results. The data may be corrupted.');
+      }
+    }
+  };
 
   // Analysis States
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -404,13 +738,6 @@ const Dashboard: React.FC = () => {
     { name: "F1 Score", value: 92.1, description: "Harmonic mean of precision and recall" }
   ];
 
-  const modelMetricsWithIcons = [
-    { name: "Accuracy", value: 94.2, icon: "fa-bullseye", color: "from-blue-500 to-cyan-500" },
-    { name: "Precision", value: 92.8, icon: "fa-crosshairs", color: "from-purple-500 to-pink-500" },
-    { name: "Recall", value: 91.5, icon: "fa-chart-line", color: "from-green-500 to-emerald-500" },
-    { name: "F1 Score", value: 92.1, icon: "fa-star", color: "from-orange-500 to-red-500" }
-  ];
-
   // Model Change Handler
   const handleModelChange = (model: MLModel) => {
     const hadUploadedFile = uploadedFile !== null;
@@ -570,6 +897,25 @@ const Dashboard: React.FC = () => {
       // Call the real API
       const results = await apiService.uploadAndPredict(uploadedFile!);
       
+      // Save to localStorage with timestamp
+      const resultsWithTimestamp = {
+        ...results,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem(LAST_PREDICTION_KEY, JSON.stringify(resultsWithTimestamp));
+      
+      // Save file data (as text) for 3D visualization later
+      if (uploadedFile) {
+        try {
+          const fileText = await uploadedFile.text();
+          localStorage.setItem(LAST_FILE_DATA_KEY, fileText);
+        } catch (err) {
+          console.warn('Failed to save file data:', err);
+        }
+      }
+      
+      setHasLastResults(true);
+      
       // Store results and show modal
       setPredictionResults(results);
       setShowResults(true);
@@ -616,6 +962,56 @@ const Dashboard: React.FC = () => {
       setFileError(`${errorMessage}: ${errorDetails}`);
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const loadSampleDataset = async () => {
+    setFileError(null);
+    setFileInfoMessage(null);
+
+    try {
+      // Load random sample from the selected model's dataset
+      const datasetType = selectedModel; // 'kepler' or 'tess'
+      const sampleSize = 50; // Get 50 random rows
+
+      setFileInfoMessage(`🎲 Loading random sample from ${datasetType.toUpperCase()} dataset...`);
+
+      const sampleData = await dataLoader.loadRandomSample(datasetType, sampleSize);
+
+      if (!sampleData || sampleData.length === 0) {
+        throw new Error('No sample data received');
+      }
+
+      // Convert the sample data to CSV format
+      const headers = Object.keys(sampleData[0]);
+      const csvLines = [
+        headers.join(','), // Header row
+        ...sampleData.map(row =>
+          headers.map(header => {
+            const value = row[header];
+            // Handle values that might contain commas or quotes
+            if (value === null || value === undefined) return '';
+            const stringValue = String(value);
+            if (stringValue.includes(',') || stringValue.includes('"')) {
+              return `"${stringValue.replace(/"/g, '""')}"`;
+            }
+            return stringValue;
+          }).join(',')
+        )
+      ];
+      const csvContent = csvLines.join('\n');
+
+      // Create a File object from the CSV content
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const file = new File([blob], `sample_${datasetType}_${Date.now()}.csv`, { type: 'text/csv' });
+
+      // Set the file and trigger validation
+      setUploadedFile(file);
+      setFileInfoMessage(`✓ Loaded ${sampleData.length} random samples from ${datasetType.toUpperCase()} dataset! Ready for analysis.`);
+
+    } catch (error: any) {
+      console.error('Sample loading error:', error);
+      setFileError(`Failed to load sample dataset: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -715,31 +1111,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Model Metrics Overview */}
-      <DashboardSection
-        variant="cosmic"
-        title="Model Performance"
-        subtitle="Current ML model accuracy metrics"
-        icon={<i className="fas fa-chart-bar"></i>}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          {modelMetricsWithIcons.map((metric, idx) => (
-            <div key={idx} className="group relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-white/80 to-white/40 dark:from-gray-800/80 dark:to-gray-800/40 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <div className="flex items-start justify-between mb-3">
-                <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${metric.color} flex items-center justify-center shadow-lg`}>
-                  <i className={`fas ${metric.icon} text-white text-xl`}></i>
-                </div>
-                <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">{metric.name}</span>
-              </div>
-              <p className="text-3xl font-bold text-gray-800 dark:text-white mb-1">{metric.value}%</p>
-              <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div className={`h-full bg-gradient-to-r ${metric.color} rounded-full transition-all duration-1000`} style={{ width: `${metric.value}%` }}></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </DashboardSection>
-
       {/* ML Model Selection & Prediction */}
       <DashboardSection
         variant="nebula"
@@ -805,6 +1176,19 @@ const Dashboard: React.FC = () => {
             />
           </div>
 
+          {/* Model Performance Metrics Section */}
+          <div className="space-y-4" key={`metrics-${selectedModel}`}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300 dark:via-purple-700 to-transparent"></div>
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <i className="fas fa-chart-line text-purple-600 dark:text-purple-400"></i>
+                Model Performance Metrics
+              </h3>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-300 dark:via-purple-700 to-transparent"></div>
+            </div>
+            <ModelMetricsDisplay metrics={modelMetricsData[selectedModel]} modelType={selectedModel} />
+          </div>
+
           {/* Input Mode Tabs */}
               <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
                 {[
@@ -825,6 +1209,30 @@ const Dashboard: React.FC = () => {
                   </button>
                 ))}
               </div>
+
+              {/* View Last Results Button */}
+              {hasLastResults && (
+                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-xl p-4 border border-cyan-200 dark:border-cyan-800">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center shadow-md">
+                        <i className="fas fa-history text-white text-lg"></i>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800 dark:text-white text-sm">Previous Results Available</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">View your last ML prediction results</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={viewLastResults}
+                      className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-lg font-semibold transition-all hover:shadow-lg hover:scale-105 text-sm whitespace-nowrap"
+                    >
+                      <i className="fas fa-eye mr-2"></i>
+                      View Last Results
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* File Upload Interface */}
               {inputMode === 'file' && (
@@ -873,13 +1281,29 @@ const Dashboard: React.FC = () => {
                           className="hidden"
                           id="file-upload-cosmic"
                         />
-                        <label
-                          htmlFor="file-upload-cosmic"
-                          className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-xl cursor-pointer transition-all hover:scale-105"
-                        >
-                          <i className="fas fa-folder-open mr-2"></i>
-                          Choose File
-                        </label>
+                        <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+                          <label
+                            htmlFor="file-upload-cosmic"
+                            className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-xl cursor-pointer transition-all hover:scale-105"
+                          >
+                            <i className="fas fa-folder-open mr-2"></i>
+                            Choose File
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={loadSampleDataset}
+                            disabled={isAnalyzing}
+                            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                          >
+                            <i className="fas fa-dice mr-2"></i>
+                            {isAnalyzing ? 'Loading...' : 'Try Sample Dataset'}
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 italic">
+                          <i className="fas fa-info-circle mr-1"></i>
+                          The sample dataset loads 50 random exoplanets from NASA's {selectedModel.toUpperCase()} dataset
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1137,31 +1561,93 @@ const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {[
-                    { id: 'KIC 8462852', type: 'Super-Earth', confidence: 89, date: 'Today', color: 'from-green-500 to-emerald-600' },
-                    { id: 'TIC 260128333', type: 'Hot Neptune', confidence: 78, date: 'Yesterday', color: 'from-yellow-500 to-orange-600' },
-                    { id: 'EPIC 249631677', type: 'Mini Neptune', confidence: 92, date: '2 days ago', color: 'from-green-500 to-emerald-600' }
-                  ].map((discovery, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                      <td className="px-4 py-4 text-sm font-medium text-gray-800 dark:text-white">{discovery.id}</td>
-                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{discovery.type}</td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden max-w-[100px]">
-                            <div className={`h-full bg-gradient-to-r ${discovery.color} rounded-full`} style={{ width: `${discovery.confidence}%` }}></div>
-                          </div>
-                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{discovery.confidence}%</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{discovery.date}</td>
-                      <td className="px-4 py-4 text-right">
-                        <button className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium">
-                          View →
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+  {isLoadingDiscoveries ? (
+    <tr>
+      <td colSpan={5} className="py-4 text-center">
+        <div className="flex justify-center items-center space-x-2">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+          <span className="text-gray-500 dark:text-gray-400">Loading discoveries...</span>
+        </div>
+      </td>
+    </tr>
+  ) : discoveriesError ? (
+    <tr>
+      <td colSpan={5} className="py-4 text-center text-red-500">
+        <i className="fas fa-exclamation-triangle mr-2"></i>
+        {discoveriesError}
+      </td>
+    </tr>
+  ) : recentDiscoveries.length === 0 ? (
+    <tr>
+      <td colSpan={5} className="py-4 text-center text-gray-500 dark:text-gray-400">
+        No recent discoveries found.
+      </td>
+    </tr>
+  ) : (
+    recentDiscoveries.map((discovery) => {
+      // Determine color based on confidence
+      const confidenceColor = discovery.confidence > 80 
+        ? 'from-green-500 to-emerald-600' 
+        : discovery.confidence > 60 
+          ? 'from-yellow-500 to-orange-600' 
+          : 'from-red-500 to-pink-600';
+      
+      // Format date
+      const formattedDate = new Date(discovery.discovered_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      return (
+        <tr key={discovery.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+          <td className="px-4 py-4 text-sm font-medium text-gray-800 dark:text-white">
+            {discovery.object_id || 'N/A'}
+          </td>
+          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400 capitalize">
+            {discovery.discovery_type?.toLowerCase() || 'Unknown'}
+          </td>
+          <td className="px-4 py-4">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden max-w-[100px]">
+                <div 
+                  className={`h-full bg-gradient-to-r ${confidenceColor} rounded-full`} 
+                  style={{ width: `${discovery.confidence}%` }}
+                ></div>
+              </div>
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {discovery.confidence.toFixed(1)}%
+              </span>
+            </div>
+          </td>
+          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-400" title={discovery.discovered_at}>
+            {formattedDate}
+          </td>
+          <td className="px-4 py-4 text-right">
+            <button 
+              onClick={() => {
+                // Navigate to visualization page with the discovery data
+                const queryParams = new URLSearchParams();
+                queryParams.set('id', discovery.object_id || '');
+                queryParams.set('object', discovery.object_id || '');
+                queryParams.set('type', discovery.discovery_type || '');
+                queryParams.set('confidence', discovery.confidence?.toString() || '0');
+                queryParams.set('date', discovery.discovered_at || '');
+                
+                window.location.href = `/visualizations?${queryParams.toString()}`;
+              }}
+              className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium"
+            >
+              View →
+            </button>
+          </td>
+        </tr>
+      );
+    })
+  )}
+</tbody>
               </table>
             </div>
           </DashboardSection>
@@ -1406,9 +1892,6 @@ const Dashboard: React.FC = () => {
           >
             Done
           </button>
-        </div>
-      </Modal>
-
       {/* Prediction Results Modal */}
       {showResults && predictionResults && (
         <PredictionResults
@@ -1416,6 +1899,7 @@ const Dashboard: React.FC = () => {
           onClose={() => setShowResults(false)}
         />
       )}
+
     </div>
   );
 };

@@ -7,7 +7,7 @@ from app.db.init_db import init_models
 from app.db.seed import seed_models
 from app.api.v1 import predict, train, stats
 from app.api.v1 import models, data, predictions
-from app.api.v1 import analysis, upload, logs, exoplanets
+from app.api.v1 import analysis, upload, logs, exoplanets, discoveries
 from app.services.model_loader import get_model_loader
 
 app = FastAPI(
@@ -28,6 +28,9 @@ app.add_middleware(
 # Include routers from both branches
 app.include_router(predict.router, prefix="/predict", tags=["Predict"])
 app.include_router(train.router, prefix="/train", tags=["Train"])
+
+# Include API v1 routers
+app.include_router(discoveries.router, prefix="/api/v1", tags=["Discoveries"])
 app.include_router(stats.router, prefix="/stats", tags=["Stats"])
 app.include_router(models.router)
 app.include_router(data.router)

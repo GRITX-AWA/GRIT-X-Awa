@@ -14,7 +14,7 @@ interface PageContextType {
 }
 
 // Lazy load page components
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.default })));
 const Exoplanets = lazy(() => import('./pages/Exoplanets'));
 const Analysis = lazy(() => import('./pages/Analysis'));
 const Visualizations = lazy(() => import('./pages/Visualizations'));
@@ -54,6 +54,7 @@ const DashboardLayoutComponent: React.FC = () => {
     }
   }, [activePage]);
 
+  // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     activePage,
     setActivePage: handleSetActivePage,

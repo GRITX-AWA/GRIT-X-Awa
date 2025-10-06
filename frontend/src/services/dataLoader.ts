@@ -356,6 +356,55 @@ class DataLoader {
   async cleanExpiredCache(): Promise<number> {
     return await indexedDBCache.cleanExpired();
   }
+
+  /**
+   * Load a random sample of rows from the dataset
+   */
+  async loadRandomSample(datasetType: DatasetType, sampleSize: number = 50): Promise<any[]> {
+    try {
+      // First load the first chunk to get column information
+      const firstChunk = await this.loadChunk(datasetType, 0);
+      if (!firstChunk || firstChunk.length === 0) {
+        throw new Error('Failed to load initial data chunk');
+      }
+
+      // Load the metadata to get total rows
+      const metadata = await this.loadMetadata(datasetType);
+      if (!metadata) {
+        throw new Error('Failed to load dataset metadata');
+      }
+
+      // Calculate how many chunks we need to load to get the sample size
+      const totalChunks = Math.ceil(sampleSize / metadata.chunk_size);
+      const chunkIndices = Array.from({ length: Math.min(totalChunks, 5) }, (_, i) => i); // Max 5 chunks
+      
+      // Load all chunks in parallel
+      const chunks = await Promise.all(
+        chunkIndices.map(i => this.loadChunk(datasetType, i))
+      );
+
+      // Flatten all chunks and take the sample size
+      const allData = chunks.flat().slice(0, sampleSize);
+      
+      // Shuffle the array to get random samples
+      return this.shuffleArray(allData);
+    } catch (error) {
+      console.error('Error loading random sample:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Shuffle an array using Fisher-Yates algorithm
+   */
+  private shuffleArray<T>(array: T[]): T[] {
+    const result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
 }
 
 // Singleton instance
